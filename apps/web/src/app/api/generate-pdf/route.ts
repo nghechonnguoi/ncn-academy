@@ -114,7 +114,7 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
 
     await browser.close();
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="Bao-Cao-Dinh-Vi-Tuong-Lai.pdf"',
