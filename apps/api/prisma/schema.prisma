@@ -1,0 +1,160 @@
+// Prisma Schema — NCN Academy
+// Run: npx prisma generate && npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── ENUMS ─────────────────────────────────────────────
+enum Role {
+  USER
+  ADMIN
+  AFFILIATE
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+// ── MODELS ────────────────────────────────────────────
+model User {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  name             String?
+  password         String?          // null if OAuth
+  avatar           String?
+  phone            String?
+  role             Role             @default(USER)
+  plan             SubscriptionPlan @default(FREE)
+  googleId         String?          @unique
+  affiliateCode    String?          @unique
+  referredBy       String?          // affiliate code used at registration
+  emailVerified    Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  assessments      Assessment[]
+  payments         Payment[]
+  aiUsages         AiUsage[]
+  commissions      AffiliateCommission[] @relation("AffiliateUser")
+  referrals        AffiliateCommission[] @relation("ReferredUser")
+  sessions         Session[]
+  refreshTokens    RefreshToken[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Assessment {
+  id           String   @id @default(cuid())
+  userId       String
+  answers      Json     // { questionId: answer }
+  riasecResult Json?    // { R, I, A, S, E, C, top3 }
+  mbtiResult   Json?    // { type, dimensions }
+  careerResult Json?    // [{ rank, name, pct, niche, salary }]
+  reportUrl    String?  // S3 URL of PDF report
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("assessments")
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  userId            String
+  stripeSessionId   String?       @unique
+  stripePaymentId   String?
+  amount            Int           // in VND cents
+  currency          String        @default("vnd")
+  plan              SubscriptionPlan
+  status            PaymentStatus @default(PENDING)
+  affiliateCode     String?
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user              User          @relation(fields: [userId], references: [id])
+  commissions       AffiliateCommission[]
+
+  @@map("payments")
+}
+
+model AffiliateCommission {
+  id             String           @id @default(cuid())
+  affiliateId    String
+  referredUserId String
+  paymentId      String
+  amount         Int              // commission amount in VND
+  rate           Float            @default(0.20)
+  status         CommissionStatus @default(PENDING)
+  paidAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  affiliate      User             @relation("AffiliateUser", fields: [affiliateId], references: [id])
+  referredUser   User             @relation("ReferredUser", fields: [referredUserId], references: [id])
+  payment        Payment          @relation(fields: [paymentId], references: [id])
+
+  @@map("affiliate_commissions")
+}
+
+model AiUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  prompt    String
+  response  String
+  tokens    Int
+  model     String   @default("gpt-4o")
+  cost      Float    // in USD
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_usages")
+}
