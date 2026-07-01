@@ -51,7 +51,7 @@ export function HeroSection() {
               className="bg-ncn-orange text-white px-8 py-4 rounded font-bold text-[15px] flex items-center gap-2 border-2 border-ncn-orange hover:bg-ncn-orange-dark hover:border-ncn-orange-dark hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(249,115,22,0.35)] transition-all duration-250"
             >
               <Sparkles className="w-5 h-5" />
-              Làm bài khảo sát miễn phí <ArrowRight className="w-4 h-4" />
+              Làm bài khảo sát <ArrowRight className="w-4 h-4" />
             </Link>
             
             <a 

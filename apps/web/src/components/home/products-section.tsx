@@ -17,7 +17,7 @@ const PRODUCTS = [
       "Gợi ý tổ hợp môn xét tuyển ĐH",
       "Báo cáo cá nhân hóa chi tiết",
     ],
-    btnText: "Làm bài khảo sát miễn phí →",
+    btnText: "Làm bài khảo sát →",
     btnLink: "https://quiz.nghechonnguoi.com",
     btnClass: "bg-ncn-orange text-white hover:bg-ncn-orange-dark",
     featured: true,

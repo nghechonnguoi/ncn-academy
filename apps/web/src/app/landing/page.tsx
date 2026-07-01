@@ -62,7 +62,7 @@ export default function LandingPage() {
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/login">
               <Button size="lg" className="bg-ncn-purple hover:bg-ncn-purple-dark text-white rounded-full px-8 font-semibold shadow-lg shadow-ncn-purple/25">
-                Làm bài khảo sát miễn phí
+                Làm bài khảo sát
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
