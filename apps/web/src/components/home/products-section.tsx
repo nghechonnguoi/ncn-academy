@@ -26,7 +26,7 @@ const PRODUCTS = [
     num: "02",
     tag: "🔜 Sắp ra mắt",
     tagClass: "bg-white/10 text-ncn-gray border border-white/15",
-    name: "Test Năng Lực Tư Duy",
+    name: "KHÁM PHÁ TIỀM NĂNG PHÁT TRIỂN (DÀNH CHO HỌC SINH 7-13 TUỔI)",
     desc: "Đánh giá chỉ số IQ, EQ, tư duy phản biện và khả năng giải quyết vấn đề — bức tranh toàn diện về trí tuệ của bạn.",
     features: [
       "Bài test IQ chuẩn quốc tế",
@@ -43,7 +43,7 @@ const PRODUCTS = [
     num: "03",
     tag: "🔜 Sắp ra mắt",
     tagClass: "bg-white/10 text-ncn-gray border border-white/15",
-    name: "Lộ Trình Học Tập Cá Nhân",
+    name: "ĐỊNH HƯỚNG PHÁT TRIỂN SỰ NGHIỆP (DÀNH CHO NGƯỜI TRƯỞNG THÀNH)",
     desc: "Dựa trên điểm mạnh và nghề nghiệp mục tiêu, hệ thống tạo ra lộ trình học tập tối ưu từng bước, từng giai đoạn, đo lường được.",
     features: [
       "Lộ trình 3–5 năm chi tiết",
