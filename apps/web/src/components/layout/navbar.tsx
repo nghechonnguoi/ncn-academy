@@ -22,7 +22,7 @@ export function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-[10px]">
           <div className="w-[36px] h-[36px] bg-ncn-orange rounded-[6px] flex items-center justify-center text-[18px]">🧭</div>
-          <div className="text-[17px] font-extrabold tracking-[-0.3px] text-white">Nghe<span className="text-ncn-orange">Chọn</span>Người</div>
+          <div className="text-[17px] font-extrabold tracking-[-0.3px] text-white">Nghề<span className="text-ncn-orange">Chọn</span>Người</div>
         </Link>
 
         {/* Desktop Nav */}

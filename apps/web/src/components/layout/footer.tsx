@@ -8,7 +8,7 @@ export function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-[10px] mb-4">
               <div className="w-[36px] h-[36px] bg-ncn-orange rounded-[6px] flex items-center justify-center text-[18px]">🧭</div>
-              <div className="text-[17px] font-extrabold tracking-[-0.3px] text-white">Nghe<span className="text-ncn-orange">Chọn</span>Người</div>
+              <div className="text-[17px] font-extrabold tracking-[-0.3px] text-white">Nghề<span className="text-ncn-orange">Chọn</span>Người</div>
             </Link>
             <p className="text-[13.5px] text-ncn-gray leading-[1.7] max-w-[280px]">
               Hệ thống định vị sự nghiệp hàng đầu Việt Nam. Kết hợp khoa học tâm lý hiện đại với dữ liệu thị trường lao động để giúp người trẻ tìm đúng con đường.
