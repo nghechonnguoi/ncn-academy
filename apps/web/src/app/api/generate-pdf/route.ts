@@ -92,7 +92,7 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
     });
 
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: 'load' });
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
