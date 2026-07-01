@@ -12,11 +12,11 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   // @ts-ignore
-  const payos = new PayOS(
-    process.env.PAYOS_CLIENT_ID || 'dummy_client_id',
-    process.env.PAYOS_API_KEY || 'dummy_api_key',
-    process.env.PAYOS_CHECKSUM_KEY || 'dummy_checksum_key'
-  );
+  const payos = new PayOS({
+    clientId: process.env.PAYOS_CLIENT_ID || 'dummy_client_id',
+    apiKey: process.env.PAYOS_API_KEY || 'dummy_api_key',
+    checksumKey: process.env.PAYOS_CHECKSUM_KEY || 'dummy_checksum_key'
+  });
   try {
     const body = await req.json();
     const { orderCode, amount, description, buyerName, buyerPhone, cancelUrl, returnUrl } = body;
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       returnUrl: returnUrl || 'https://quiz.nghechonnguoi.com',
     };
 
-    const checkoutData = await payos.createPaymentLink(paymentData);
+    const checkoutData = await payos.paymentRequests.create(paymentData);
     
     return NextResponse.json({
       success: true,

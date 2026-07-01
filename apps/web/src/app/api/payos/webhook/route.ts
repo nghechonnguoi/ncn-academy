@@ -23,22 +23,23 @@ export async function POST(req: Request) {
     }
   }
   // @ts-ignore
-  const payos = new PayOS(
-    process.env.PAYOS_CLIENT_ID || 'dummy_client_id',
-    process.env.PAYOS_API_KEY || 'dummy_api_key',
-    process.env.PAYOS_CHECKSUM_KEY || 'dummy_checksum_key'
-  );
+  // @ts-ignore
+  const payos = new PayOS({
+    clientId: process.env.PAYOS_CLIENT_ID || 'dummy_client_id',
+    apiKey: process.env.PAYOS_API_KEY || 'dummy_api_key',
+    checksumKey: process.env.PAYOS_CHECKSUM_KEY || 'dummy_checksum_key'
+  });
 
   try {
     const body = await req.json();
     console.log("PayOS Webhook received:", body);
     
-    const webhookData = payos.verifyPaymentWebhookData(body);
+    const webhookData = await payos.webhooks.verify(body);
     
-    // webhookData contains orderCode, amount, description, success, etc.
-    if (webhookData.code === "00") {
+    // webhookData returns data object
+    if (webhookData && webhookData.orderCode) {
       // Payment successful
-      const orderCode = String(webhookData.data.orderCode);
+      const orderCode = String(webhookData.orderCode);
       
       // Update Firestore
       // @ts-ignore
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
         const db = admin.firestore();
         await db.collection('orders').doc(orderCode).set({
           status: 'PAID',
-          amount: webhookData.data.amount,
+          amount: webhookData.amount,
           // @ts-ignore
           paidAt: admin.firestore.FieldValue.serverTimestamp(),
         }, { merge: true });
