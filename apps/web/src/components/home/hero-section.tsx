@@ -37,12 +37,12 @@ export function HeroSection() {
           </div>
           
           <h1 className="text-[clamp(52px,7vw,96px)] font-black leading-[1] tracking-[-2px] mb-6 max-w-[750px] text-white">
-            KHÁM PHÁ CON NGƯỜI THẬT.
-            <span className="text-ncn-orange block mt-2">LÀM CHỦ TƯƠNG LAI.</span>
+            HIỂU ĐÚNG NĂNG LỰC.
+            <span className="text-ncn-orange block mt-2">ĐI ĐÚNG CON ĐƯỜNG.</span>
           </h1>
 
           <p className="text-[17px] text-ncn-gray-light leading-[1.7] max-w-[520px] mb-11">
-            NghechonNguoi cung cấp hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam — kết hợp Holland RIASEC, MBTI và Ikigai để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.
+            Nghề Chọn Người cung cấp hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam — kết hợp Holland RIASEC, MBTI và Ikigai để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.
           </p>
 
           <div className="flex flex-wrap gap-4 mb-[70px]">
