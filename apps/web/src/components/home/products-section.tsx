@@ -49,7 +49,7 @@ const PRODUCTS = [
       "Bản đồ lộ trình thăng tiến (Career Growth)",
       "Chiến lược chuyển đổi ngành nghề an toàn",
       "Khám phá lợi thế cạnh tranh cá nhân",
-      "Định vị thương hiệu cá nhân nơi công sở",
+      "Định vị thương hiệu cá nhân",
     ],
     btnText: "Thông báo khi ra mắt",
     btnLink: "#",
