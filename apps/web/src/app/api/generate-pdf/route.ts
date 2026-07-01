@@ -88,7 +88,7 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
     const browser = await puppeteer.launch({
       args: chromium.args,
       executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH,
-      headless: chromium.headless,
+      headless: true,
     });
 
     const page = await browser.newPage();
