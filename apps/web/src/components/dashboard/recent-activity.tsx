@@ -1,7 +1,7 @@
 const activities = [
   { icon: "🎯", text: "Hoàn thành bài test RIASEC", time: "2 giờ trước" },
   { icon: "📊", text: "Nhận kết quả phân tích nghề nghiệp", time: "2 giờ trước" },
-  { icon: "🤖", text: "Chat với AI Advisor lần đầu", time: "1 ngày trước" },
+  { icon: "🤖", text: "Chat với Chuyên gia ảo lần đầu", time: "1 ngày trước" },
   { icon: "💳", text: "Nâng cấp lên gói Pro", time: "3 ngày trước" },
 ];
 

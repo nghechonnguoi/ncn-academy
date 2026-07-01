@@ -11,11 +11,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "NCN Academy — Định Vị Sự Nghiệp Với AI",
+    default: "NCN Academy — Hệ Thống Định Vị Sự Nghiệp",
     template: "%s | NCN Academy",
   },
   description:
-    "Hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam. Kết hợp Holland RIASEC, MBTI và AI để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.",
+    "Hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam. Kết hợp Holland RIASEC, MBTI và thuật toán chuyên sâu để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.",
   keywords: ["định hướng nghề nghiệp", "MBTI", "Holland RIASEC", "tư vấn nghề nghiệp", "AI"],
   authors: [{ name: "NCN Academy" }],
   openGraph: {

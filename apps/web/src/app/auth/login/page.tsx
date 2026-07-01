@@ -67,7 +67,7 @@ function LoginForm() {
             <span className="w-10 h-10 rounded-xl bg-[#635bff] flex items-center justify-center text-white text-lg">🧭</span>
             <span>NCN<span className="text-[#635bff]">Academy</span></span>
           </Link>
-          <p className="text-gray-500 mt-2 text-sm">Định vị sự nghiệp với khoa học &amp; AI</p>
+          <p className="text-gray-500 mt-2 text-sm">Định vị sự nghiệp với khoa học chuyên sâu</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl shadow-gray-100/50 border border-gray-100 overflow-hidden">

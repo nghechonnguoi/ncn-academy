@@ -19,7 +19,7 @@ const PROCESS_STEPS = [
     step: "Bước 03",
     icon: "⚙️",
     title: "Thuật Toán Phân Tích",
-    desc: "Hệ thống AI đối chiếu dữ liệu đa biến: Holland × MBTI × Nhân số học × Xu hướng thị trường.",
+    desc: "Hệ thống đối chiếu dữ liệu đa biến: Holland × MBTI × Nhân số học × Xu hướng thị trường.",
   },
   {
     step: "Bước 04",

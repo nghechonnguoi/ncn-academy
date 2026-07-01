@@ -33,7 +33,7 @@ const plans = [
     name: "Pro",
     price: "299.000đ",
     period: "một lần",
-    desc: "Báo cáo đầy đủ + AI Advisor",
+    desc: "Báo cáo đầy đủ + Chuyên gia tư vấn ảo",
     cta: "Mua ngay",
     href: "/checkout?plan=pro",
     highlight: true,

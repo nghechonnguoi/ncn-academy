@@ -13,7 +13,7 @@ export function QuickActions({ hasAssessment }: QuickActionsProps) {
       href: "/assessment",
       color: "text-violet-600 bg-violet-50",
     },
-    { icon: Bot, label: "Chat với AI Advisor", href: "/ai-tools", color: "text-[#635bff] bg-[#635bff]/10" },
+    { icon: Bot, label: "Chat với Chuyên gia ảo", href: "/ai-tools", color: "text-[#635bff] bg-[#635bff]/10" },
     { icon: FileText, label: "Tải báo cáo PDF", href: "/checkout?plan=pro", color: "text-blue-600 bg-blue-50" },
   ];
 
