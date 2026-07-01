@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import PayOS from '@payos/node';
-
-const payos = new PayOS(
-  process.env.PAYOS_CLIENT_ID || 'dummy_client_id',
-  process.env.PAYOS_API_KEY || 'dummy_api_key',
-  process.env.PAYOS_CHECKSUM_KEY || 'dummy_checksum_key'
-);
-
+const { PayOS } = require('@payos/node');
 export async function POST(req: Request) {
+  // @ts-ignore
+  const payos = new PayOS(
+    process.env.PAYOS_CLIENT_ID || 'dummy_client_id',
+    process.env.PAYOS_API_KEY || 'dummy_api_key',
+    process.env.PAYOS_CHECKSUM_KEY || 'dummy_checksum_key'
+  );
   try {
     const body = await req.json();
     const { orderCode, amount, description, buyerName, buyerPhone, cancelUrl, returnUrl } = body;
