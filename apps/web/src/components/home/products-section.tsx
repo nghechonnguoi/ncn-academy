@@ -29,7 +29,7 @@ const PRODUCTS = [
     name: "KHÁM PHÁ TIỀM NĂNG PHÁT TRIỂN (DÀNH CHO HỌC SINH 7-13 TUỔI)",
     desc: "Công cụ đánh giá đa trí tuệ kết hợp tâm lý học hành vi, giúp cha mẹ thấu hiểu năng khiếu bẩm sinh và xây dựng lộ trình bồi dưỡng sớm cho con.",
     features: [
-      "Phân tích 8 loại hình trí thông minh",
+      "Phân tích tính cách, tiềm năng, đam mê",
       "Khám phá năng khiếu & điểm mạnh cốt lõi",
       "Tư vấn phương pháp học tập cá nhân hóa",
       "Gợi ý môi trường rèn luyện tối ưu",
@@ -44,11 +44,11 @@ const PRODUCTS = [
     tag: "🔜 Sắp ra mắt",
     tagClass: "bg-white/10 text-ncn-gray border border-white/15",
     name: "ĐỊNH HƯỚNG PHÁT TRIỂN SỰ NGHIỆP (DÀNH CHO NGƯỜI TRƯỞNG THÀNH)",
-    desc: "Hệ thống phân tích năng lực lõi và tư vấn chuyển đổi nghề nghiệp (Career Pivot) chuyên sâu, giúp người đi làm định vị lại bản thân và bứt phá thu nhập.",
+    desc: "Hệ thống phân tích năng lực lõi, giúp người đi làm hoạch định lộ trình thăng tiến, chuyển đổi nghề nghiệp an toàn và bứt phá thu nhập.",
     features: [
-      "Đánh giá mức độ phù hợp với công việc hiện tại",
+      "Bản đồ lộ trình thăng tiến (Career Growth)",
       "Chiến lược chuyển đổi ngành nghề an toàn",
-      "Bản đồ lộ trình thăng tiến (C-Level)",
+      "Khám phá lợi thế cạnh tranh cá nhân",
       "Định vị thương hiệu cá nhân nơi công sở",
     ],
     btnText: "Thông báo khi ra mắt",
