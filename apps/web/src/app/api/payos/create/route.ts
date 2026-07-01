@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 const { PayOS } = require('@payos/node');
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: Request) {
   // @ts-ignore
   const payos = new PayOS(
@@ -12,7 +22,7 @@ export async function POST(req: Request) {
     const { orderCode, amount, description, buyerName, buyerPhone, cancelUrl, returnUrl } = body;
 
     if (!orderCode || !amount || !description) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400, headers: corsHeaders });
     }
 
     const paymentData = {
@@ -37,9 +47,9 @@ export async function POST(req: Request) {
       amount: checkoutData.amount,
       description: checkoutData.description,
       paymentLinkId: checkoutData.paymentLinkId
-    });
+    }, { headers: corsHeaders });
   } catch (error: any) {
     console.error('Lỗi khi tạo link thanh toán PayOS:', error);
-    return NextResponse.json({ error: error.message || 'Lỗi server' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Lỗi server' }, { status: 500, headers: corsHeaders });
   }
 }
