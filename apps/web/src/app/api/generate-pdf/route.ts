@@ -48,7 +48,10 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
           }
         });
         const result = await model.generateContent(prompt);
-        aiTexts = JSON.parse(result.response.text());
+        let textResult = result.response.text();
+        // Remove markdown code blocks if any
+        textResult = textResult.replace(/^```json/im, '').replace(/```$/im, '').trim();
+        aiTexts = JSON.parse(textResult);
       } catch (e) {
         console.error("Gemini API Error:", e);
       }
