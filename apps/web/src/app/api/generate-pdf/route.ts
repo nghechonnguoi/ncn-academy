@@ -3,14 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
-import { Anthropic } from '@anthropic-ai/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 
 // Allow this API route to run for up to 300 seconds (5 minutes)
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
   try {
-    const { data } = await req.json();
+    const data = await req.json();
 
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn("ANTHROPIC_API_KEY is not set. Using generic texts.");
