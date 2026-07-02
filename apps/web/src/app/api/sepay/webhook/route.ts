@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     
     // Update Firestore
     // @ts-ignore
-    if (admin.apps.length) {
+    if (admin.apps?.length) {
       // @ts-ignore
       const db = admin.firestore();
       const docRef = db.collection('orders').doc(orderCode);
