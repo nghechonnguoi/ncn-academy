@@ -10,7 +10,7 @@ const PRODUCTS = [
     tag: "✅ Đang hoạt động",
     tagClass: "bg-ncn-orange/15 text-ncn-orange border border-ncn-orange/40",
     name: "ĐỊNH VỊ NGHỀ NGHIỆP DÀNH CHO HỌC SINH 14 -18 TUỔI",
-    desc: "Hệ thống phân tích đa chiều kết hợp Nhân số học, RIASEC Holland, MBTI và Ikigai — gợi ý TOP 5 nghề nghiệp phù hợp nhất với con người thật của bạn.",
+    desc: "Hệ thống phân tích đa chiều kết hợp các công cụ khoa học chuyên sâu — gợi ý TOP 5 nghề nghiệp phù hợp nhất với con người thật của bạn.",
     features: [
       "Phân tích 40+ câu hỏi chuyên sâu",
       "Kết hợp 4 công cụ thấu hiểu con người",

@@ -8,12 +8,12 @@ const SERVICES = [
   {
     icon: "🧭",
     title: "Định Vị Nghề Nghiệp",
-    desc: "Phân tích RIASEC Holland chuyên sâu, xác định nhóm nghề nghiệp phù hợp nhất với cấu trúc năng lực hành vi.",
+    desc: "Phân tích các nhóm ngành nghề chuyên sâu, xác định nhóm nghề nghiệp phù hợp nhất với cấu trúc năng lực hành vi.",
   },
   {
     icon: "🧠",
     title: "Phân Tích Tính Cách",
-    desc: "Kết hợp MBTI và Nhân số học Ikigai, giải mã phong cách tư duy và phương thức vận hành độc đáo của cá nhân.",
+    desc: "Kết hợp các nền tảng khoa học tâm lý học, giải mã phong cách tư duy và phương thức vận hành độc đáo của cá nhân.",
   },
   {
     icon: "📊",
@@ -33,7 +33,7 @@ const SERVICES = [
   {
     icon: "🎓",
     title: "Tư Vấn Chọn Ngành",
-    desc: "Gợi ý khối thi, trường và ngành học phù hợp dựa trên kết quả phân tích đa biến kết hợp xu hướng tuyển dụng.",
+    desc: "Dựa trên mô hình môi trường làm việc chuẩn quốc tế, giúp ứng viên tìm thấy nơi thuộc về mình.",
   },
 ];
 

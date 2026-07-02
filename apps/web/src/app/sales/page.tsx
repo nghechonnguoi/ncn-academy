@@ -71,8 +71,8 @@ const plans = [
 ];
 
 const faqs = [
-  { q: "Bài test mất bao lâu?", a: "Khoảng 8–12 phút. Gồm 60 câu hỏi RIASEC được thiết kế để đo lường xu hướng nghề nghiệp chính xác nhất." },
-  { q: "Kết quả có chính xác không?", a: "Hệ thống dựa trên mô hình Holland RIASEC được nghiên cứu khoa học hơn 60 năm và được chuẩn hóa theo dữ liệu thị trường Việt Nam." },
+  { q: "Bài test mất bao lâu?", a: "Khoảng 8–12 phút. Gồm 60 câu hỏi được thiết kế để đo lường xu hướng nghề nghiệp chính xác nhất." },
+  { q: "Kết quả có chính xác không?", a: "Hệ thống dựa trên các mô hình phân tích tâm lý học được nghiên cứu khoa học chuyên sâu và được chuẩn hóa theo dữ liệu thị trường Việt Nam." },
   { q: "Tôi có thể làm bài nhiều lần không?", a: "Có thể làm lại sau 6 tháng để so sánh sự thay đổi xu hướng nghề nghiệp theo thời gian." },
   { q: "Thanh toán qua đâu?", a: "Stripe — hỗ trợ Visa, Mastercard, JCB. Hoặc chuyển khoản ngân hàng." },
 ];

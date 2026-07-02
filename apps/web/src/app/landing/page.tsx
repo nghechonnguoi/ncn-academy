@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Định Vị Sự Nghiệp Với Khoa Học",
-  description: "Hệ thống phân tích nghề nghiệp đa biến — Holland RIASEC + MBTI + Thuật toán tối ưu",
+  description: "Hệ thống phân tích nghề nghiệp đa biến — Kết hợp các công cụ khoa học chuyên sâu",
 };
 
 const features = [
@@ -57,7 +57,7 @@ export default function LandingPage() {
             <span className="gradient-text">Chọn đúng nghề. Thành công.</span>
           </h1>
           <p className="mt-6 text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Hệ thống phân tích nghề nghiệp đa biến kết hợp Holland RIASEC, MBTI, Nhân số học Ikigai và Dữ liệu lớn — nhận báo cáo 15 trang cá nhân hóa trong 10 phút.
+            Hệ thống phân tích nghề nghiệp đa biến kết hợp các công cụ khoa học tâm lý và Dữ liệu lớn — nhận báo cáo 15 trang cá nhân hóa trong 10 phút.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/login">

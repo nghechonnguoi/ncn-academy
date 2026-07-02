@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     template: "%s | NCN Academy",
   },
   description:
-    "Hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam. Kết hợp Holland RIASEC, MBTI và thuật toán chuyên sâu để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.",
-  keywords: ["định hướng nghề nghiệp", "MBTI", "Holland RIASEC", "tư vấn nghề nghiệp", "AI"],
+    "Hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam. Kết hợp các công cụ khoa học chuyên sâu để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.",
+  keywords: ["định hướng nghề nghiệp", "trắc nghiệm tính cách", "chọn ngành", "tư vấn nghề nghiệp", "AI"],
   authors: [{ name: "NCN Academy" }],
   openGraph: {
     type: "website",
