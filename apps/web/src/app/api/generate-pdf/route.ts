@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
 
 // Allow this API route to run for up to 60 seconds
 export const maxDuration = 60;
@@ -14,8 +14,8 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    if (!process.env.GEMINI_API_KEY) {
-      console.warn("GEMINI_API_KEY is not set. Using generic texts.");
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.warn("ANTHROPIC_API_KEY is not set. Using generic texts.");
     }
 
     const prompt = `Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin của ứng viên sau:
@@ -39,29 +39,25 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
 }`;
 
     let aiTexts: any = {};
-    if (process.env.GEMINI_API_KEY) {
+    if (process.env.ANTHROPIC_API_KEY) {
       try {
-        let model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig: { responseMimeType: "application/json" } });
-        let result;
-        try {
-          result = await model.generateContent(prompt);
-        } catch (err: any) {
-          console.warn("gemini-1.5-flash failed, trying gemini-1.5-flash-latest...", err.message);
-          model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest", generationConfig: { responseMimeType: "application/json" } });
-          try {
-            result = await model.generateContent(prompt);
-          } catch (err2: any) {
-            console.warn("gemini-1.5-flash-latest failed, trying gemini-pro...", err2.message);
-            model = genAI.getGenerativeModel({ model: "gemini-pro" });
-            result = await model.generateContent(prompt);
-          }
-        }
-        let textResult = result.response.text();
+        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const message = await anthropic.messages.create({
+          model: "claude-3-5-sonnet-20240620",
+          max_tokens: 1500,
+          temperature: 0.7,
+          system: "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
+          messages: [
+            { role: "user", content: prompt }
+          ]
+        });
+        
+        let textResult = (message.content[0] as any).text;
         // Remove markdown code blocks if any
         textResult = textResult.replace(/^```json/im, '').replace(/```$/im, '').trim();
         aiTexts = JSON.parse(textResult);
       } catch (e) {
-        console.error("Gemini API Error:", e);
+        console.error("Anthropic API Error:", e);
       }
     }
 
