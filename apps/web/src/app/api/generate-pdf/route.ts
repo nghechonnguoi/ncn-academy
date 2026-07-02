@@ -359,7 +359,7 @@ ${userInfo}
           pdfUrl: pdfUrl
         });
         console.log(`✅ Saved PDF URL to Firestore for order ${data.orderCode}`);
-      } catch (err) {
+      } catch (err: any) {
         console.error("❌ Failed to save PDF to Firebase Storage:", err);
       }
     }
@@ -370,7 +370,6 @@ ${userInfo}
         'Content-Disposition': 'attachment; filename="Bao-Cao-Dinh-Vi-Tuong-Lai.pdf"',
       },
     });
-
   } catch (error: any) {
     console.error("PDF Generation Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
