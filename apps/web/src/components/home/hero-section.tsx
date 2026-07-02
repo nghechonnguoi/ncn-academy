@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { LiveTrafficCounter } from "./live-traffic-counter";
 
 export function HeroSection() {
   return (
@@ -64,20 +65,20 @@ export function HeroSection() {
 
           <div className="flex flex-wrap gap-[50px]">
             <div>
-              <div className="text-[36px] font-black text-ncn-orange leading-none">5.000+</div>
-              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Học viên</div>
+              <div className="text-[36px] font-black text-ncn-orange leading-none">1000+</div>
+              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Ngành nghề</div>
             </div>
             <div>
-              <div className="text-[36px] font-black text-ncn-orange leading-none">98%</div>
-              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Hài lòng</div>
+              <div className="text-[36px] font-black text-ncn-orange leading-none">5</div>
+              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Bộ công cụ</div>
             </div>
             <div>
-              <div className="text-[36px] font-black text-ncn-orange leading-none">100+</div>
-              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Nghề phân tích</div>
+              <LiveTrafficCounter className="text-[36px] font-black text-ncn-orange leading-none" />
+              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Lưu lượng truy cập</div>
             </div>
             <div>
-              <div className="text-[36px] font-black text-ncn-orange leading-none">4</div>
-              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Bộ công cụ tâm lý</div>
+              <div className="text-[36px] font-black text-ncn-orange leading-none">5s</div>
+              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Thời gian phân tích</div>
             </div>
           </div>
         </motion.div>

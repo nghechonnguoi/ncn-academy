@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { LiveTrafficCounter } from "./live-traffic-counter";
 
 export function StatsSection() {
   return (
@@ -14,20 +15,20 @@ export function StatsSection() {
           transition={{ duration: 0.6 }}
         >
           <div className="p-[20px_10px] md:p-[20px_40px] text-center md:border-r border-black/15 last:border-none">
-            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">5.000+</div>
-            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Học viên đã làm bài</div>
+            <LiveTrafficCounter className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]" />
+            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Lưu lượng truy cập</div>
           </div>
           <div className="p-[20px_10px] md:p-[20px_40px] text-center md:border-r border-black/15 last:border-none">
-            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">4</div>
+            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">1000+</div>
+            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Ngành nghề phân tích</div>
+          </div>
+          <div className="p-[20px_10px] md:p-[20px_40px] text-center md:border-r border-black/15 last:border-none">
+            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">5</div>
             <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Bộ công cụ tâm lý học</div>
           </div>
           <div className="p-[20px_10px] md:p-[20px_40px] text-center md:border-r border-black/15 last:border-none">
-            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">100+</div>
-            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Nhóm nghề phân tích</div>
-          </div>
-          <div className="p-[20px_10px] md:p-[20px_40px] text-center md:border-r border-black/15 last:border-none border-none">
-            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">100%</div>
-            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Cá nhân hóa kết quả</div>
+            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">5 giây</div>
+            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Thời gian xuất báo cáo</div>
           </div>
         </motion.div>
       </div>
