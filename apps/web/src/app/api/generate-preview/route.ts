@@ -36,7 +36,7 @@ ${userInfo}
 }`;
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    let message;
+    let message: any;
     let fallbackResult = null;
     try {
       message = await anthropic.messages.create({
