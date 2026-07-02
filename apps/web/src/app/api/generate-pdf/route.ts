@@ -49,6 +49,7 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
         ];
         
         let message;
+        let errors = [];
         for (const modelName of modelsToTry) {
           try {
             message = await anthropic.messages.create({
@@ -63,12 +64,13 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
             console.log("Successfully used model:", modelName);
             break; // Success!
           } catch (err: any) {
+            errors.push(`${modelName}: ${err.message}`);
             console.warn(`Model ${modelName} failed:`, err.message);
           }
         }
 
         if (!message) {
-          throw new Error("All Anthropic models failed.");
+          throw new Error("Models failed -> " + errors.join(" | "));
         }
         
         let textResult = (message.content[0] as any).text;
