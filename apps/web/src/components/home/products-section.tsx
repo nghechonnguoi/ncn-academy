@@ -12,8 +12,8 @@ const PRODUCTS = [
     name: "ĐỊNH VỊ NGHỀ NGHIỆP DÀNH CHO HỌC SINH 14 -18 TUỔI",
     desc: "Hệ thống phân tích đa chiều kết hợp các công cụ khoa học chuyên sâu — gợi ý TOP 5 nghề nghiệp phù hợp nhất với con người thật của bạn.",
     features: [
-      "Phân tích 40+ câu hỏi chuyên sâu",
-      "Kết hợp 4 công cụ thấu hiểu con người",
+      "Hệ thống 60 câu hỏi đo lường chuẩn xác",
+      "Tích hợp các nền tảng phân tích tâm lý học",
       "Gợi ý 5 nghề, ngách nghề, tổ hợp môn học phù hợp",
       "Báo cáo cá nhân hóa chi tiết",
     ],
