@@ -293,6 +293,7 @@ ${userInfo}
 
     await browser.close();
 
+    let emailErrorResponse = null;
     // 🚀 Send email if email address is provided
     if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
       try {
@@ -319,11 +320,13 @@ ${userInfo}
         });
         if (resendResponse.error) {
           console.error("❌ Resend API returned an error:", resendResponse.error);
+          emailErrorResponse = resendResponse.error;
         } else {
           console.log("✅ Email sent successfully to", data.EMAIL);
         }
-      } catch (emailError) {
+      } catch (emailError: any) {
         console.error("❌ Failed to send email:", emailError);
+        emailErrorResponse = emailError.message;
         // We don't throw here to ensure the user still gets the PDF download even if email fails
       }
     }
@@ -359,17 +362,29 @@ ${userInfo}
           pdfUrl: pdfUrl
         });
         console.log(`✅ Saved PDF URL to Firestore for order ${data.orderCode}`);
+        
+        if (emailErrorResponse) {
+          // Send back JSON with error info if we want to debug, but wait, returning new NextResponse breaks free tier!
+          // Actually, if orderCode is present, it's called by the WEBHOOK, not the free tier!
+          // Webhook expects JSON! Free tier DOES NOT SEND orderCode!
+          return NextResponse.json({ success: true, pdfUrl: pdfUrl, emailError: emailErrorResponse });
+        }
       } catch (err: any) {
         console.error("❌ Failed to save PDF to Firebase Storage:", err);
       }
     }
 
-    return new NextResponse(Buffer.from(pdfBuffer), {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="Bao-Cao-Dinh-Vi-Tuong-Lai.pdf"',
-      },
-    });
+    // If orderCode is not present, it's free tier, MUST return buffer!
+    if (!data.orderCode) {
+      return new NextResponse(Buffer.from(pdfBuffer), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': 'attachment; filename="Bao-Cao-Dinh-Vi-Tuong-Lai.pdf"',
+        },
+      });
+    }
+
+    return NextResponse.json({ success: true, emailError: emailErrorResponse });
   } catch (error: any) {
     console.error("PDF Generation Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
