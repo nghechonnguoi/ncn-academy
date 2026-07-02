@@ -8,7 +8,6 @@ import Anthropic from '@anthropic-ai/sdk';
 // Allow this API route to run for up to 60 seconds
 export const maxDuration = 60;
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
