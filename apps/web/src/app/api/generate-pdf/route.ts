@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   4. ${data.TOP4_TITLE || "Chưa có"}
   5. ${data.TOP5_TITLE || "Chưa có"}`;
 
-    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG: Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ, rõ ràng và thấu cảm. Đảm bảo phân tích chuyên sâu chi tiết.";
+    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG: 1. Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ, rõ ràng và thấu cảm. 2. KHÔNG BAO GIỜ được gọi tên các công cụ/chỉ số cụ thể (như MBTI, Holland, % điểm số...). Thay vào đó, phải TỔNG HÒA tất cả để phân tích sâu sắc dựa trên 'con người thật' (ví dụ: 'Bạn phù hợp với nghề này bởi sự nhạy bén bẩm sinh, tư duy đột phá và khao khát tự do mãnh liệt...'). Đảm bảo phân tích chuyên sâu chi tiết.";
 
     const prompt1 = `${instruction}
 Thông tin ứng viên:
