@@ -74,8 +74,9 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
         let textResult = "";
         if (typeof message.content === 'string') {
           textResult = message.content;
-        } else if (Array.isArray(message.content) && message.content.length > 0) {
-          textResult = message.content[0].text || JSON.stringify(message.content);
+        } else if (Array.isArray(message.content)) {
+          const textBlock = message.content.find((b: any) => b.type === 'text') as any;
+          textResult = (textBlock && textBlock.text) ? textBlock.text : JSON.stringify(message.content);
         } else {
           textResult = JSON.stringify(message);
         }
