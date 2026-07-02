@@ -6,6 +6,7 @@ import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 import * as admin from 'firebase-admin';
+import { getStorage } from 'firebase-admin/storage';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_please_change');
 
@@ -335,7 +336,7 @@ ${userInfo}
     // @ts-ignore
     if (data.orderCode && admin.apps?.length) {
       try {
-        const bucket = admin.storage().bucket("nghechonnguoi-f9eec.firebasestorage.app");
+        const bucket = getStorage().bucket("nghechonnguoi-f9eec.firebasestorage.app");
         const fileName = `pdfs/Bao-Cao-Dinh-Vi-${data.orderCode}-${Date.now()}.pdf`;
         const file = bucket.file(fileName);
         
