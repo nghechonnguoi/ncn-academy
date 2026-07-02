@@ -8,17 +8,15 @@ import Anthropic from '@anthropic-ai/sdk';
 // Allow this API route to run for up to 300 seconds (5 minutes)
 export const maxDuration = 300;
 
-
 export async function POST(req: Request) {
   try {
-    const data = await req.json();
+    const { data } = await req.json();
 
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn("ANTHROPIC_API_KEY is not set. Using generic texts.");
     }
 
-    const prompt = `Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin của ứng viên sau:
-- Tên: ${data.HOTEN}
+    const userInfo = `- Tên: ${data.HOTEN}
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
 - Điểm Holland: R(${data.R_PCT}%), I(${data.I_PCT}%), A(${data.A_PCT}%), S(${data.S_PCT}%), E(${data.E_PCT}%), C(${data.C_PCT}%)
@@ -27,72 +25,84 @@ export async function POST(req: Request) {
   2. ${data.TOP2_TITLE || "Chưa có"}
   3. ${data.TOP3_TITLE || "Chưa có"}
   4. ${data.TOP4_TITLE || "Chưa có"}
-  5. ${data.TOP5_TITLE || "Chưa có"}
+  5. ${data.TOP5_TITLE || "Chưa có"}`;
 
-Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết bằng tiếng Việt, ngôn từ truyền cảm hứng, thấu hiểu, mang tính chữa lành và định vị sự nghiệp sâu sắc). Đảm bảo phân tích chuyên sâu cho từng nghề nghiệp trong Top 5:
+    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG: Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ, rõ ràng và thấu cảm. Đảm bảo phân tích chuyên sâu chi tiết.";
+
+    const prompt1 = `${instruction}
+Thông tin ứng viên:
+${userInfo}
+
 {
-  "AI_PAGE3_P1": "Phân tích tổng quan về điểm sáng nhất trong tính cách của ứng viên (dài ~50 chữ).",
-  "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~40 chữ).",
-  "AI_PAGE3_P3": "Lời khuyên về môi trường làm việc phù hợp nhất (dài ~40 chữ).",
-  "AI_PAGE4_P1": "Phân tích cách tư duy và giải quyết vấn đề của ứng viên (dài ~50 chữ).",
-  "AI_PAGE4_P2": "Giá trị cốt lõi ứng viên mang lại cho tổ chức (dài ~40 chữ).",
-  "AI_PAGE4_P3": "Rủi ro khi ứng viên đối mặt với áp lực và điểm nghẽn tâm lý (dài ~50 chữ).",
-  "AI_PAGE4_RECOVERY": "Lời khuyên để vượt qua áp lực (dài ~30 chữ).",
-  "AI_PAGE5_P1": "Lời khen ngợi về năng lực thiên bẩm và sức mạnh sâu thẳm của ứng viên (dài ~75 chữ).",
-  "AI_PAGE5_P2": "Di sản và giá trị dài hạn ứng viên có thể tạo ra (dài ~40 chữ).",
-  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~60 chữ).",
-  "CAREER_1_SCIENCE": "Cơ sở khoa học và lý do nghề 1 phù hợp với ứng viên (dài ~20 chữ).",
-  "CAREER_1_TREND": "Xu hướng phát triển tương lai của nghề 1 (dài ~20 chữ).",
-  "CAREER_1_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 1 (dài ~20 chữ).",
-  "CAREER_2_SCIENCE": "Cơ sở khoa học và lý do nghề 2 phù hợp với ứng viên (dài ~20 chữ).",
-  "CAREER_2_TREND": "Xu hướng phát triển tương lai của nghề 2 (dài ~20 chữ).",
-  "CAREER_2_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 2 (dài ~20 chữ).",
-  "CAREER_3_SCIENCE": "Cơ sở khoa học và lý do nghề 3 phù hợp với ứng viên (dài ~20 chữ).",
-  "CAREER_3_TREND": "Xu hướng phát triển tương lai của nghề 3 (dài ~20 chữ).",
-  "CAREER_3_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 3 (dài ~20 chữ).",
-  "CAREER_4_SCIENCE": "Cơ sở khoa học và lý do nghề 4 phù hợp với ứng viên (dài ~20 chữ).",
-  "CAREER_4_TREND": "Xu hướng phát triển tương lai của nghề 4 (dài ~20 chữ).",
-  "CAREER_4_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 4 (dài ~20 chữ).",
-  "CAREER_5_SCIENCE": "Cơ sở khoa học và lý do nghề 5 phù hợp với ứng viên (dài ~20 chữ).",
-  "CAREER_5_TREND": "Xu hướng phát triển tương lai của nghề 5 (dài ~20 chữ).",
-  "CAREER_5_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 5 (dài ~20 chữ).",
+  "AI_PAGE3_P1": "Phân tích tổng quan về điểm sáng nhất trong tính cách của ứng viên (dài ~100 chữ).",
+  "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~80 chữ).",
+  "AI_PAGE3_P3": "Lời khuyên về môi trường làm việc phù hợp nhất (dài ~80 chữ).",
+  "AI_PAGE4_P1": "Phân tích cách tư duy và giải quyết vấn đề của ứng viên (dài ~100 chữ).",
+  "AI_PAGE4_P2": "Giá trị cốt lõi ứng viên mang lại cho tổ chức (dài ~80 chữ).",
+  "AI_PAGE4_P3": "Rủi ro khi ứng viên đối mặt với áp lực và điểm nghẽn tâm lý (dài ~100 chữ).",
+  "AI_PAGE4_RECOVERY": "Lời khuyên để vượt qua áp lực (dài ~60 chữ).",
+  "AI_PAGE5_P1": "Lời khen ngợi về năng lực thiên bẩm và sức mạnh sâu thẳm của ứng viên (dài ~150 chữ).",
+  "AI_PAGE5_P2": "Di sản và giá trị dài hạn ứng viên có thể tạo ra (dài ~80 chữ).",
+  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~120 chữ).",
+  "CAREER_1_SCIENCE": "Cơ sở khoa học và lý do nghề 1 phù hợp với ứng viên (dài ~60 chữ).",
+  "CAREER_1_TREND": "Xu hướng phát triển tương lai của nghề 1 (dài ~60 chữ).",
+  "CAREER_1_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 1 (dài ~60 chữ).",
+  "CAREER_2_SCIENCE": "Cơ sở khoa học và lý do nghề 2 phù hợp với ứng viên (dài ~60 chữ).",
+  "CAREER_2_TREND": "Xu hướng phát triển tương lai của nghề 2 (dài ~60 chữ).",
+  "CAREER_2_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 2 (dài ~60 chữ).",
+  "CAREER_3_SCIENCE": "Cơ sở khoa học và lý do nghề 3 phù hợp với ứng viên (dài ~60 chữ).",
+  "CAREER_3_TREND": "Xu hướng phát triển tương lai của nghề 3 (dài ~60 chữ).",
+  "CAREER_3_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 3 (dài ~60 chữ)."
+}`;
+
+    const prompt2 = `${instruction}
+Thông tin ứng viên:
+${userInfo}
+
+{
+  "CAREER_4_SCIENCE": "Cơ sở khoa học và lý do nghề 4 phù hợp với ứng viên (dài ~60 chữ).",
+  "CAREER_4_TREND": "Xu hướng phát triển tương lai của nghề 4 (dài ~60 chữ).",
+  "CAREER_4_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 4 (dài ~60 chữ).",
+  "CAREER_5_SCIENCE": "Cơ sở khoa học và lý do nghề 5 phù hợp với ứng viên (dài ~60 chữ).",
+  "CAREER_5_TREND": "Xu hướng phát triển tương lai của nghề 5 (dài ~60 chữ).",
+  "CAREER_5_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 5 (dài ~60 chữ).",
   "WEAKNESS_1_TITLE": "Tên điểm mù / rào cản tâm lý số 1 (ngắn gọn).",
-  "WEAKNESS_1_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 1 (dài ~30 chữ).",
+  "WEAKNESS_1_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 1 (dài ~80 chữ).",
   "WEAKNESS_2_TITLE": "Tên điểm mù / rào cản tâm lý số 2 (ngắn gọn).",
-  "WEAKNESS_2_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 2 (dài ~30 chữ).",
+  "WEAKNESS_2_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 2 (dài ~80 chữ).",
   "WEAKNESS_3_TITLE": "Tên điểm mù / rào cản tâm lý số 3 (ngắn gọn).",
-  "WEAKNESS_3_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 3 (dài ~30 chữ).",
-  "RISK_SHORT_TERM": "Chiến lược quản trị rủi ro cốt lõi trong ngắn hạn 0-6 tháng (dài ~25 chữ).",
-  "RISK_LONG_TERM": "Chiến lược quản trị rủi ro cốt lõi trong dài hạn 6-24 tháng (dài ~25 chữ).",
-  "IDEAL_ENVIRONMENT": "Mô tả môi trường làm việc lý tưởng giúp giải phóng năng lực (dài ~30 chữ).",
-  "TOXIC_ENVIRONMENT": "Mô tả môi trường gây ức chế, cạm bẫy cần tránh (dài ~30 chữ).",
+  "WEAKNESS_3_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 3 (dài ~80 chữ).",
+  "RISK_SHORT_TERM": "Chiến lược quản trị rủi ro cốt lõi trong ngắn hạn 0-6 tháng (dài ~70 chữ).",
+  "RISK_LONG_TERM": "Chiến lược quản trị rủi ro cốt lõi trong dài hạn 6-24 tháng (dài ~70 chữ).",
+  "IDEAL_ENVIRONMENT": "Mô tả môi trường làm việc lý tưởng giúp giải phóng năng lực (dài ~80 chữ).",
+  "TOXIC_ENVIRONMENT": "Mô tả môi trường gây ức chế, cạm bẫy cần tránh (dài ~80 chữ).",
   "MNC_FIT": "Mức độ phù hợp với Tập đoàn đa quốc gia (Ví dụ: 85%).",
-  "MNC_DESC": "Phân tích lý do phù hợp/không phù hợp (dài ~20 chữ).",
+  "MNC_DESC": "Phân tích lý do phù hợp/không phù hợp (dài ~60 chữ).",
   "SOLO_FIT": "Mức độ phù hợp với Solopreneurship (Ví dụ: 90%).",
-  "SOLO_DESC": "Phân tích lý do (dài ~20 chữ).",
+  "SOLO_DESC": "Phân tích lý do (dài ~60 chữ).",
   "STARTUP_FIT": "Mức độ phù hợp với Startups (Ví dụ: 70%).",
-  "STARTUP_DESC": "Phân tích lý do (dài ~20 chữ).",
+  "STARTUP_DESC": "Phân tích lý do (dài ~60 chữ).",
   "PUBLIC_FIT": "Mức độ phù hợp với Khối Nhà nước (Ví dụ: 40%).",
-  "PUBLIC_DESC": "Phân tích lý do (dài ~20 chữ).",
+  "PUBLIC_DESC": "Phân tích lý do (dài ~60 chữ).",
   "PILLAR_1_TITLE": "Tên trụ cột kỹ năng số 1 (Ví dụ: Kỹ năng ABC).",
-  "PILLAR_1_DESC": "Mô tả chi tiết tại sao đây là chìa khóa cho sự tự do (dài ~25 chữ).",
+  "PILLAR_1_DESC": "Mô tả chi tiết tại sao đây là chìa khóa cho sự tự do (dài ~70 chữ).",
   "PILLAR_2_TITLE": "Tên trụ cột kỹ năng số 2.",
-  "PILLAR_2_DESC": "Mô tả chi tiết (dài ~25 chữ).",
+  "PILLAR_2_DESC": "Mô tả chi tiết (dài ~70 chữ).",
   "PILLAR_3_TITLE": "Tên trụ cột kỹ năng số 3.",
-  "PILLAR_3_DESC": "Mô tả chi tiết (dài ~25 chữ)."
+  "PILLAR_3_DESC": "Mô tả chi tiết (dài ~70 chữ)."
 }`;
 
     let aiTexts: any = {};
     if (process.env.ANTHROPIC_API_KEY) {
-      try {
-        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-        const modelsToTry = [
-          "claude-sonnet-5",
-          "claude-5-sonnet-latest",
-          "claude-3-5-sonnet-20240620",
-          "claude-3-5-sonnet-latest"
-        ];
-        
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const modelsToTry = [
+        "claude-sonnet-5",
+        "claude-5-sonnet-latest",
+        "claude-3-5-sonnet-20240620",
+        "claude-3-5-sonnet-latest"
+      ];
+
+      async function fetchClaudeJson(promptText: string) {
         let message;
         let errors = [];
         for (const modelName of modelsToTry) {
@@ -100,22 +110,21 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
             message = await anthropic.messages.create({
               model: modelName,
               max_tokens: 4096,
-              system: "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
+              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
               messages: [
-                { role: "user", content: prompt }
+                { role: "user", content: promptText }
               ]
             });
-            console.log("Successfully used model:", modelName);
-            break; // Success!
+            break;
           } catch (err: any) {
             errors.push(`${modelName}: ${err.message}`);
-            console.warn(`Model ${modelName} failed:`, err.message);
           }
         }
 
         if (!message) {
           throw new Error("Models failed -> " + errors.join(" | "));
         }
+        
         let textResult = "";
         if (typeof message.content === 'string') {
           textResult = message.content;
@@ -126,31 +135,28 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
           textResult = JSON.stringify(message);
         }
 
-        if (typeof textResult !== 'string' || !textResult) {
-          throw new Error("Could not extract text. Raw message: " + JSON.stringify(message));
-        }
-
-        // Clean markdown backticks properly
-        textResult = textResult.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
-
-        // Fallback: use regex if it contains extra text
+        textResult = textResult.replace(/^\s*```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
         
-        try {
-          aiTexts = JSON.parse(textResult);
-        } catch (parseError: any) {
-          throw new Error("JSON parse error. Thử giảm bớt độ dài prompt. Chi tiết: " + parseError.message + " | Raw text: " + textResult.substring(0, 100));
-        }
+        return JSON.parse(textResult);
+      }
+
+      try {
+        const [res1, res2] = await Promise.all([
+          fetchClaudeJson(prompt1),
+          fetchClaudeJson(prompt2)
+        ]);
+        aiTexts = { ...res1, ...res2 };
       } catch (e: any) {
         console.error("Anthropic API Error:", e);
         aiTexts.DEBUG_ERROR = String(e.message || e);
       }
     }
 
-    // Fallback if AI fails or no key
     const fallback = aiTexts.DEBUG_ERROR ? `[LỖI HỆ THỐNG AI: ${aiTexts.DEBUG_ERROR}] Vui lòng chụp ảnh màn hình này gửi cho đội kỹ thuật.` : "Đây là phần đánh giá chuyên sâu dành riêng cho nhóm tính cách của Bạn. Sự nhạy bén và trực giác giúp Bạn thấu hiểu thế giới theo một cách rất riêng.";
     const fullData = {
       ...data,
@@ -205,11 +211,9 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
       PILLAR_3_DESC: aiTexts.PILLAR_3_DESC || "",
     };
 
-    // Load HTML Template
     const templatePath = path.join(process.cwd(), 'public', 'bao-cao-pdf-template.html');
     let html = fs.readFileSync(templatePath, 'utf8');
 
-    // Replace variables
     html = html.replace(/{{(.*?)}}/g, (match, p1) => {
       const key = p1.trim();
       if (fullData[key] !== undefined) {
@@ -218,7 +222,6 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
       return "";
     });
 
-    // Generate PDF using Puppeteer
     const isLocal = process.env.NODE_ENV === 'development';
     
     let browser;
