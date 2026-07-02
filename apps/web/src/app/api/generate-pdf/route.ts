@@ -5,8 +5,8 @@ import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
 
-// Allow this API route to run for up to 60 seconds
-export const maxDuration = 60;
+// Allow this API route to run for up to 300 seconds (5 minutes)
+export const maxDuration = 300;
 
 
 export async function POST(req: Request) {
