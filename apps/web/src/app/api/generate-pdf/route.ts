@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Allow this API route to run for up to 60 seconds
@@ -94,7 +94,8 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
         headless: true,
       });
     } else {
-      const executablePath = await chromium.executablePath();
+      const packUrl = 'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar';
+      const executablePath = await chromium.executablePath(packUrl);
       browser = await puppeteer.launch({
         args: chromium.args,
         executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH,

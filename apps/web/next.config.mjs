@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ["@prisma/client", "@sparticuz/chromium", "puppeteer-core"],
-    outputFileTracingIncludes: {
-      "/api/**/*": ["./node_modules/**/*.wasm", "./node_modules/@sparticuz/chromium/bin/**/*"],
-    },
+    serverComponentsExternalPackages: ["@prisma/client", "@sparticuz/chromium-min", "puppeteer-core"],
   },
   images: {
     domains: ["lh3.googleusercontent.com", "avatars.githubusercontent.com"],
