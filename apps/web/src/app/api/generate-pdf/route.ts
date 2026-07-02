@@ -292,7 +292,7 @@ ${userInfo}
           attachments: [
             {
               filename: 'Bao-Cao-Dinh-Vi-Tuong-Lai.pdf',
-              content: pdfBuffer,
+              content: Buffer.from(pdfBuffer),
             },
           ],
         });
