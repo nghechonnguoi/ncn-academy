@@ -71,8 +71,19 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
         if (!message) {
           throw new Error("Models failed -> " + errors.join(" | "));
         }
-        
-        let textResult = (message.content[0] as any).text;
+        let textResult = "";
+        if (typeof message.content === 'string') {
+          textResult = message.content;
+        } else if (Array.isArray(message.content) && message.content.length > 0) {
+          textResult = message.content[0].text || JSON.stringify(message.content);
+        } else {
+          textResult = JSON.stringify(message);
+        }
+
+        if (typeof textResult !== 'string' || !textResult) {
+          throw new Error("Could not extract text. Raw message: " + JSON.stringify(message));
+        }
+
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
