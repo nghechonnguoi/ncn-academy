@@ -54,7 +54,7 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
           try {
             message = await anthropic.messages.create({
               model: modelName,
-              max_tokens: 1500,
+              max_tokens: 4096,
               system: "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
               messages: [
                 { role: "user", content: prompt }
