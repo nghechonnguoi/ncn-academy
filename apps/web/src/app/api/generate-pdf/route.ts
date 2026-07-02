@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   4. ${data.TOP4_TITLE || "Chưa có"}
   5. ${data.TOP5_TITLE || "Chưa có"}`;
 
-    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG: 1. Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ, rõ ràng và thấu cảm. 2. KHÔNG BAO GIỜ được gọi tên các công cụ/chỉ số cụ thể (như MBTI, Holland, % điểm số...). Thay vào đó, phải TỔNG HÒA tất cả để phân tích sâu sắc dựa trên 'con người thật' (ví dụ: 'Bạn phù hợp với nghề này bởi sự nhạy bén bẩm sinh, tư duy đột phá và khao khát tự do mãnh liệt...'). Đảm bảo phân tích chuyên sâu chi tiết.";
+    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG TỐI THƯỢNG: 1. Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ. 2. TRONG TOÀN BỘ CÁC MỤC (TỪ TÍNH CÁCH, NGHỀ NGHIỆP, RÀO CẢN ĐẾN MÔI TRƯỜNG), PHẢI LUÔN LỒNG GHÉP VÀ TỔNG HÒA sâu sắc ý nghĩa của 5 khía cạnh cốt lõi (Tiềm năng bẩm sinh, Khao khát nội tại, Sứ mệnh, Tài năng, Đam mê) cùng với MBTI và Holland. 3. KHÔNG BAO GIỜ được gọi đích danh tên các công cụ/chỉ số (như MBTI, Holland, Số chủ đạo, Số sứ mệnh, %...). Phải biến các chỉ số này thành những mô tả phẩm chất con người thật tự nhiên và thấu cảm.";
 
     const prompt1 = `${instruction}
 Thông tin ứng viên:

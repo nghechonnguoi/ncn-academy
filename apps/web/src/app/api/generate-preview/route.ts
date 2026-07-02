@@ -17,9 +17,14 @@ export async function POST(req: Request) {
     const userInfo = `- Tên: ${data.HOTEN}
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
-- Điểm Holland: R(${data.R_PCT}%), I(${data.I_PCT}%), A(${data.A_PCT}%), S(${data.S_PCT}%), E(${data.E_PCT}%), C(${data.C_PCT}%)`;
+- Điểm Holland: R(${data.R_PCT}%), I(${data.I_PCT}%), A(${data.A_PCT}%), S(${data.S_PCT}%), E(${data.E_PCT}%), C(${data.C_PCT}%)
+- Tiềm năng bẩm sinh (Life Path): ${data.LIFEPATH || "Không có"}
+- Khao khát nội tại (Soul): ${data.SOUL || "Không có"}
+- Số Sứ mệnh (Mission): ${data.MISSION || "Không có"}
+- Chỉ số Tài năng (Talent): ${data.TALENT || "Không có"}
+- Chỉ số Đam mê (Passion): ${data.PASSION || "Không có"}`;
 
-    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Sinh ra BẮT BUỘC một JSON hợp lệ. YÊU CẦU: Viết sâu sắc, đắc nhân tâm, truyền cảm hứng mạnh mẽ. KHÔNG BAO GIỜ gọi tên các chỉ số cụ thể (như MBTI, Holland, %...). Hãy TỔNG HÒA để phân tích dựa trên 'con người thật'.";
+    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Sinh ra BẮT BUỘC một JSON hợp lệ. YÊU CẦU QUAN TRỌNG: 1. Viết thật sâu sắc, đắc nhân tâm, truyền cảm hứng mạnh mẽ. 2. LUÔN LỒNG GHÉP VÀ TỔNG HÒA ý nghĩa của 5 khía cạnh cốt lõi (Tiềm năng bẩm sinh, Khao khát nội tại, Sứ mệnh, Tài năng, Đam mê) cùng với MBTI và Holland vào bài viết. 3. KHÔNG BAO GIỜ gọi đích danh tên các chỉ số (như MBTI, Holland, Số chủ đạo...). Hãy biến chúng thành những phẩm chất cá nhân chân thật.";
 
     const promptText = `${instruction}
 Thông tin ứng viên:
