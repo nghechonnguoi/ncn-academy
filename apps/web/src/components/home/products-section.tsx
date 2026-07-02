@@ -9,7 +9,7 @@ const PRODUCTS = [
     num: "01",
     tag: "✅ Đang hoạt động",
     tagClass: "bg-ncn-orange/15 text-ncn-orange border border-ncn-orange/40",
-    name: "ĐỊNH VỊ NGHỀ NGHIỆP DÀNH CHO HỌC SINH 14 -18 TUỔI",
+    name: "ĐỊNH VỊ NGHỀ NGHIỆP DÀNH CHO HỌC SINH, SINH VIÊN 14 - 25 TUỔI",
     desc: "Hệ thống phân tích đa chiều kết hợp các công cụ khoa học chuyên sâu — gợi ý TOP 5 nghề nghiệp phù hợp nhất với con người thật của bạn.",
     features: [
       "Hệ thống 60 câu hỏi đo lường chuẩn xác",
