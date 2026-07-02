@@ -8,32 +8,32 @@ const SERVICES = [
   {
     icon: "🧭",
     title: "Định Vị Nghề Nghiệp",
-    desc: "Phân tích các nhóm ngành nghề chuyên sâu, xác định nhóm nghề nghiệp phù hợp nhất với cấu trúc năng lực hành vi.",
+    desc: "Xác định chính xác TOP 5 nhóm nghề nghiệp sinh ra dành cho bạn dựa trên cấu trúc năng lực và tính cách.",
   },
   {
     icon: "🧠",
-    title: "Phân Tích Tính Cách",
-    desc: "Kết hợp các nền tảng khoa học tâm lý học, giải mã phong cách tư duy và phương thức vận hành độc đáo của cá nhân.",
+    title: "Phân Tích Đa Chiều",
+    desc: "Kết hợp các nền tảng khoa học tâm lý, giải mã phong cách tư duy, năng lực bẩm sinh và khao khát nội tại.",
   },
   {
     icon: "📊",
-    title: "Báo Cáo Khoa Học",
-    desc: "Báo cáo PDF Premium 15 trang cá nhân hóa 100% — lộ trình thăng tiến, ma trận thu nhập và kế hoạch 4 năm.",
+    title: "Báo Cáo Cá Nhân Hóa",
+    desc: "Báo cáo PDF Premium 12 trang độc bản 100% — định hướng lộ trình sự nghiệp rõ ràng và chi tiết nhất.",
   },
   {
     icon: "🚀",
-    title: "Lộ Trình Thăng Tiến",
-    desc: "Sơ đồ lộ trình từ Junior đến C-Suite cho từng nghề nghiệp kèm dữ liệu thu nhập thực tế từ thị trường Việt Nam.",
+    title: "Phân Tích Chi Tiết Nghề",
+    desc: "Cung cấp góc nhìn sâu sắc về ưu điểm, thách thức và lộ trình phát triển cho từng nghề nghiệp được đề xuất.",
   },
   {
     icon: "🏆",
-    title: "Xây Dựng Thương Hiệu",
-    desc: "Chiến lược personal branding trên LinkedIn, định vị chuyên gia dựa trên giá trị khoa học đo lường được.",
+    title: "Dự Báo & Vượt Rào Cản",
+    desc: "Nhận diện những rào cản tiềm ẩn trong tính cách và cung cấp chiến lược phát triển cá nhân để vượt qua.",
   },
   {
     icon: "🎓",
-    title: "Tư Vấn Chọn Ngành",
-    desc: "Dựa trên mô hình môi trường làm việc chuẩn quốc tế, giúp ứng viên tìm thấy nơi thuộc về mình.",
+    title: "Môi Trường Lý Tưởng",
+    desc: "Dựa trên mô hình môi trường làm việc chuẩn quốc tế, giúp ứng viên tìm thấy văn hóa doanh nghiệp nơi mình thuộc về.",
   },
 ];
 
