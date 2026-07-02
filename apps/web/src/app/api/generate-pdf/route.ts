@@ -73,16 +73,19 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
         }
         
         let textResult = (message.content[0] as any).text;
-        // Remove markdown code blocks if any
-        textResult = textResult.replace(/^```json/im, '').replace(/```$/im, '').trim();
+        const jsonMatch = textResult.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          textResult = jsonMatch[0];
+        }
         aiTexts = JSON.parse(textResult);
-      } catch (e) {
+      } catch (e: any) {
         console.error("Anthropic API Error:", e);
+        aiTexts.DEBUG_ERROR = String(e.message || e);
       }
     }
 
     // Fallback if AI fails or no key
-    const fallback = "Đây là phần đánh giá chuyên sâu dành riêng cho nhóm tính cách của Bạn. Sự nhạy bén và trực giác giúp Bạn thấu hiểu thế giới theo một cách rất riêng.";
+    const fallback = aiTexts.DEBUG_ERROR ? `[LỖI HỆ THỐNG AI: ${aiTexts.DEBUG_ERROR}] Vui lòng chụp ảnh màn hình này gửi cho đội kỹ thuật.` : "Đây là phần đánh giá chuyên sâu dành riêng cho nhóm tính cách của Bạn. Sự nhạy bén và trực giác giúp Bạn thấu hiểu thế giới theo một cách rất riêng.";
     const fullData = {
       ...data,
       AI_PAGE3_P1: aiTexts.AI_PAGE3_P1 || fallback,
