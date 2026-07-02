@@ -4,6 +4,9 @@ import path from 'path';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_please_change');
 
 // Allow this API route to run for up to 300 seconds (5 minutes)
 export const maxDuration = 300;
@@ -268,6 +271,37 @@ ${userInfo}
     });
 
     await browser.close();
+
+    // 🚀 Send email if email address is provided
+    if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
+      try {
+        await resend.emails.send({
+          from: 'NCN Academy <no-reply@ncnacademy.com>', // User needs to verify domain in Resend
+          to: [data.EMAIL],
+          subject: `[NCN Academy] Báo Cáo Định Vị Ikigai Chiến Lược - ${data.HOTEN}`,
+          html: `
+            <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+              <h2 style="color: #4f46e5;">Chào ${data.HOTEN},</h2>
+              <p>Cảm ơn bạn đã thực hiện bài kiểm tra Khảo sát Định vị Ikigai Chiến lược.</p>
+              <p>Đính kèm trong email này là <strong>Báo Cáo PDF Cá Nhân Hóa</strong> chi tiết của riêng bạn.</p>
+              <p>Chúc bạn sớm tìm được định hướng sự nghiệp phù hợp và tỏa sáng đúng nơi mình thuộc về!</p>
+              <br/>
+              <p>Trân trọng,<br/><strong>Đội ngũ NCN Academy</strong></p>
+            </div>
+          `,
+          attachments: [
+            {
+              filename: 'Bao-Cao-Dinh-Vi-Tuong-Lai.pdf',
+              content: pdfBuffer,
+            },
+          ],
+        });
+        console.log("✅ Email sent successfully to", data.EMAIL);
+      } catch (emailError) {
+        console.error("❌ Failed to send email:", emailError);
+        // We don't throw here to ensure the user still gets the PDF download even if email fails
+      }
+    }
 
     return new NextResponse(Buffer.from(pdfBuffer), {
       headers: {
