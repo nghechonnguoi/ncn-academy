@@ -20,6 +20,11 @@ export async function POST(req: Request) {
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
 - Điểm Holland: R(${data.R_PCT}%), I(${data.I_PCT}%), A(${data.A_PCT}%), S(${data.S_PCT}%), E(${data.E_PCT}%), C(${data.C_PCT}%)
+- Tiềm năng bẩm sinh (Life Path): ${data.LIFEPATH || "Không có"}
+- Khao khát nội tại (Soul): ${data.SOUL || "Không có"}
+- Số Sứ mệnh (Mission): ${data.MISSION || "Không có"}
+- Chỉ số Tài năng (Talent): ${data.TALENT || "Không có"}
+- Chỉ số Đam mê (Passion): ${data.PASSION || "Không có"}
 - Top 5 Nghề nghiệp Đề xuất:
   1. ${data.TOP1_TITLE || "Chưa có"}
   2. ${data.TOP2_TITLE || "Chưa có"}
