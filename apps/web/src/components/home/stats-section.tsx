@@ -27,8 +27,8 @@ export function StatsSection() {
             <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Bộ công cụ tâm lý học</div>
           </div>
           <div className="p-[20px_10px] md:p-[20px_40px] text-center md:border-r border-black/15 last:border-none">
-            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">5 giây</div>
-            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Thời gian xuất báo cáo</div>
+            <div className="text-[36px] md:text-[48px] font-black text-white leading-none tracking-[-2px]">30 giây</div>
+            <div className="text-[10px] md:text-[12px] font-bold text-black/60 uppercase tracking-[1.5px] mt-[6px]">Biết ngay kết quả</div>
           </div>
         </motion.div>
       </div>

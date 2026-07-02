@@ -77,8 +77,8 @@ export function HeroSection() {
               <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Lưu lượng truy cập</div>
             </div>
             <div>
-              <div className="text-[36px] font-black text-ncn-orange leading-none">5s</div>
-              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Thời gian phân tích</div>
+              <div className="text-[36px] font-black text-ncn-orange leading-none">30s</div>
+              <div className="text-[12px] text-ncn-gray mt-1 uppercase tracking-[1px] font-semibold">Biết ngay kết quả</div>
             </div>
           </div>
         </motion.div>
