@@ -118,7 +118,7 @@ ${userInfo}
             message = await anthropic.messages.create({
               model: modelName,
               max_tokens: 4096,
-              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
+              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.",
               messages: [
                 { role: "user", content: promptText }
               ]
@@ -149,6 +149,9 @@ ${userInfo}
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
+        
+        // Remove literal newlines and control characters that break JSON strings
+        textResult = textResult.replace(/[\r\n\t]+/g, ' ');
         
         return JSON.parse(textResult);
       }
