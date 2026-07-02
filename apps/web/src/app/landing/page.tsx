@@ -24,7 +24,7 @@ const features = [
   },
   {
     icon: BarChart3,
-    title: "Báo Cáo 15 Trang",
+    title: "Báo Cáo Chi Tiết",
     desc: "PDF cá nhân hóa hoàn toàn: lộ trình thăng tiến, ma trận thu nhập",
   },
   {
@@ -57,7 +57,7 @@ export default function LandingPage() {
             <span className="gradient-text">Chọn đúng nghề. Thành công.</span>
           </h1>
           <p className="mt-6 text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
-            Hệ thống phân tích nghề nghiệp đa biến kết hợp các công cụ khoa học tâm lý và Dữ liệu lớn — nhận báo cáo 15 trang cá nhân hóa trong 10 phút.
+            Hệ thống phân tích nghề nghiệp đa biến kết hợp các công cụ khoa học tâm lý và Dữ liệu lớn — nhận báo cáo cá nhân hóa chuyên sâu trong 10 phút.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/login">
@@ -120,7 +120,7 @@ export default function LandingPage() {
               { step: "01", title: "Nhập thông tin", desc: "Họ tên, ngày sinh, email" },
               { step: "02", title: "Làm bài test", desc: "60 câu hỏi chuẩn hóa" },
               { step: "03", title: "AI phân tích", desc: "Thuật toán đa biến" },
-              { step: "04", title: "Nhận kết quả", desc: "Báo cáo PDF 15 trang" },
+              { step: "04", title: "Nhận kết quả", desc: "Báo cáo PDF Premium" },
             ].map((s) => (
               <div key={s.step} className="flex flex-col items-center text-center">
                 <div className="w-16 h-16 rounded-2xl bg-ncn-purple text-white flex items-center justify-center font-black text-xl mb-4 relative z-10 shadow-lg shadow-ncn-purple/30">

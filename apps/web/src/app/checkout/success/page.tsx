@@ -18,7 +18,7 @@ export default function CheckoutSuccessPage() {
         <h1 className="text-3xl font-black text-gray-900 mb-3">Thanh toán thành công! 🎉</h1>
         <p className="text-gray-500 mb-8 leading-relaxed">
           Chào mừng bạn đến với NCN Academy Pro! Tài khoản của bạn đã được nâng cấp.
-          Báo cáo PDF 15 trang và Chuyên gia tư vấn ảo đã được kích hoạt.
+          Báo cáo PDF Premium và Chuyên gia tư vấn ảo đã được kích hoạt.
         </p>
 
         {/* What's next */}
@@ -29,7 +29,7 @@ export default function CheckoutSuccessPage() {
           </h2>
           {[
             "Làm bài test RIASEC 60 câu để nhận kết quả đầy đủ",
-            "Tải xuống báo cáo PDF 15 trang từ Dashboard",
+            "Tải xuống báo cáo PDF Premium từ Dashboard",
             "Chat với Chuyên gia tư vấn ảo — không giới hạn 50 tin",
             "Chia sẻ link affiliate để nhận 20% hoa hồng",
           ].map((item, i) => (

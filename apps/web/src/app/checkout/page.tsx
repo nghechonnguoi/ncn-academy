@@ -19,7 +19,7 @@ const PLANS: Record<string, { name: string; price: number; features: string[] }>
     name: "Gói Pro",
     price: 299000,
     features: [
-      "Báo cáo PDF 15 trang",
+      "Báo cáo PDF Premium độc bản 100%",
       "TOP 5 nghề + phân tích MBTI",
       "AI Advisor (50 tin/tháng)",
       "Lộ trình thăng tiến",

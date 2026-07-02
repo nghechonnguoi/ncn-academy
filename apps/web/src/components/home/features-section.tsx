@@ -18,7 +18,7 @@ const SERVICES = [
   {
     icon: "📊",
     title: "Báo Cáo Cá Nhân Hóa",
-    desc: "Báo cáo PDF Premium 12 trang độc bản 100% — định hướng lộ trình sự nghiệp rõ ràng và chi tiết nhất.",
+    desc: "Báo cáo PDF Premium độc bản 100% — định hướng lộ trình sự nghiệp rõ ràng và chi tiết nhất.",
   },
   {
     icon: "🚀",
