@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.109.1",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.9.0",
     "@payos/node": "^2.0.5",
