@@ -296,7 +296,7 @@ ${userInfo}
     // 🚀 Send email if email address is provided
     if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
       try {
-        await resend.emails.send({
+        const resendResponse = await resend.emails.send({
           from: 'NCN Academy <no-reply@nghechonnguoi.com>',
           to: [data.EMAIL],
           subject: `[NCN Academy] Báo Cáo Định Vị Ikigai Chiến Lược - ${data.HOTEN}`,
@@ -317,7 +317,11 @@ ${userInfo}
             },
           ],
         });
-        console.log("✅ Email sent successfully to", data.EMAIL);
+        if (resendResponse.error) {
+          console.error("❌ Resend API returned an error:", resendResponse.error);
+        } else {
+          console.log("✅ Email sent successfully to", data.EMAIL);
+        }
       } catch (emailError) {
         console.error("❌ Failed to send email:", emailError);
         // We don't throw here to ensure the user still gets the PDF download even if email fails
@@ -328,15 +332,35 @@ ${userInfo}
     // @ts-ignore
     if (data.orderCode && admin.apps?.length) {
       try {
+        const bucket = admin.storage().bucket("nghechonnguoi-f9eec.firebasestorage.app");
+        const fileName = `pdfs/Bao-Cao-Dinh-Vi-${data.orderCode}-${Date.now()}.pdf`;
+        const file = bucket.file(fileName);
+        
+        await file.save(pdfBuffer, {
+          metadata: { contentType: 'application/pdf' }
+        });
+        
+        let pdfUrl = '';
+        try {
+          const [signedUrl] = await file.getSignedUrl({
+            action: 'read',
+            expires: '01-01-2099'
+          });
+          pdfUrl = signedUrl;
+        } catch (signErr) {
+          console.warn("⚠️ getSignedUrl failed, using public URL:", signErr);
+          // Fallback to public URL (might require bucket to be public)
+          pdfUrl = `https://firebasestorage.googleapis.com/v0/b/nghechonnguoi-f9eec.firebasestorage.app/o/${encodeURIComponent(fileName)}?alt=media`;
+        }
+        
         // @ts-ignore
         const db = admin.firestore();
-        const base64String = Buffer.from(pdfBuffer).toString('base64');
         await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfBase64: base64String
+          pdfUrl: pdfUrl
         });
-        console.log(`✅ Saved PDF Base64 to Firestore for order ${data.orderCode}`);
+        console.log(`✅ Saved PDF URL to Firestore for order ${data.orderCode}`);
       } catch (err) {
-        console.error("❌ Failed to save PDF to Firestore:", err);
+        console.error("❌ Failed to save PDF to Firebase Storage:", err);
       }
     }
 
