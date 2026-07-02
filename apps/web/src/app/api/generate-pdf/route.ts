@@ -84,12 +84,23 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
     });
 
     // Generate PDF using Puppeteer
-    const executablePath = await chromium.executablePath();
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH,
-      headless: true,
-    });
+    const isLocal = process.env.NODE_ENV === 'development';
+    
+    let browser;
+    if (isLocal) {
+      browser = await puppeteer.launch({
+        args: [],
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+        headless: true,
+      });
+    } else {
+      const executablePath = await chromium.executablePath();
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        executablePath: executablePath || process.env.PUPPETEER_EXECUTABLE_PATH,
+        headless: true,
+      });
+    }
 
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'load' });
