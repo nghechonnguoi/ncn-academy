@@ -30,9 +30,8 @@ export function Footer() {
             <h4 className="text-[12px] font-extrabold tracking-[2px] uppercase text-ncn-orange mb-[20px]">Sản phẩm</h4>
             <ul className="list-none space-y-[10px]">
               <li><Link href="https://quiz.nghechonnguoi.com" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Khảo sát Nghề nghiệp</Link></li>
-              <li><Link href="#" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Test Năng lực Tư duy</Link></li>
-              <li><Link href="#" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Lộ trình Học tập</Link></li>
-              <li><Link href="#" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Báo cáo PDF Premium</Link></li>
+              <li><Link href="/sales" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Báo cáo PDF Premium</Link></li>
+              <li><Link href="#contact" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Tư vấn Hướng nghiệp</Link></li>
             </ul>
           </div>
 
