@@ -41,15 +41,36 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
     if (process.env.ANTHROPIC_API_KEY) {
       try {
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-        const message = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20240620",
-          max_tokens: 1500,
-          temperature: 0.7,
-          system: "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
-          messages: [
-            { role: "user", content: prompt }
-          ]
-        });
+        const modelsToTry = [
+          "claude-5-sonnet-20260415",
+          "claude-5-sonnet-latest",
+          "claude-3-5-sonnet-20240620",
+          "claude-3-5-sonnet-latest",
+          "claude-3-haiku-20240307"
+        ];
+        
+        let message;
+        for (const modelName of modelsToTry) {
+          try {
+            message = await anthropic.messages.create({
+              model: modelName,
+              max_tokens: 1500,
+              temperature: 0.7,
+              system: "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
+              messages: [
+                { role: "user", content: prompt }
+              ]
+            });
+            console.log("Successfully used model:", modelName);
+            break; // Success!
+          } catch (err: any) {
+            console.warn(`Model ${modelName} failed:`, err.message);
+          }
+        }
+
+        if (!message) {
+          throw new Error("All Anthropic models failed.");
+        }
         
         let textResult = (message.content[0] as any).text;
         // Remove markdown code blocks if any
