@@ -13,7 +13,7 @@ const PROCESS_STEPS = [
     step: "Bước 02",
     icon: "🎯",
     title: "Làm Bài Khảo Sát",
-    desc: "Hoàn thành 60+ câu hỏi được thiết kế bởi chuyên gia nhân sự và tâm lý học nghề nghiệp.",
+    desc: "Hoàn thành 40+ câu hỏi được thiết kế bởi chuyên gia nhân sự và tâm lý học nghề nghiệp.",
   },
   {
     step: "Bước 03",

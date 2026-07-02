@@ -28,7 +28,7 @@ export default function CheckoutSuccessPage() {
             Bạn có thể làm ngay bây giờ
           </h2>
           {[
-            "Làm bài test RIASEC 60 câu để nhận kết quả đầy đủ",
+            "Làm bài test 40+ câu để nhận kết quả đầy đủ",
             "Tải xuống báo cáo PDF Premium từ Dashboard",
             "Chat với Chuyên gia tư vấn ảo — không giới hạn 50 tin",
             "Chia sẻ link affiliate để nhận 20% hoa hồng",

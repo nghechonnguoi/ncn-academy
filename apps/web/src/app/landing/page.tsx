@@ -15,7 +15,7 @@ const features = [
   {
     icon: Brain,
     title: "Phân tích RIASEC Holland",
-    desc: "60 câu hỏi chuẩn hóa khoa học, xác định nhóm nghề phù hợp nhất",
+    desc: "40+ câu hỏi chuẩn hóa khoa học, xác định nhóm nghề phù hợp nhất",
   },
   {
     icon: Zap,
@@ -118,7 +118,7 @@ export default function LandingPage() {
             <div className="hidden md:block absolute top-8 left-[12%] right-[12%] h-px bg-gray-200" />
             {[
               { step: "01", title: "Nhập thông tin", desc: "Họ tên, ngày sinh, email" },
-              { step: "02", title: "Làm bài test", desc: "60 câu hỏi chuẩn hóa" },
+              { step: "02", title: "Làm bài test", desc: "40+ câu hỏi chuẩn hóa" },
               { step: "03", title: "AI phân tích", desc: "Thuật toán đa biến" },
               { step: "04", title: "Nhận kết quả", desc: "Báo cáo PDF Premium" },
             ].map((s) => (
