@@ -42,11 +42,10 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
       try {
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const modelsToTry = [
-          "claude-5-sonnet-20260415",
+          "claude-sonnet-5",
           "claude-5-sonnet-latest",
           "claude-3-5-sonnet-20240620",
-          "claude-3-5-sonnet-latest",
-          "claude-3-haiku-20240307"
+          "claude-3-5-sonnet-latest"
         ];
         
         let message;
