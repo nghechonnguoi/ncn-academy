@@ -41,13 +41,21 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
     let aiTexts: any = {};
     if (process.env.GEMINI_API_KEY) {
       try {
-        const model = genAI.getGenerativeModel({ 
-          model: "gemini-1.5-flash",
-          generationConfig: {
-            responseMimeType: "application/json",
+        let model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", generationConfig: { responseMimeType: "application/json" } });
+        let result;
+        try {
+          result = await model.generateContent(prompt);
+        } catch (err: any) {
+          console.warn("gemini-1.5-flash failed, trying gemini-1.5-flash-latest...", err.message);
+          model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest", generationConfig: { responseMimeType: "application/json" } });
+          try {
+            result = await model.generateContent(prompt);
+          } catch (err2: any) {
+            console.warn("gemini-1.5-flash-latest failed, trying gemini-pro...", err2.message);
+            model = genAI.getGenerativeModel({ model: "gemini-pro" });
+            result = await model.generateContent(prompt);
           }
-        });
-        const result = await model.generateContent(prompt);
+        }
         let textResult = result.response.text();
         // Remove markdown code blocks if any
         textResult = textResult.replace(/^```json/im, '').replace(/```$/im, '').trim();
