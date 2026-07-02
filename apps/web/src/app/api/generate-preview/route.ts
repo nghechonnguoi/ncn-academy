@@ -10,7 +10,8 @@ export async function POST(req: Request) {
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({
         AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
-        AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
+        AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng.",
+        AI_PAGE3_P3: "Bạn sẽ tỏa sáng nhất trong môi trường năng động, đề cao giá trị con người, nơi bạn được tự do sáng tạo, giao tiếp cởi mở."
       });
     }
 
@@ -32,7 +33,8 @@ ${userInfo}
 
 {
   "AI_PAGE3_P1": "Phân tích tổng quan về điểm sáng nhất trong tính cách của ứng viên (dài ~100 chữ).",
-  "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~80 chữ)."
+  "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~80 chữ).",
+  "AI_PAGE3_P3": "Dự đoán môi trường làm việc (tương tác, văn hóa, không gian) giúp ứng viên tỏa sáng và phát huy tối đa năng lực nhất (dài ~50 chữ)."
 }`;
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
