@@ -22,8 +22,14 @@ export async function POST(req: Request) {
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
 - Điểm Holland: R(${data.R_PCT}%), I(${data.I_PCT}%), A(${data.A_PCT}%), S(${data.S_PCT}%), E(${data.E_PCT}%), C(${data.C_PCT}%)
+- Top 5 Nghề nghiệp Đề xuất:
+  1. ${data.TOP1_TITLE || "Chưa có"}
+  2. ${data.TOP2_TITLE || "Chưa có"}
+  3. ${data.TOP3_TITLE || "Chưa có"}
+  4. ${data.TOP4_TITLE || "Chưa có"}
+  5. ${data.TOP5_TITLE || "Chưa có"}
 
-Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết bằng tiếng Việt, ngôn từ truyền cảm hứng, thấu hiểu, mang tính chữa lành và định vị sự nghiệp sâu sắc):
+Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết bằng tiếng Việt, ngôn từ truyền cảm hứng, thấu hiểu, mang tính chữa lành và định vị sự nghiệp sâu sắc). Đảm bảo phân tích chuyên sâu cho từng nghề nghiệp trong Top 5:
 {
   "AI_PAGE3_P1": "Phân tích tổng quan về điểm sáng nhất trong tính cách của ứng viên (dài ~100 chữ).",
   "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~80 chữ).",
@@ -34,7 +40,46 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
   "AI_PAGE4_RECOVERY": "Lời khuyên để vượt qua áp lực (dài ~60 chữ).",
   "AI_PAGE5_P1": "Lời khen ngợi về năng lực thiên bẩm và sức mạnh sâu thẳm của ứng viên (dài ~150 chữ).",
   "AI_PAGE5_P2": "Di sản và giá trị dài hạn ứng viên có thể tạo ra (dài ~80 chữ).",
-  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~120 chữ)."
+  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~120 chữ).",
+  "CAREER_1_SCIENCE": "Cơ sở khoa học và lý do nghề 1 phù hợp với ứng viên (dài ~40 chữ).",
+  "CAREER_1_TREND": "Xu hướng phát triển tương lai của nghề 1 (dài ~40 chữ).",
+  "CAREER_1_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 1 (dài ~40 chữ).",
+  "CAREER_2_SCIENCE": "Cơ sở khoa học và lý do nghề 2 phù hợp với ứng viên (dài ~40 chữ).",
+  "CAREER_2_TREND": "Xu hướng phát triển tương lai của nghề 2 (dài ~40 chữ).",
+  "CAREER_2_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 2 (dài ~40 chữ).",
+  "CAREER_3_SCIENCE": "Cơ sở khoa học và lý do nghề 3 phù hợp với ứng viên (dài ~40 chữ).",
+  "CAREER_3_TREND": "Xu hướng phát triển tương lai của nghề 3 (dài ~40 chữ).",
+  "CAREER_3_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 3 (dài ~40 chữ).",
+  "CAREER_4_SCIENCE": "Cơ sở khoa học và lý do nghề 4 phù hợp với ứng viên (dài ~40 chữ).",
+  "CAREER_4_TREND": "Xu hướng phát triển tương lai của nghề 4 (dài ~40 chữ).",
+  "CAREER_4_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 4 (dài ~40 chữ).",
+  "CAREER_5_SCIENCE": "Cơ sở khoa học và lý do nghề 5 phù hợp với ứng viên (dài ~40 chữ).",
+  "CAREER_5_TREND": "Xu hướng phát triển tương lai của nghề 5 (dài ~40 chữ).",
+  "CAREER_5_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 5 (dài ~40 chữ).",
+  "WEAKNESS_1_TITLE": "Tên điểm mù / rào cản tâm lý số 1 (ngắn gọn).",
+  "WEAKNESS_1_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 1 (dài ~60 chữ).",
+  "WEAKNESS_2_TITLE": "Tên điểm mù / rào cản tâm lý số 2 (ngắn gọn).",
+  "WEAKNESS_2_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 2 (dài ~60 chữ).",
+  "WEAKNESS_3_TITLE": "Tên điểm mù / rào cản tâm lý số 3 (ngắn gọn).",
+  "WEAKNESS_3_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 3 (dài ~60 chữ).",
+  "RISK_SHORT_TERM": "Chiến lược quản trị rủi ro cốt lõi trong ngắn hạn 0-6 tháng (dài ~50 chữ).",
+  "RISK_LONG_TERM": "Chiến lược quản trị rủi ro cốt lõi trong dài hạn 6-24 tháng (dài ~50 chữ).",
+  "IDEAL_ENVIRONMENT": "Mô tả môi trường làm việc lý tưởng giúp giải phóng năng lực (dài ~60 chữ).",
+  "TOXIC_ENVIRONMENT": "Mô tả môi trường gây ức chế, cạm bẫy cần tránh (dài ~60 chữ).",
+  "MNC_FIT": "Mức độ phù hợp với Tập đoàn đa quốc gia (Ví dụ: 85%).",
+  "MNC_DESC": "Phân tích lý do phù hợp/không phù hợp (dài ~40 chữ).",
+  "SOLO_FIT": "Mức độ phù hợp với Solopreneurship (Ví dụ: 90%).",
+  "SOLO_DESC": "Phân tích lý do (dài ~40 chữ).",
+  "STARTUP_FIT": "Mức độ phù hợp với Startups (Ví dụ: 70%).",
+  "STARTUP_DESC": "Phân tích lý do (dài ~40 chữ).",
+  "PUBLIC_FIT": "Mức độ phù hợp với Khối Nhà nước (Ví dụ: 40%).",
+  "PUBLIC_DESC": "Phân tích lý do (dài ~40 chữ).",
+  "PILLAR_1_TITLE": "Tên trụ cột kỹ năng số 1 (Ví dụ: Kỹ năng ABC).",
+  "PILLAR_1_DESC": "Mô tả chi tiết tại sao đây là chìa khóa cho sự tự do (dài ~50 chữ).",
+  "PILLAR_2_TITLE": "Tên trụ cột kỹ năng số 2.",
+  "PILLAR_2_DESC": "Mô tả chi tiết (dài ~50 chữ).",
+  "PILLAR_3_TITLE": "Tên trụ cột kỹ năng số 3.",
+  "PILLAR_3_DESC": "Mô tả chi tiết (dài ~50 chữ)."
 }`;
 
     let aiTexts: any = {};
@@ -110,6 +155,45 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
       AI_PAGE5_P1: aiTexts.AI_PAGE5_P1 || fallback,
       AI_PAGE5_P2: aiTexts.AI_PAGE5_P2 || fallback,
       AI_CLOSING_MESSAGE: aiTexts.AI_CLOSING_MESSAGE || "Hãy dũng cảm bước đi trên con đường của chính mình.",
+      CAREER_1_SCIENCE: aiTexts.CAREER_1_SCIENCE || "",
+      CAREER_1_TREND: aiTexts.CAREER_1_TREND || "",
+      CAREER_1_SKILLS: aiTexts.CAREER_1_SKILLS || "",
+      CAREER_2_SCIENCE: aiTexts.CAREER_2_SCIENCE || "",
+      CAREER_2_TREND: aiTexts.CAREER_2_TREND || "",
+      CAREER_2_SKILLS: aiTexts.CAREER_2_SKILLS || "",
+      CAREER_3_SCIENCE: aiTexts.CAREER_3_SCIENCE || "",
+      CAREER_3_TREND: aiTexts.CAREER_3_TREND || "",
+      CAREER_3_SKILLS: aiTexts.CAREER_3_SKILLS || "",
+      CAREER_4_SCIENCE: aiTexts.CAREER_4_SCIENCE || "",
+      CAREER_4_TREND: aiTexts.CAREER_4_TREND || "",
+      CAREER_4_SKILLS: aiTexts.CAREER_4_SKILLS || "",
+      CAREER_5_SCIENCE: aiTexts.CAREER_5_SCIENCE || "",
+      CAREER_5_TREND: aiTexts.CAREER_5_TREND || "",
+      CAREER_5_SKILLS: aiTexts.CAREER_5_SKILLS || "",
+      WEAKNESS_1_TITLE: aiTexts.WEAKNESS_1_TITLE || "",
+      WEAKNESS_1_DESC: aiTexts.WEAKNESS_1_DESC || "",
+      WEAKNESS_2_TITLE: aiTexts.WEAKNESS_2_TITLE || "",
+      WEAKNESS_2_DESC: aiTexts.WEAKNESS_2_DESC || "",
+      WEAKNESS_3_TITLE: aiTexts.WEAKNESS_3_TITLE || "",
+      WEAKNESS_3_DESC: aiTexts.WEAKNESS_3_DESC || "",
+      RISK_SHORT_TERM: aiTexts.RISK_SHORT_TERM || "",
+      RISK_LONG_TERM: aiTexts.RISK_LONG_TERM || "",
+      IDEAL_ENVIRONMENT: aiTexts.IDEAL_ENVIRONMENT || "",
+      TOXIC_ENVIRONMENT: aiTexts.TOXIC_ENVIRONMENT || "",
+      MNC_FIT: aiTexts.MNC_FIT || "",
+      MNC_DESC: aiTexts.MNC_DESC || "",
+      SOLO_FIT: aiTexts.SOLO_FIT || "",
+      SOLO_DESC: aiTexts.SOLO_DESC || "",
+      STARTUP_FIT: aiTexts.STARTUP_FIT || "",
+      STARTUP_DESC: aiTexts.STARTUP_DESC || "",
+      PUBLIC_FIT: aiTexts.PUBLIC_FIT || "",
+      PUBLIC_DESC: aiTexts.PUBLIC_DESC || "",
+      PILLAR_1_TITLE: aiTexts.PILLAR_1_TITLE || "",
+      PILLAR_1_DESC: aiTexts.PILLAR_1_DESC || "",
+      PILLAR_2_TITLE: aiTexts.PILLAR_2_TITLE || "",
+      PILLAR_2_DESC: aiTexts.PILLAR_2_DESC || "",
+      PILLAR_3_TITLE: aiTexts.PILLAR_3_TITLE || "",
+      PILLAR_3_DESC: aiTexts.PILLAR_3_DESC || "",
     };
 
     // Load HTML Template
