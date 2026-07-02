@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
-import Anthropic from '@anthropic-ai/sdk';
+import { Anthropic } from '@anthropic-ai/sdk';
 
 // Allow this API route to run for up to 300 seconds (5 minutes)
 export const maxDuration = 300;
