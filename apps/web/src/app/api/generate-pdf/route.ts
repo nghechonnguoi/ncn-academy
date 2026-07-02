@@ -5,6 +5,7 @@ import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
+import * as admin from 'firebase-admin';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_please_change');
 
@@ -14,6 +15,23 @@ export const maxDuration = 300;
 export async function POST(req: Request) {
   try {
     const data = await req.json();
+
+    // Initialize Firebase Admin if not already initialized
+    // @ts-ignore
+    if (!admin.apps?.length) {
+      try {
+        if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+          const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
+          // @ts-ignore
+          admin.initializeApp({
+            // @ts-ignore
+            credential: admin.credential.cert(serviceAccount)
+          });
+        }
+      } catch (error) {
+        console.error("Firebase admin init error:", error);
+      }
+    }
 
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn("ANTHROPIC_API_KEY is not set. Using generic texts.");
@@ -303,6 +321,22 @@ ${userInfo}
       } catch (emailError) {
         console.error("❌ Failed to send email:", emailError);
         // We don't throw here to ensure the user still gets the PDF download even if email fails
+      }
+    }
+
+    // Save to Firestore if orderCode is provided
+    // @ts-ignore
+    if (data.orderCode && admin.apps?.length) {
+      try {
+        // @ts-ignore
+        const db = admin.firestore();
+        const base64String = Buffer.from(pdfBuffer).toString('base64');
+        await db.collection('orders').doc(String(data.orderCode)).update({
+          pdfBase64: base64String
+        });
+        console.log(`✅ Saved PDF Base64 to Firestore for order ${data.orderCode}`);
+      } catch (err) {
+        console.error("❌ Failed to save PDF to Firestore:", err);
       }
     }
 
