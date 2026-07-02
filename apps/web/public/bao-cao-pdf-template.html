@@ -178,11 +178,26 @@ tr:nth-child(even) td { background: #f8fafc; }
   <div class="cover-content">
     <div class="cover-logo">🧭 Hệ Thống Nghề Chọn Người</div>
     <div class="cover-divider"></div>
-    <div class="cover-badge">Báo Cáo Định Vị Nghề Nghiệp Tương Lai</div>
+    <div class="cover-badge">Báo Cáo Định Vị Nghề Nghiệp</div>
     <h1 class="cover-title">BÁO CÁO KHOA HỌC:<br>ĐỊNH VỊ NĂNG LỰC HÀNH VI<br>&amp; BẢN ĐỒ CHIẾN LƯỢC SỰ NGHIỆP</h1>
     <p class="cover-subtitle">Hệ thống phân tích đa biến: Holland RIASEC · MBTI · Nhân số học Ikigai<br>Phát hành bởi Hội đồng Khoa học Nghề Chọn Người — Bản quyền bảo hộ độc quyền</p>
   </div>
   <div class="cover-content">
+    <div style="display: flex; gap: 4mm; margin-bottom: 4mm;">
+      <div style="flex: 1; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 5mm;">
+        <h4 style="color: #a78bfa; font-size: 8pt; margin-bottom: 4mm; letter-spacing: 1px; text-transform: uppercase;">👤 Tố chất</h4>
+        <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Tiềm năng bẩm sinh (Life Path)</span><span class="cover-id-value">{{LIFEPATH}}</span></div>
+        <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Khao khát nội tại (Soul)</span><span class="cover-id-value">{{SOUL}}</span></div>
+        <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Số Sứ mệnh (Mission)</span><span class="cover-id-value">{{MISSION}}</span></div>
+        <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Chỉ số Tài năng (Talent)</span><span class="cover-id-value">{{TALENT}}</span></div>
+        <div class="cover-id-row" style="margin-bottom: 0;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Chỉ số Đam mê (Passion)</span><span class="cover-id-value">{{PASSION}}</span></div>
+      </div>
+      <div style="flex: 1; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 5mm;">
+        <h4 style="color: #f472b6; font-size: 8pt; margin-bottom: 4mm; letter-spacing: 1px; text-transform: uppercase;">🧠 Năng lực thực tế (MBTI &amp; HOLLAND)</h4>
+        <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Mã tính cách</span><span class="cover-id-value">{{MBTI}}</span></div>
+        <div class="cover-id-row" style="margin-bottom: 0;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Holland vượt trội</span><span class="cover-id-value">{{HOLLAND}}</span></div>
+      </div>
+    </div>
     <div class="cover-id-box">
       <div class="cover-id-row"><span class="cover-id-label">Họ và tên học viên</span><span class="cover-id-value">{{HOTEN}}</span></div>
       <div class="cover-id-row"><span class="cover-id-label">Ngày tháng năm sinh</span><span class="cover-id-value">{{NGAY_SINH}}</span></div>
