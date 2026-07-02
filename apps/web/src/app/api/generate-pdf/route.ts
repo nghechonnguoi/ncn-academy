@@ -31,55 +31,55 @@ export async function POST(req: Request) {
 
 Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết bằng tiếng Việt, ngôn từ truyền cảm hứng, thấu hiểu, mang tính chữa lành và định vị sự nghiệp sâu sắc). Đảm bảo phân tích chuyên sâu cho từng nghề nghiệp trong Top 5:
 {
-  "AI_PAGE3_P1": "Phân tích tổng quan về điểm sáng nhất trong tính cách của ứng viên (dài ~100 chữ).",
-  "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~80 chữ).",
-  "AI_PAGE3_P3": "Lời khuyên về môi trường làm việc phù hợp nhất (dài ~80 chữ).",
-  "AI_PAGE4_P1": "Phân tích cách tư duy và giải quyết vấn đề của ứng viên (dài ~100 chữ).",
-  "AI_PAGE4_P2": "Giá trị cốt lõi ứng viên mang lại cho tổ chức (dài ~80 chữ).",
-  "AI_PAGE4_P3": "Rủi ro khi ứng viên đối mặt với áp lực và điểm nghẽn tâm lý (dài ~100 chữ).",
-  "AI_PAGE4_RECOVERY": "Lời khuyên để vượt qua áp lực (dài ~60 chữ).",
-  "AI_PAGE5_P1": "Lời khen ngợi về năng lực thiên bẩm và sức mạnh sâu thẳm của ứng viên (dài ~150 chữ).",
-  "AI_PAGE5_P2": "Di sản và giá trị dài hạn ứng viên có thể tạo ra (dài ~80 chữ).",
-  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~120 chữ).",
-  "CAREER_1_SCIENCE": "Cơ sở khoa học và lý do nghề 1 phù hợp với ứng viên (dài ~40 chữ).",
-  "CAREER_1_TREND": "Xu hướng phát triển tương lai của nghề 1 (dài ~40 chữ).",
-  "CAREER_1_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 1 (dài ~40 chữ).",
-  "CAREER_2_SCIENCE": "Cơ sở khoa học và lý do nghề 2 phù hợp với ứng viên (dài ~40 chữ).",
-  "CAREER_2_TREND": "Xu hướng phát triển tương lai của nghề 2 (dài ~40 chữ).",
-  "CAREER_2_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 2 (dài ~40 chữ).",
-  "CAREER_3_SCIENCE": "Cơ sở khoa học và lý do nghề 3 phù hợp với ứng viên (dài ~40 chữ).",
-  "CAREER_3_TREND": "Xu hướng phát triển tương lai của nghề 3 (dài ~40 chữ).",
-  "CAREER_3_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 3 (dài ~40 chữ).",
-  "CAREER_4_SCIENCE": "Cơ sở khoa học và lý do nghề 4 phù hợp với ứng viên (dài ~40 chữ).",
-  "CAREER_4_TREND": "Xu hướng phát triển tương lai của nghề 4 (dài ~40 chữ).",
-  "CAREER_4_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 4 (dài ~40 chữ).",
-  "CAREER_5_SCIENCE": "Cơ sở khoa học và lý do nghề 5 phù hợp với ứng viên (dài ~40 chữ).",
-  "CAREER_5_TREND": "Xu hướng phát triển tương lai của nghề 5 (dài ~40 chữ).",
-  "CAREER_5_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 5 (dài ~40 chữ).",
+  "AI_PAGE3_P1": "Phân tích tổng quan về điểm sáng nhất trong tính cách của ứng viên (dài ~50 chữ).",
+  "AI_PAGE3_P2": "Phân tích về sự kết hợp giữa các đặc điểm nổi trội (dài ~40 chữ).",
+  "AI_PAGE3_P3": "Lời khuyên về môi trường làm việc phù hợp nhất (dài ~40 chữ).",
+  "AI_PAGE4_P1": "Phân tích cách tư duy và giải quyết vấn đề của ứng viên (dài ~50 chữ).",
+  "AI_PAGE4_P2": "Giá trị cốt lõi ứng viên mang lại cho tổ chức (dài ~40 chữ).",
+  "AI_PAGE4_P3": "Rủi ro khi ứng viên đối mặt với áp lực và điểm nghẽn tâm lý (dài ~50 chữ).",
+  "AI_PAGE4_RECOVERY": "Lời khuyên để vượt qua áp lực (dài ~30 chữ).",
+  "AI_PAGE5_P1": "Lời khen ngợi về năng lực thiên bẩm và sức mạnh sâu thẳm của ứng viên (dài ~75 chữ).",
+  "AI_PAGE5_P2": "Di sản và giá trị dài hạn ứng viên có thể tạo ra (dài ~40 chữ).",
+  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~60 chữ).",
+  "CAREER_1_SCIENCE": "Cơ sở khoa học và lý do nghề 1 phù hợp với ứng viên (dài ~20 chữ).",
+  "CAREER_1_TREND": "Xu hướng phát triển tương lai của nghề 1 (dài ~20 chữ).",
+  "CAREER_1_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 1 (dài ~20 chữ).",
+  "CAREER_2_SCIENCE": "Cơ sở khoa học và lý do nghề 2 phù hợp với ứng viên (dài ~20 chữ).",
+  "CAREER_2_TREND": "Xu hướng phát triển tương lai của nghề 2 (dài ~20 chữ).",
+  "CAREER_2_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 2 (dài ~20 chữ).",
+  "CAREER_3_SCIENCE": "Cơ sở khoa học và lý do nghề 3 phù hợp với ứng viên (dài ~20 chữ).",
+  "CAREER_3_TREND": "Xu hướng phát triển tương lai của nghề 3 (dài ~20 chữ).",
+  "CAREER_3_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 3 (dài ~20 chữ).",
+  "CAREER_4_SCIENCE": "Cơ sở khoa học và lý do nghề 4 phù hợp với ứng viên (dài ~20 chữ).",
+  "CAREER_4_TREND": "Xu hướng phát triển tương lai của nghề 4 (dài ~20 chữ).",
+  "CAREER_4_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 4 (dài ~20 chữ).",
+  "CAREER_5_SCIENCE": "Cơ sở khoa học và lý do nghề 5 phù hợp với ứng viên (dài ~20 chữ).",
+  "CAREER_5_TREND": "Xu hướng phát triển tương lai của nghề 5 (dài ~20 chữ).",
+  "CAREER_5_SKILLS": "Các kỹ năng cần tập trung phát triển cho nghề 5 (dài ~20 chữ).",
   "WEAKNESS_1_TITLE": "Tên điểm mù / rào cản tâm lý số 1 (ngắn gọn).",
-  "WEAKNESS_1_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 1 (dài ~60 chữ).",
+  "WEAKNESS_1_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 1 (dài ~30 chữ).",
   "WEAKNESS_2_TITLE": "Tên điểm mù / rào cản tâm lý số 2 (ngắn gọn).",
-  "WEAKNESS_2_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 2 (dài ~60 chữ).",
+  "WEAKNESS_2_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 2 (dài ~30 chữ).",
   "WEAKNESS_3_TITLE": "Tên điểm mù / rào cản tâm lý số 3 (ngắn gọn).",
-  "WEAKNESS_3_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 3 (dài ~60 chữ).",
-  "RISK_SHORT_TERM": "Chiến lược quản trị rủi ro cốt lõi trong ngắn hạn 0-6 tháng (dài ~50 chữ).",
-  "RISK_LONG_TERM": "Chiến lược quản trị rủi ro cốt lõi trong dài hạn 6-24 tháng (dài ~50 chữ).",
-  "IDEAL_ENVIRONMENT": "Mô tả môi trường làm việc lý tưởng giúp giải phóng năng lực (dài ~60 chữ).",
-  "TOXIC_ENVIRONMENT": "Mô tả môi trường gây ức chế, cạm bẫy cần tránh (dài ~60 chữ).",
+  "WEAKNESS_3_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 3 (dài ~30 chữ).",
+  "RISK_SHORT_TERM": "Chiến lược quản trị rủi ro cốt lõi trong ngắn hạn 0-6 tháng (dài ~25 chữ).",
+  "RISK_LONG_TERM": "Chiến lược quản trị rủi ro cốt lõi trong dài hạn 6-24 tháng (dài ~25 chữ).",
+  "IDEAL_ENVIRONMENT": "Mô tả môi trường làm việc lý tưởng giúp giải phóng năng lực (dài ~30 chữ).",
+  "TOXIC_ENVIRONMENT": "Mô tả môi trường gây ức chế, cạm bẫy cần tránh (dài ~30 chữ).",
   "MNC_FIT": "Mức độ phù hợp với Tập đoàn đa quốc gia (Ví dụ: 85%).",
-  "MNC_DESC": "Phân tích lý do phù hợp/không phù hợp (dài ~40 chữ).",
+  "MNC_DESC": "Phân tích lý do phù hợp/không phù hợp (dài ~20 chữ).",
   "SOLO_FIT": "Mức độ phù hợp với Solopreneurship (Ví dụ: 90%).",
-  "SOLO_DESC": "Phân tích lý do (dài ~40 chữ).",
+  "SOLO_DESC": "Phân tích lý do (dài ~20 chữ).",
   "STARTUP_FIT": "Mức độ phù hợp với Startups (Ví dụ: 70%).",
-  "STARTUP_DESC": "Phân tích lý do (dài ~40 chữ).",
+  "STARTUP_DESC": "Phân tích lý do (dài ~20 chữ).",
   "PUBLIC_FIT": "Mức độ phù hợp với Khối Nhà nước (Ví dụ: 40%).",
-  "PUBLIC_DESC": "Phân tích lý do (dài ~40 chữ).",
+  "PUBLIC_DESC": "Phân tích lý do (dài ~20 chữ).",
   "PILLAR_1_TITLE": "Tên trụ cột kỹ năng số 1 (Ví dụ: Kỹ năng ABC).",
-  "PILLAR_1_DESC": "Mô tả chi tiết tại sao đây là chìa khóa cho sự tự do (dài ~50 chữ).",
+  "PILLAR_1_DESC": "Mô tả chi tiết tại sao đây là chìa khóa cho sự tự do (dài ~25 chữ).",
   "PILLAR_2_TITLE": "Tên trụ cột kỹ năng số 2.",
-  "PILLAR_2_DESC": "Mô tả chi tiết (dài ~50 chữ).",
+  "PILLAR_2_DESC": "Mô tả chi tiết (dài ~25 chữ).",
   "PILLAR_3_TITLE": "Tên trụ cột kỹ năng số 3.",
-  "PILLAR_3_DESC": "Mô tả chi tiết (dài ~50 chữ)."
+  "PILLAR_3_DESC": "Mô tả chi tiết (dài ~25 chữ)."
 }`;
 
     let aiTexts: any = {};
@@ -130,11 +130,20 @@ Hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau (viết b
           throw new Error("Could not extract text. Raw message: " + JSON.stringify(message));
         }
 
+        // Clean markdown backticks properly
+        textResult = textResult.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+
+        // Fallback: use regex if it contains extra text
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
-        aiTexts = JSON.parse(textResult);
+        
+        try {
+          aiTexts = JSON.parse(textResult);
+        } catch (parseError: any) {
+          throw new Error("JSON parse error. Thử giảm bớt độ dài prompt. Chi tiết: " + parseError.message + " | Raw text: " + textResult.substring(0, 100));
+        }
       } catch (e: any) {
         console.error("Anthropic API Error:", e);
         aiTexts.DEBUG_ERROR = String(e.message || e);
