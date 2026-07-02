@@ -276,7 +276,7 @@ ${userInfo}
     if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
       try {
         await resend.emails.send({
-          from: 'NCN Academy <no-reply@ncnacademy.com>', // User needs to verify domain in Resend
+          from: 'NCN Academy <no-reply@nghechonnguoi.com>',
           to: [data.EMAIL],
           subject: `[NCN Academy] Báo Cáo Định Vị Ikigai Chiến Lược - ${data.HOTEN}`,
           html: `
