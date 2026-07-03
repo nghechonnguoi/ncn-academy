@@ -40,19 +40,37 @@ ${userInfo}
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     let message: any;
     let fallbackResult = null;
-    try {
-      message = await anthropic.messages.create({
-        model: "claude-3-5-sonnet-20240620",
-        max_tokens: 1024,
-        system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa.",
-        messages: [{ role: "user", content: promptText }]
-      });
-    } catch (e: any) {
-       console.error("Preview API error", e);
-       fallbackResult = {
-         AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
-         AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
-       }
+    let errorMessage = "";
+    
+    const modelsToTry = [
+      "claude-3-5-sonnet-20240620",
+      "claude-3-5-sonnet-latest",
+      "claude-3-opus-20240229",
+      "claude-3-haiku-20240307"
+    ];
+
+    let errors = [];
+    for (const modelName of modelsToTry) {
+      try {
+        message = await anthropic.messages.create({
+          model: modelName,
+          max_tokens: 1024,
+          system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.",
+          messages: [{ role: "user", content: promptText }]
+        });
+        break; // Stop trying if successful
+      } catch (err: any) {
+        errors.push(`${modelName}: ${err.message}`);
+      }
+    }
+
+    if (!message) {
+      errorMessage = errors.join(" | ");
+      console.error("Preview API all models failed", errorMessage);
+      fallbackResult = {
+        AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
+        AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
+      };
     }
 
     if (fallbackResult) {
