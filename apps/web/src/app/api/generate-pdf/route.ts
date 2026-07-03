@@ -122,9 +122,8 @@ ${userInfo}
     if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
       const anthropicModelsToTry = [
-        "claude-5-sonnet-latest",
-        "claude-4-5-haiku-latest",
-        "claude-5-fable-latest"
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5-20251001"
       ];
 
       async function fetchClaudeJson(promptText: string) {
@@ -151,11 +150,11 @@ ${userInfo}
             console.log("Anthropic failed, falling back to Gemini...");
             const { GoogleGenerativeAI } = require('@google/generative-ai');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-            
+
             const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro", "gemini-2.0-flash-exp"];
             let result;
             let geminiErrors = [];
-            
+
             for (const m of geminiModelsToTry) {
               try {
                 const model = genAI.getGenerativeModel({ model: m });
@@ -167,7 +166,7 @@ ${userInfo}
                 geminiErrors.push(`${m}: ${e.message}`);
               }
             }
-            
+
             if (!result) {
               // Try OpenAI if Gemini fails
               if (process.env.OPENAI_API_KEY) {
@@ -177,7 +176,7 @@ ${userInfo}
                 const openaiModelsToTry = ["gpt-4o-mini", "gpt-4o"];
                 let openaiResponse;
                 let openaiError;
-                
+
                 for (const m of openaiModelsToTry) {
                   try {
                     openaiResponse = await openai.chat.completions.create({
@@ -193,14 +192,14 @@ ${userInfo}
                     openaiError = e;
                   }
                 }
-                
+
                 if (openaiResponse && openaiResponse.choices[0].message.content) {
                   message = { content: openaiResponse.choices[0].message.content };
                 } else {
-                   throw new Error(`All Models failed -> Anthropic: ${errors.join(" | ")} | Gemini: ${geminiErrors.join(" | ")} | OpenAI: ${openaiError?.message}`);
+                  throw new Error(`All Models failed -> Anthropic: ${errors.join(" | ")} | Gemini: ${geminiErrors.join(" | ")} | OpenAI: ${openaiError?.message}`);
                 }
               } else {
-                 throw new Error(`All Models failed -> Anthropic: ${errors.join(" | ")} | Gemini: ${geminiErrors.join(" | ")}`);
+                throw new Error(`All Models failed -> Anthropic: ${errors.join(" | ")} | Gemini: ${geminiErrors.join(" | ")}`);
               }
             } else {
               const response = await result.response;
