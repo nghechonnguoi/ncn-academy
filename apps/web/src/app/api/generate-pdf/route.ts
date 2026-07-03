@@ -362,7 +362,9 @@ ${userInfo}
         // @ts-ignore
         const db = admin.firestore();
         await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfUrl: pdfUrl
+          pdfUrl: pdfUrl,
+          pdfDone: true,
+          pdfGenerating: false
         });
         console.log(`✅ Saved PDF URL to Firestore for order ${data.orderCode}`);
         
