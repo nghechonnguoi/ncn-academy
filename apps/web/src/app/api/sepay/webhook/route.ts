@@ -63,6 +63,8 @@ export async function POST(req: Request) {
     // @ts-ignore
     if (admin.apps?.length) {
       // @ts-ignore
+      console.log(`Firebase Project ID: ${admin.app().options.projectId}`);
+      // @ts-ignore
       const db = admin.firestore();
       const docRef = db.collection('orders').doc(orderCode);
       const docSnap = await docRef.get();
