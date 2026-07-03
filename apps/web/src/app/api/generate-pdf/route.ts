@@ -122,9 +122,9 @@ ${userInfo}
     if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
       const modelsToTry = [
-        "claude-sonnet-4-6",
-        "claude-haiku-4-5-20251001",
+        "claude-3-5-sonnet-latest",
         "claude-3-5-sonnet-20241022",
+        "claude-3-5-haiku-latest",
         "claude-3-5-haiku-20241022",
         "claude-3-haiku-20240307"
       ];
@@ -153,10 +153,28 @@ ${userInfo}
             console.log("Anthropic failed, falling back to Gemini...");
             const { GoogleGenerativeAI } = require('@google/generative-ai');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const result = await model.generateContent(
-              "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.\n\n" + promptText
-            );
+            
+            // Try newer models first
+            const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+            let result;
+            let geminiError;
+            
+            for (const gModel of geminiModelsToTry) {
+              try {
+                const model = genAI.getGenerativeModel({ model: gModel });
+                result = await model.generateContent(
+                  "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.\n\n" + promptText
+                );
+                break; // success
+              } catch (err: any) {
+                geminiError = err;
+              }
+            }
+            
+            if (!result) {
+              throw new Error("Models failed -> Anthropic: " + errors.join(" | ") + " | Gemini: " + (geminiError?.message || "Unknown error"));
+            }
+            
             const response = await result.response;
             message = { content: response.text() };
           } else {

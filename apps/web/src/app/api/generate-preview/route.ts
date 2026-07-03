@@ -43,22 +43,11 @@ ${userInfo}
     let errorMessage = "";
     
     const modelsToTry = [
-      "claude-5-haiku-latest",
-      "claude-5-sonnet-latest",
-      "claude-4-6-haiku-latest",
-      "claude-4-6-sonnet-latest",
-      "claude-3-5-haiku-20241022",
-      "claude-3-5-sonnet-20241022",
-      "claude-3-haiku-20240307",
-      "claude-3-5-sonnet-20240620",
       "claude-3-5-sonnet-latest",
-      "claude-3-5-sonnet",
-      "claude-3.5-sonnet",
-      "anthropic/claude-3.5-sonnet",
-      "anthropic/claude-3-5-sonnet-20241022",
-      "claude-3-sonnet-20240229",
-      "claude-3-opus-20240229",
-      "claude-3-sonnet"
+      "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-latest",
+      "claude-3-5-haiku-20241022",
+      "claude-3-haiku-20240307"
     ];
 
     let errors = [];
@@ -117,6 +106,9 @@ ${userInfo}
       textResult = jsonMatch[0];
     }
     
+    // Remove literal newlines and control characters that break JSON strings
+    textResult = textResult.replace(/[\r\n\t]+/g, ' ');
+
     return NextResponse.json(JSON.parse(textResult));
 
   } catch (error: any) {
