@@ -63,25 +63,8 @@ export async function POST(req: Request) {
     const orderCode = match[1];
     console.log(`Extracted Order Code: ${orderCode}, Amount: ${amount}`);
     
-    // Initialize Firebase Admin if not already initialized
-    // @ts-ignore
-    if (!admin.apps?.length) {
-      if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-        // @ts-ignore
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        // @ts-ignore
-        admin.initializeApp({
-          // @ts-ignore
-          credential: admin.credential.cert(serviceAccount)
-        });
-      }
-    }
-
     // Update Firestore
-    // @ts-ignore
-    if (admin.apps?.length) {
-      // @ts-ignore
-      console.log(`Firebase Project ID: ${admin.app().options.projectId}`);
+    if (getApps().length) {
       const db = getFirestore();
       const docRef = db.collection('orders').doc(orderCode);
       const docSnap = await docRef.get();
