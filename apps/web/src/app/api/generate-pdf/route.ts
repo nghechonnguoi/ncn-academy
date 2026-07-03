@@ -5,10 +5,10 @@ import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
-import admin from 'firebase-admin';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getStorage } from 'firebase-admin/storage';
 import { getFirestore } from 'firebase-admin/firestore';
+// ❌ REMOVED: import { getStorage } from 'firebase-admin/storage';
+// ✅ Không cần Firebase Storage nữa — lưu PDF base64 trực tiếp vào Firestore
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_please_change');
 
@@ -174,7 +174,7 @@ ${userInfo}
             throw new Error("Models failed -> " + errors.join(" | "));
           }
         }
-        
+
         let textResult = "";
         if (typeof message.content === 'string') {
           textResult = message.content;
@@ -186,15 +186,15 @@ ${userInfo}
         }
 
         textResult = textResult.replace(/^\s*```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        
+
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
-        
+
         // Remove literal newlines and control characters that break JSON strings
         textResult = textResult.replace(/[\r\n\t]+/g, ' ');
-        
+
         return JSON.parse(textResult);
       }
 
@@ -276,7 +276,7 @@ ${userInfo}
     });
 
     const isLocal = process.env.NODE_ENV === 'development';
-    
+
     let browser;
     if (isLocal) {
       browser = await puppeteer.launch({
@@ -351,26 +351,43 @@ ${userInfo}
       } catch (emailError: any) {
         console.error("❌ Failed to send email:", emailError);
         emailErrorResponse = emailError.message;
-        // We don't throw here to ensure the user still gets the PDF download even if email fails
       }
     }
 
-    // Update Firestore to mark PDF as done, but DON'T save the base64 to Firestore (to avoid 1MB limit)
-    // We will just return the base64 directly to the frontend!
+    // ✅ FIX: Save PDF as base64 to Firestore (NO Storage needed, works on Spark plan)
     if (data.orderCode && getApps().length) {
       try {
         const db = getFirestore();
-        await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfDone: true,
-          pdfGenerating: false
-        });
-        console.log(`✅ Marked PDF as done in Firestore for order ${data.orderCode}`);
-        
-        const base64Str = pdfBuffer.toString('base64');
-        return NextResponse.json({ success: true, pdfBase64: base64Str, emailError: emailErrorResponse });
+        const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
+
+        // Firestore document limit = 1MB. Typical PDF ~200-500KB → base64 ~270-670KB → fits.
+        // If PDF is too large (>750KB raw), save without base64 and rely on email delivery.
+        const pdfSizeKB = Math.round(pdfBase64.length / 1024);
+
+        if (pdfSizeKB < 900) {
+          // PDF fits in Firestore — save base64 directly
+          await db.collection('orders').doc(String(data.orderCode)).update({
+            pdfBase64: pdfBase64,
+            pdfDone: true,
+            pdfGenerating: false
+          });
+          console.log(`✅ Saved PDF base64 (${pdfSizeKB}KB) to Firestore for order ${data.orderCode}`);
+        } else {
+          // PDF too large for Firestore — mark as done, user gets it via email
+          console.warn(`⚠️ PDF too large for Firestore (${pdfSizeKB}KB), skipping base64 save`);
+          await db.collection('orders').doc(String(data.orderCode)).update({
+            pdfDone: true,
+            pdfGenerating: false,
+            pdfNote: 'PDF quá lớn để lưu trực tiếp. Đã gửi qua email.'
+          });
+        }
+
+        if (emailErrorResponse) {
+          return NextResponse.json({ success: true, emailError: emailErrorResponse });
+        }
       } catch (err: any) {
-        console.error("❌ Failed to update Firestore:", err);
-        return NextResponse.json({ success: false, error: "Failed to update Firestore: " + err.message }, { status: 500 });
+        console.error("❌ Failed to save PDF to Firestore:", err);
+        return NextResponse.json({ success: false, error: "Failed to save PDF: " + err.message }, { status: 500 });
       }
     }
 
