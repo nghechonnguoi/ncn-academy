@@ -98,8 +98,9 @@ export async function POST(req: Request) {
         console.log(`Triggering background PDF generation for order ${orderCode}`);
         try {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ncn-academy-web.vercel.app';
-          // Tự động gọi API generate-pdf ở background (không await để webhook trả về nhanh)
-          fetch(`${baseUrl}/api/generate-pdf`, {
+          // Phải dùng await để Vercel không đóng băng container trước khi fetch xong!
+          // SePay có thể bị timeout (báo lỗi đỏ trên SePay) nhưng tiến trình vẫn sẽ chạy ngầm trên Vercel.
+          await fetch(`${baseUrl}/api/generate-pdf`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...data.payload, orderCode })
