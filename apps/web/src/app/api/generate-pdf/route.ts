@@ -174,7 +174,7 @@ ${userInfo}
             throw new Error("Models failed -> " + errors.join(" | "));
           }
         }
-        
+
         let textResult = "";
         if (typeof message.content === 'string') {
           textResult = message.content;
@@ -186,15 +186,15 @@ ${userInfo}
         }
 
         textResult = textResult.replace(/^\s*```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-        
+
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
-        
+
         // Remove literal newlines and control characters that break JSON strings
         textResult = textResult.replace(/[\r\n\t]+/g, ' ');
-        
+
         return JSON.parse(textResult);
       }
 
@@ -276,7 +276,7 @@ ${userInfo}
     });
 
     const isLocal = process.env.NODE_ENV === 'development';
-    
+
     let browser;
     if (isLocal) {
       browser = await puppeteer.launch({
