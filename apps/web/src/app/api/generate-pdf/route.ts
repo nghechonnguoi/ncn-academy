@@ -155,7 +155,19 @@ ${userInfo}
         }
 
         if (!message) {
-          throw new Error("Models failed -> " + errors.join(" | "));
+          if (process.env.GEMINI_API_KEY) {
+            console.log("Anthropic failed, falling back to Gemini...");
+            const { GoogleGenerativeAI } = require('@google/generative-ai');
+            const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const result = await model.generateContent(
+              "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.\n\n" + promptText
+            );
+            const response = await result.response;
+            message = { content: response.text() };
+          } else {
+            throw new Error("Models failed -> " + errors.join(" | "));
+          }
         }
         
         let textResult = "";
