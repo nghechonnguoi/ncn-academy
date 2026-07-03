@@ -36,7 +36,22 @@ export async function POST(req: Request) {
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn("ANTHROPIC_API_KEY is not set. Using generic texts.");
     }
-
+    let cachedAiTexts: any = null;
+    if (data.orderCode && getApps().length) {
+      try {
+        const dbCheck = getFirestore();
+        const orderSnap = await dbCheck.collection('orders').doc(String(data.orderCode)).get();
+        if (orderSnap.exists) {
+          const orderData = orderSnap.data();
+          if (orderData?.aiTextsCache) {
+            cachedAiTexts = JSON.parse(orderData.aiTextsCache);
+            console.log(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
+          }
+        }
+      } catch (e) {
+        console.warn("Không đọc được cache nội dung AI:", e);
+      }
+    }
     const userInfo = `- Tên: ${data.HOTEN}
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
@@ -119,11 +134,12 @@ ${userInfo}
 }`;
 
     let aiTexts: any = {};
-    if (process.env.ANTHROPIC_API_KEY) {
+    if (cachedAiTexts) {
+      aiTexts = cachedAiTexts;
+    } else if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
       const anthropicModelsToTry = [
         "claude-sonnet-5",
-        "claude-fable-5",
         "claude-sonnet-4-6",
         "claude-haiku-4-5-20251001"
       ];
@@ -247,8 +263,24 @@ ${userInfo}
       }
     }
 
-    const fallback = aiTexts.DEBUG_ERROR ? `[LỖI HỆ THỐNG AI: ${aiTexts.DEBUG_ERROR}] Vui lòng chụp ảnh màn hình này gửi cho đội kỹ thuật.` : "Đây là phần đánh giá chuyên sâu dành riêng cho nhóm tính cách của Bạn. Sự nhạy bén và trực giác giúp Bạn thấu hiểu thế giới theo một cách rất riêng.";
+    const aiGenerationFailed = !!aiTexts.DEBUG_ERROR;
+    if (aiGenerationFailed) {
+      console.error("⚠️ AI content generation failed completely:", aiTexts.DEBUG_ERROR);
+    }
+    const fallback = "Đây là phần đánh giá chuyên sâu dành riêng cho nhóm tính cách của Bạn. Sự nhạy bén và trực giác giúp Bạn thấu hiểu thế giới theo một cách rất riêng.";
+    if (data.orderCode && getApps().length && !cachedAiTexts && !aiGenerationFailed) {
+      try {
+        const dbSave = getFirestore();
+        await dbSave.collection('orders').doc(String(data.orderCode)).update({
+          aiTextsCache: JSON.stringify(aiTexts)
+        });
+        console.log(`💾 Đã lưu nội dung AI cho đơn ${data.orderCode} để dùng lại các lần sau.`);
+      } catch (e) {
+        console.warn("Không lưu được cache nội dung AI:", e);
+      }
+    }
     const fullData = {
+
       ...data,
       AI_PAGE3_P1: aiTexts.AI_PAGE3_P1 || fallback,
       AI_PAGE3_P2: aiTexts.AI_PAGE3_P2 || fallback,
@@ -398,19 +430,35 @@ ${userInfo}
 
         // Mark order as done in Firestore (NO pdfBase64 — too large for Firestore's 1MB limit)
         await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfDone: true,
-          pdfGenerating: false
+          pdfDone: !aiGenerationFailed,
+          pdfGenerating: false,
+          aiGenerationFailed: aiGenerationFailed,
+          aiErrorDetail: aiGenerationFailed ? String(aiTexts.DEBUG_ERROR) : null
         });
-        console.log(`✅ Marked order ${data.orderCode} as done in Firestore`);
+        if (aiGenerationFailed) {
+          console.error(`⚠️ Order ${data.orderCode}: pdfDone=false vì AI lỗi. Cần tạo lại thủ công.`);
+        } else {
+          console.log(`✅ Marked order ${data.orderCode} as done in Firestore`);
+        }
 
         // Return pdfBase64 directly in API response — frontend will handle download
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
-        return NextResponse.json({ success: true, pdfBase64: pdfBase64, emailError: emailErrorResponse });
+        return NextResponse.json({
+          success: !aiGenerationFailed,
+          pdfBase64: pdfBase64,
+          emailError: emailErrorResponse,
+          aiGenerationFailed: aiGenerationFailed
+        });
       } catch (err: any) {
         console.error("❌ Failed to update Firestore:", err);
         // Still return the PDF even if Firestore update fails
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
-        return NextResponse.json({ success: true, pdfBase64: pdfBase64, emailError: emailErrorResponse });
+        return NextResponse.json({
+          success: !aiGenerationFailed,
+          pdfBase64: pdfBase64,
+          emailError: emailErrorResponse,
+          aiGenerationFailed: aiGenerationFailed
+        });
       }
     }
 
