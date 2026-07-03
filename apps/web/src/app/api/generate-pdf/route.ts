@@ -154,9 +154,9 @@ ${userInfo}
             const { GoogleGenerativeAI } = require('@google/generative-ai');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
             
-            const geminiModelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro-latest"];
+            const geminiModelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-002", "gemini-1.5-pro-002"];
             let result;
-            let geminiError;
+            let geminiErrors = [];
             
             for (const m of geminiModelsToTry) {
               try {
@@ -165,17 +165,49 @@ ${userInfo}
                   "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG.\n\n" + promptText
                 );
                 break; // success
-              } catch (err: any) {
-                geminiError = err;
+              } catch (e: any) {
+                geminiErrors.push(`${m}: ${e.message}`);
               }
             }
             
             if (!result) {
-              throw new Error("Models failed -> Anthropic: " + errors.join(" | ") + " | Gemini: " + (geminiError?.message || "Unknown error"));
+              // Try OpenAI if Gemini fails
+              if (process.env.OPENAI_API_KEY) {
+                console.log("Gemini failed, falling back to OpenAI...");
+                const OpenAI = require('openai').default || require('openai');
+                const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+                const openaiModelsToTry = ["gpt-4o-mini", "gpt-4o"];
+                let openaiResponse;
+                let openaiError;
+                
+                for (const m of openaiModelsToTry) {
+                  try {
+                    openaiResponse = await openai.chat.completions.create({
+                      model: m,
+                      messages: [
+                        { role: "system", content: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG." },
+                        { role: "user", content: promptText }
+                      ],
+                      response_format: { type: "json_object" }
+                    });
+                    break;
+                  } catch (e: any) {
+                    openaiError = e;
+                  }
+                }
+                
+                if (openaiResponse && openaiResponse.choices[0].message.content) {
+                  message = { content: openaiResponse.choices[0].message.content };
+                } else {
+                   throw new Error(`All Models failed -> Anthropic: ${errors.join(" | ")} | Gemini: ${geminiErrors.join(" | ")} | OpenAI: ${openaiError?.message}`);
+                }
+              } else {
+                 throw new Error(`All Models failed -> Anthropic: ${errors.join(" | ")} | Gemini: ${geminiErrors.join(" | ")}`);
+              }
+            } else {
+              const response = await result.response;
+              message = { content: response.text() };
             }
-            
-            const response = await result.response;
-            message = { content: response.text() };
           } else {
             throw new Error("Models failed -> " + errors.join(" | "));
           }

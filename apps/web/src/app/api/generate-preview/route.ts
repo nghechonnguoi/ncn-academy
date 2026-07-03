@@ -71,9 +71,9 @@ ${userInfo}
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        const geminiModelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro-latest"];
+        const geminiModelsToTry = ["gemini-2.0-flash", "gemini-1.5-flash-002", "gemini-1.5-pro-002"];
         let result;
-        let geminiError;
+        let geminiErrors = [];
         
         for (const gModel of geminiModelsToTry) {
           try {
@@ -83,7 +83,7 @@ ${userInfo}
             );
             break;
           } catch (err: any) {
-            geminiError = err;
+            geminiErrors.push(`${gModel}: ${err.message}`);
           }
         }
         
@@ -115,7 +115,7 @@ ${userInfo}
             if (openaiResponse && openaiResponse.choices[0].message.content) {
               message = { content: openaiResponse.choices[0].message.content };
             } else {
-              errorMessage = errors.join(" | ") + " | Gemini: " + (geminiError?.message || "Unknown error") + " | OpenAI: " + (openaiError?.message || "Unknown error");
+              errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ") + " | OpenAI: " + (openaiError?.message || "Unknown error");
               console.error("Preview API all models failed", errorMessage);
               fallbackResult = {
                 AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
@@ -123,7 +123,7 @@ ${userInfo}
               };
             }
           } else {
-            errorMessage = errors.join(" | ") + " | Gemini: " + (geminiError?.message || "Unknown error");
+            errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ");
             console.error("Preview API all models failed", errorMessage);
             fallbackResult = {
               AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
