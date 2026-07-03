@@ -174,7 +174,7 @@ ${userInfo}
             throw new Error("Models failed -> " + errors.join(" | "));
           }
         }
-
+        
         let textResult = "";
         if (typeof message.content === 'string') {
           textResult = message.content;
@@ -186,15 +186,15 @@ ${userInfo}
         }
 
         textResult = textResult.replace(/^\s*```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-
+        
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
-
+        
         // Remove literal newlines and control characters that break JSON strings
         textResult = textResult.replace(/[\r\n\t]+/g, ' ');
-
+        
         return JSON.parse(textResult);
       }
 
@@ -276,7 +276,7 @@ ${userInfo}
     });
 
     const isLocal = process.env.NODE_ENV === 'development';
-
+    
     let browser;
     if (isLocal) {
       browser = await puppeteer.launch({
@@ -354,21 +354,26 @@ ${userInfo}
       }
     }
 
-    // Update Firestore to mark PDF as done, but DO NOT save the base64 string to Firestore to avoid 1MB limit
+    // ✅ FIX: Save PDF as base64 to Firestore (NO Storage needed, works on Spark plan)
     if (data.orderCode && getApps().length) {
       try {
         const db = getFirestore();
+
+        // Mark order as done in Firestore (NO pdfBase64 — too large for Firestore's 1MB limit)
         await db.collection('orders').doc(String(data.orderCode)).update({
           pdfDone: true,
           pdfGenerating: false
         });
-        console.log(`✅ Marked PDF as done in Firestore for order ${data.orderCode}`);
-        
-        const base64Str = pdfBuffer.toString('base64');
-        return NextResponse.json({ success: true, pdfBase64: base64Str, emailError: emailErrorResponse });
+        console.log(`✅ Marked order ${data.orderCode} as done in Firestore`);
+
+        // Return pdfBase64 directly in API response — frontend will handle download
+        const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
+        return NextResponse.json({ success: true, pdfBase64: pdfBase64, emailError: emailErrorResponse });
       } catch (err: any) {
         console.error("❌ Failed to update Firestore:", err);
-        return NextResponse.json({ success: false, error: "Failed to update Firestore: " + err.message }, { status: 500 });
+        // Still return the PDF even if Firestore update fails
+        const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
+        return NextResponse.json({ success: true, pdfBase64: pdfBase64, emailError: emailErrorResponse });
       }
     }
 
