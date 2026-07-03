@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 export const maxDuration = 300;

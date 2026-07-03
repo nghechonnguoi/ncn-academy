@@ -5,7 +5,7 @@ import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import { getStorage } from 'firebase-admin/storage';
 import { getFirestore } from 'firebase-admin/firestore';
 
