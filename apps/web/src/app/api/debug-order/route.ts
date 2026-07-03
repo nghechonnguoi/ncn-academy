@@ -1,22 +1,21 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    // @ts-ignore
     if (!admin.apps?.length) {
       if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        // @ts-ignore
         admin.initializeApp({
           credential: admin.credential.cert(serviceAccount)
         });
       }
     }
-    const db = admin.firestore();
+    const db = getFirestore();
     const docRef = db.collection('orders').doc('516');
     const docSnap = await docRef.get();
     
