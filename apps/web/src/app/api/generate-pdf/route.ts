@@ -122,6 +122,10 @@ ${userInfo}
     if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
       const modelsToTry = [
+        "claude-5-haiku-latest",
+        "claude-5-sonnet-latest",
+        "claude-4-6-haiku-latest",
+        "claude-4-6-sonnet-latest",
         "claude-3-5-haiku-20241022",
         "claude-3-5-sonnet-20241022",
         "claude-3-haiku-20240307",

@@ -43,8 +43,13 @@ ${userInfo}
     let errorMessage = "";
     
     const modelsToTry = [
-      "claude-3-5-sonnet-20241022",
+      "claude-5-haiku-latest",
+      "claude-5-sonnet-latest",
+      "claude-4-6-haiku-latest",
+      "claude-4-6-sonnet-latest",
       "claude-3-5-haiku-20241022",
+      "claude-3-5-sonnet-20241022",
+      "claude-3-haiku-20240307",
       "claude-3-5-sonnet-20240620",
       "claude-3-5-sonnet-latest",
       "claude-3-5-sonnet",
