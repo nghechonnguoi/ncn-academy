@@ -155,7 +155,7 @@ ${userInfo}
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
             
             // Try newer models first
-            const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+            const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
             let result;
             let geminiError;
             
