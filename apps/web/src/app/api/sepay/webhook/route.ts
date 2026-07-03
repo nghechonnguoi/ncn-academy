@@ -105,23 +105,8 @@ export async function POST(req: Request) {
       
       console.log(`Order ${orderCode} marked as PAID and PDF generating in Firestore`);
 
-      // Tự động gọi API generate-pdf ở background nếu có payload
-      if (data.payload) {
-        console.log(`Triggering background PDF generation for order ${orderCode}`);
-        try {
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ncn-academy-web.vercel.app';
-          // Phải dùng await để Vercel không đóng băng container trước khi fetch xong!
-          // SePay có thể bị timeout (báo lỗi đỏ trên SePay) nhưng tiến trình vẫn sẽ chạy ngầm trên Vercel.
-          await fetch(`${baseUrl}/api/generate-pdf`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...data.payload, orderCode })
-          }).catch(err => console.error("Background PDF API failed:", err));
-        } catch (err) {
-          console.error("Failed to trigger background PDF API:", err);
-          await docRef.set({ pdfGenerating: false }, { merge: true });
-        }
-      }
+      // Đã chuyển phần gọi API generate-pdf sang cho Frontend (script.js) xử lý 
+      // để tránh việc Vercel Webhook bị timeout sau 10s (giới hạn của gói Hobby).
 
     } else {
       console.error("Cannot update Firestore because Firebase Admin is not initialized.");
