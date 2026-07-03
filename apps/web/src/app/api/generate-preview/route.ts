@@ -43,9 +43,10 @@ ${userInfo}
     let errorMessage = "";
     
     const anthropicModelsToTry = [
-      "claude-5-sonnet-latest",
-      "claude-4-5-haiku-latest",
-      "claude-5-fable-latest"
+      "claude-sonnet-5",
+      "claude-fable-5",
+      "claude-sonnet-4-6",
+      "claude-haiku-4-5-20251001"
     ];
 
     let errors = [];
