@@ -35,8 +35,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const authHeader = req.headers.get('authorization');
-    if (process.env.SEPAY_API_KEY && authHeader !== `Bearer ${process.env.SEPAY_API_KEY}`) {
+    const authHeader = req.headers.get('authorization') || '';
+    if (process.env.SEPAY_API_KEY && !authHeader.includes(process.env.SEPAY_API_KEY)) {
       console.warn("Invalid or missing Authorization header from SePay webhook");
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401, headers: corsHeaders });
     }
