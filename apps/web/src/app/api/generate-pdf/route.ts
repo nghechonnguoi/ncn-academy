@@ -6,6 +6,7 @@ import chromium from '@sparticuz/chromium-min';
 import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 import admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
 import { getFirestore } from 'firebase-admin/firestore';
 
@@ -19,15 +20,12 @@ export async function POST(req: Request) {
     const data = await req.json();
 
     // Initialize Firebase Admin if not already initialized
-    // @ts-ignore
-    if (!admin.apps?.length) {
+    if (!getApps().length) {
       try {
         if (process.env.FIREBASE_SERVICE_ACCOUNT) {
           const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
-          // @ts-ignore
-          admin.initializeApp({
-            // @ts-ignore
-            credential: admin.credential.cert(serviceAccount)
+          initializeApp({
+            credential: cert(serviceAccount)
           });
         }
       } catch (error) {

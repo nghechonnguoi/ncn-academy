@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 export const maxDuration = 300;
@@ -16,15 +16,12 @@ export async function OPTIONS() {
 
 export async function POST(req: Request) {
   // Initialize Firebase Admin if not already initialized
-  // @ts-ignore
-  if (!admin.apps?.length) {
+  if (!getApps().length) {
     try {
       if (process.env.FIREBASE_SERVICE_ACCOUNT) {
         const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
-        // @ts-ignore
-        admin.initializeApp({
-          // @ts-ignore
-          credential: admin.credential.cert(serviceAccount)
+        initializeApp({
+          credential: cert(serviceAccount)
         });
       } else {
         console.warn("Missing FIREBASE_SERVICE_ACCOUNT environment variable. Firestore updates via webhook will fail.");
