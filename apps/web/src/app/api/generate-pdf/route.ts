@@ -121,18 +121,16 @@ ${userInfo}
     let aiTexts: any = {};
     if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-      const modelsToTry = [
-        "claude-3-5-sonnet-latest",
-        "claude-3-5-sonnet-20241022",
-        "claude-3-5-haiku-latest",
-        "claude-3-5-haiku-20241022",
-        "claude-3-haiku-20240307"
+      const anthropicModelsToTry = [
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5-20251001",
+        "claude-3-5-sonnet-latest"
       ];
 
       async function fetchClaudeJson(promptText: string) {
         let message;
         let errors = [];
-        for (const modelName of modelsToTry) {
+        for (const modelName of anthropicModelsToTry) {
           try {
             message = await anthropic.messages.create({
               model: modelName,
