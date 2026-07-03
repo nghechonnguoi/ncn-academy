@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req) {
+export async function GET(req: Request) {
   try {
     if (!admin.apps?.length) {
       if (process.env.FIREBASE_SERVICE_ACCOUNT) {
