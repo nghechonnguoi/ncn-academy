@@ -70,12 +70,34 @@ ${userInfo}
         console.log("Anthropic failed, falling back to Gemini...");
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(
-          "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.\n\n" + promptText
-        );
-        const response = await result.response;
-        message = { content: response.text() };
+        
+        const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"];
+        let result;
+        let geminiError;
+        
+        for (const gModel of geminiModelsToTry) {
+          try {
+            const model = genAI.getGenerativeModel({ model: gModel });
+            result = await model.generateContent(
+              "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.\n\n" + promptText
+            );
+            break;
+          } catch (err: any) {
+            geminiError = err;
+          }
+        }
+        
+        if (!result) {
+          errorMessage = errors.join(" | ") + " | Gemini: " + (geminiError?.message || "Unknown error");
+          console.error("Preview API all models failed", errorMessage);
+          fallbackResult = {
+            AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
+            AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
+          };
+        } else {
+          const response = await result.response;
+          message = { content: response.text() };
+        }
       } else {
         errorMessage = errors.join(" | ");
         console.error("Preview API all models failed", errorMessage);
