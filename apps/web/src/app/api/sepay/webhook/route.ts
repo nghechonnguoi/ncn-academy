@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
-export const maxDuration = 60;
-
 export const maxDuration = 300;
 
 const corsHeaders = {
