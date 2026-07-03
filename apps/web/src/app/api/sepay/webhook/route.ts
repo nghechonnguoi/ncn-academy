@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 
+export const maxDuration = 60;
+
 export const maxDuration = 300;
 
 const corsHeaders = {
@@ -98,18 +100,12 @@ export async function POST(req: Request) {
         console.log(`Triggering background PDF generation for order ${orderCode}`);
         try {
           const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ncn-academy-web.vercel.app';
-          const pdfRes = await fetch(`${baseUrl}/api/generate-pdf`, {
+          // Tự động gọi API generate-pdf ở background (không await để webhook trả về nhanh)
+          fetch(`${baseUrl}/api/generate-pdf`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...data.payload, orderCode })
-          });
-
-          if (!pdfRes.ok) {
-            console.error("Background PDF API failed with status:", pdfRes.status);
-            await docRef.set({ pdfGenerating: false }, { merge: true });
-          } else {
-            await docRef.set({ pdfGenerating: false, pdfDone: true }, { merge: true });
-          }
+          }).catch(err => console.error("Background PDF API failed:", err));
         } catch (err) {
           console.error("Failed to trigger background PDF API:", err);
           await docRef.set({ pdfGenerating: false }, { merge: true });
