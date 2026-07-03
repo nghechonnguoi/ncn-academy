@@ -1,30 +1,11 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server';
-import * as admin from 'firebase-admin';
-import { getFirestore } from 'firebase-admin/firestore';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
-  try {
-    if (!admin.apps?.length) {
-      if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount)
-        });
-      }
-    }
-    const db = getFirestore();
-    const docRef = db.collection('orders').doc('516');
-    const docSnap = await docRef.get();
-    
-    return NextResponse.json({
-      projectId: admin.app().options.projectId,
-      exists: docSnap.exists,
-      data: docSnap.exists ? docSnap.data() : null
-    });
-  } catch (error) {
-    return NextResponse.json({ error: error.message });
-  }
+  return NextResponse.json({
+    hasFirebaseSA: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+    saPreview: process.env.FIREBASE_SERVICE_ACCOUNT ? process.env.FIREBASE_SERVICE_ACCOUNT.substring(0, 20) : 'none'
+  });
 }
