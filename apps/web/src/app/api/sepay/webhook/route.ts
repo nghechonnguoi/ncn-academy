@@ -35,6 +35,12 @@ export async function POST(req: Request) {
   }
 
   try {
+    const authHeader = req.headers.get('authorization');
+    if (process.env.SEPAY_API_KEY && authHeader !== `Bearer ${process.env.SEPAY_API_KEY}`) {
+      console.warn("Invalid or missing Authorization header from SePay webhook");
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401, headers: corsHeaders });
+    }
+
     const body = await req.json();
     console.log("SePay Webhook received:", body);
     
@@ -89,8 +95,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: 'Order not found' }, { headers: corsHeaders });
       }
 
-      // Check if amount is sufficient (you may want to skip this if you trust any amount, but it's safe to log)
-      console.log(`Expected amount: (Depends on discount, we assume success if any amount is paid for now)`);
+      // Check if amount is sufficient
+      const expectedAmount = Number(data.amount || 0);
+      if (amount < expectedAmount) {
+        console.warn(`Insufficient amount for order ${orderCode}. Expected ${expectedAmount}, received ${amount}`);
+        // Save partial payment but don't generate PDF
+        await docRef.set({
+           status: 'PARTIAL_PAID',
+           paidAmount: amount,
+           sepayData: payload,
+           updatedAt: FieldValue.serverTimestamp()
+        }, { merge: true });
+        return NextResponse.json({ success: true, message: 'Insufficient amount' }, { headers: corsHeaders });
+      }
 
       // Skip if already generating
       if (data.pdfGenerating || data.pdfDone) {
