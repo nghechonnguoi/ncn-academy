@@ -137,7 +137,7 @@ ${userInfo}
             message = await anthropic.messages.create({
               model: modelName,
               max_tokens: 4096,
-              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON. ĐẶC BIỆT CHÚ Ý: TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\") HAY DẤU NHÁY KÉP BÊN TRONG NỘI DUNG CỦA CÁC GIÁ TRỊ JSON. NẾU CẦN TRÍCH DẪN, HÃY DÙNG DẤU NHÁY ĐƠN ('). NẾU BẠN DÙNG DẤU NGOẶC KÉP BÊN TRONG CHUỖI SẼ GÂY LỖI HỆ THỐNG.",
+              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG.",
               messages: [
                 { role: "user", content: promptText }
               ]
@@ -163,7 +163,7 @@ ${userInfo}
               try {
                 const model = genAI.getGenerativeModel({ model: gModel });
                 result = await model.generateContent(
-                  "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON. ĐẶC BIỆT CHÚ Ý: TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\") HAY DẤU NHÁY KÉP BÊN TRONG NỘI DUNG CỦA CÁC GIÁ TRỊ JSON. NẾU CẦN TRÍCH DẪN, HÃY DÙNG DẤU NHÁY ĐƠN ('). NẾU BẠN DÙNG DẤU NGOẶC KÉP BÊN TRONG CHUỖI SẼ GÂY LỖI HỆ THỐNG.\n\n" + promptText
+                  "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG.\n\n" + promptText
                 );
                 break; // success
               } catch (err: any) {
