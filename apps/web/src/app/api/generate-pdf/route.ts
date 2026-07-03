@@ -122,13 +122,14 @@ ${userInfo}
     if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
       const modelsToTry = [
-        "claude-3-5-sonnet-20241022",
         "claude-3-5-haiku-20241022",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-haiku-20240307",
         "claude-3-5-sonnet-20240620",
         "claude-3-5-sonnet-latest",
         "claude-3-5-sonnet",
         "claude-3.5-sonnet",
-        "anthropic/claude-3.5-sonnet",
+        "anthropic/claude-3-5-haiku-20241022",
         "anthropic/claude-3-5-sonnet-20241022",
         "claude-3-sonnet-20240229",
         "claude-3-opus-20240229",
@@ -390,6 +391,7 @@ ${userInfo}
         }
       } catch (err: any) {
         console.error("❌ Failed to save PDF to Firebase Storage:", err);
+        return NextResponse.json({ success: false, error: "Failed to save PDF to Storage: " + err.message }, { status: 500 });
       }
     }
 
@@ -403,10 +405,11 @@ ${userInfo}
       });
     }
 
+    // Default return for paid tier
     return NextResponse.json({ success: true, emailError: emailErrorResponse });
   } catch (error: any) {
     console.error("PDF Generation Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message || "Unknown error" }, { status: 500 });
   }
 }
 
