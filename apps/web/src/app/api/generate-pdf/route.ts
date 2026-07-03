@@ -358,7 +358,7 @@ ${userInfo}
     // Save to Firestore if orderCode is provided
     if (data.orderCode && getApps().length) {
       try {
-        const bucket = getStorage().bucket("nghechonnguoi-f9eec.firebasestorage.app");
+        const bucket = getStorage().bucket("nghechonnguoi-f9eec.appspot.com");
         const fileName = `pdfs/Bao-Cao-Dinh-Vi-${data.orderCode}-${Date.now()}.pdf`;
         const file = bucket.file(fileName);
         
@@ -376,7 +376,7 @@ ${userInfo}
         } catch (signErr) {
           console.warn("⚠️ getSignedUrl failed, using public URL:", signErr);
           // Fallback to public URL (might require bucket to be public)
-          pdfUrl = `https://firebasestorage.googleapis.com/v0/b/nghechonnguoi-f9eec.firebasestorage.app/o/${encodeURIComponent(fileName)}?alt=media`;
+          pdfUrl = `https://firebasestorage.googleapis.com/v0/b/nghechonnguoi-f9eec.appspot.com/o/${encodeURIComponent(fileName)}?alt=media`;
         }
         
         const db = getFirestore();
