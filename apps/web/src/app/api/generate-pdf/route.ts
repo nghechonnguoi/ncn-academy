@@ -137,7 +137,7 @@ ${userInfo}
             message = await anthropic.messages.create({
               model: modelName,
               max_tokens: 4096,
-              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.",
+              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON. ĐẶC BIỆT CHÚ Ý: TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\") HAY DẤU NHÁY KÉP BÊN TRONG NỘI DUNG CỦA CÁC GIÁ TRỊ JSON. NẾU CẦN TRÍCH DẪN, HÃY DÙNG DẤU NHÁY ĐƠN ('). NẾU BẠN DÙNG DẤU NGOẶC KÉP BÊN TRONG CHUỖI SẼ GÂY LỖI HỆ THỐNG.",
               messages: [
                 { role: "user", content: promptText }
               ]
@@ -163,7 +163,7 @@ ${userInfo}
               try {
                 const model = genAI.getGenerativeModel({ model: gModel });
                 result = await model.generateContent(
-                  "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON.\n\n" + promptText
+                  "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ, không có code blocks, không có text dư thừa. TUYỆT ĐỐI KHÔNG DÙNG KÝ TỰ XUỐNG DÒNG (ENTER) BÊN TRONG CHUỖI GIÁ TRỊ JSON. ĐẶC BIỆT CHÚ Ý: TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\") HAY DẤU NHÁY KÉP BÊN TRONG NỘI DUNG CỦA CÁC GIÁ TRỊ JSON. NẾU CẦN TRÍCH DẪN, HÃY DÙNG DẤU NHÁY ĐƠN ('). NẾU BẠN DÙNG DẤU NGOẶC KÉP BÊN TRONG CHUỖI SẼ GÂY LỖI HỆ THỐNG.\n\n" + promptText
                 );
                 break; // success
               } catch (err: any) {
