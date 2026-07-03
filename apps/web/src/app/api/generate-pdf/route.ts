@@ -354,26 +354,21 @@ ${userInfo}
       }
     }
 
-    // ✅ FIX: Save PDF as base64 to Firestore (NO Storage needed, works on Spark plan)
+    // Update Firestore to mark PDF as done, but DO NOT save the base64 string to Firestore to avoid 1MB limit
     if (data.orderCode && getApps().length) {
       try {
         const db = getFirestore();
-        const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
-
-        // Save base64 directly to Firestore (Warning: May exceed 1MB limit)
         await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfBase64: pdfBase64,
           pdfDone: true,
           pdfGenerating: false
         });
-        console.log(`✅ Saved PDF base64 to Firestore for order ${data.orderCode}`);
-
-        if (emailErrorResponse) {
-          return NextResponse.json({ success: true, emailError: emailErrorResponse });
-        }
+        console.log(`✅ Marked PDF as done in Firestore for order ${data.orderCode}`);
+        
+        const base64Str = pdfBuffer.toString('base64');
+        return NextResponse.json({ success: true, pdfBase64: base64Str, emailError: emailErrorResponse });
       } catch (err: any) {
-        console.error("❌ Failed to save PDF to Firestore:", err);
-        return NextResponse.json({ success: false, error: "Failed to save PDF: " + err.message }, { status: 500 });
+        console.error("❌ Failed to update Firestore:", err);
+        return NextResponse.json({ success: false, error: "Failed to update Firestore: " + err.message }, { status: 500 });
       }
     }
 
