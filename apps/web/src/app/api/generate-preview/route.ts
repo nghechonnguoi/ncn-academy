@@ -54,7 +54,7 @@ ${userInfo}
       try {
         message = await anthropic.messages.create({
           model: modelName,
-          max_tokens: 1024,
+          max_tokens: 8192,
           system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG.",
           messages: [{ role: "user", content: promptText }]
         });
