@@ -122,6 +122,8 @@ model Payment {
 
   user              User          @relation(fields: [userId], references: [id])
   commissions       AffiliateCommission[]
+  discountCodeId    String?
+  discountCode      DiscountCode? @relation(fields: [discountCodeId], references: [id])
 
   @@map("payments")
 }
@@ -157,4 +159,18 @@ model AiUsage {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("ai_usages")
+}
+
+model DiscountCode {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  discountPercent Int       @default(100)
+  maxUses         Int       @default(1)
+  usedCount       Int       @default(0)
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+
+  payments        Payment[]
+
+  @@map("discount_codes")
 }
