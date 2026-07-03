@@ -355,47 +355,22 @@ ${userInfo}
       }
     }
 
-    // Save to Firestore if orderCode is provided
+    // Update Firestore to mark PDF as done, but DON'T save the base64 to Firestore (to avoid 1MB limit)
+    // We will just return the base64 directly to the frontend!
     if (data.orderCode && getApps().length) {
       try {
-        const bucket = getStorage().bucket("nghechonnguoi-f9eec.firebasestorage.app");
-        const fileName = `pdfs/Bao-Cao-Dinh-Vi-${data.orderCode}-${Date.now()}.pdf`;
-        const file = bucket.file(fileName);
-        
-        await file.save(pdfBuffer, {
-          metadata: { contentType: 'application/pdf' }
-        });
-        
-        let pdfUrl = '';
-        try {
-          const [signedUrl] = await file.getSignedUrl({
-            action: 'read',
-            expires: '01-01-2099'
-          });
-          pdfUrl = signedUrl;
-        } catch (signErr) {
-          console.warn("⚠️ getSignedUrl failed, using public URL:", signErr);
-          // Fallback to public URL (might require bucket to be public)
-          pdfUrl = `https://firebasestorage.googleapis.com/v0/b/nghechonnguoi-f9eec.firebasestorage.app/o/${encodeURIComponent(fileName)}?alt=media`;
-        }
-        
         const db = getFirestore();
         await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfUrl: pdfUrl,
           pdfDone: true,
           pdfGenerating: false
         });
-        console.log(`✅ Saved PDF URL to Firestore for order ${data.orderCode}`);
+        console.log(`✅ Marked PDF as done in Firestore for order ${data.orderCode}`);
         
-        if (emailErrorResponse) {
-          // Send back JSON with error info if we want to debug, but wait, returning new NextResponse breaks free tier!
-          // Actually, if orderCode is present, it's called by the WEBHOOK, not the free tier!
-          // Webhook expects JSON! Free tier DOES NOT SEND orderCode!
-          return NextResponse.json({ success: true, pdfUrl: pdfUrl, emailError: emailErrorResponse });
-        }
+        const base64Str = pdfBuffer.toString('base64');
+        return NextResponse.json({ success: true, pdfBase64: base64Str, emailError: emailErrorResponse });
       } catch (err: any) {
-        console.error("❌ Failed to save PDF to Firebase Storage:", err);
-        return NextResponse.json({ success: false, error: "Failed to save PDF to Storage: " + err.message }, { status: 500 });
+        console.error("❌ Failed to update Firestore:", err);
+        return NextResponse.json({ success: false, error: "Failed to update Firestore: " + err.message }, { status: 500 });
       }
     }
 
