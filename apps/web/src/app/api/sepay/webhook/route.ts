@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 export const maxDuration = 300;
 
@@ -78,8 +79,7 @@ export async function POST(req: Request) {
     if (admin.apps?.length) {
       // @ts-ignore
       console.log(`Firebase Project ID: ${admin.app().options.projectId}`);
-      // @ts-ignore
-      const db = admin.firestore();
+      const db = getFirestore();
       const docRef = db.collection('orders').doc(orderCode);
       const docSnap = await docRef.get();
       const data = docSnap.exists ? docSnap.data() : null;
@@ -102,8 +102,7 @@ export async function POST(req: Request) {
         status: 'PAID',
         paidAmount: amount,
         sepayData: payload,
-        // @ts-ignore
-        paidAt: admin.firestore.FieldValue.serverTimestamp(),
+        paidAt: FieldValue.serverTimestamp(),
         pdfGenerating: true
       }, { merge: true });
       

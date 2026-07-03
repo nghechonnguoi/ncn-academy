@@ -7,6 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { Resend } from 'resend';
 import * as admin from 'firebase-admin';
 import { getStorage } from 'firebase-admin/storage';
+import { getFirestore } from 'firebase-admin/firestore';
 
 const resend = new Resend(process.env.RESEND_API_KEY || 're_placeholder_key_please_change');
 
@@ -359,8 +360,7 @@ ${userInfo}
           pdfUrl = `https://firebasestorage.googleapis.com/v0/b/nghechonnguoi-f9eec.firebasestorage.app/o/${encodeURIComponent(fileName)}?alt=media`;
         }
         
-        // @ts-ignore
-        const db = admin.firestore();
+        const db = getFirestore();
         await db.collection('orders').doc(String(data.orderCode)).update({
           pdfUrl: pdfUrl,
           pdfDone: true,
