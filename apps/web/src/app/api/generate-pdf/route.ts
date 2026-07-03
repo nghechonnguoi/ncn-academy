@@ -351,8 +351,7 @@ ${userInfo}
     }
 
     // Save to Firestore if orderCode is provided
-    // @ts-ignore
-    if (data.orderCode && admin.apps?.length) {
+    if (data.orderCode && getApps().length) {
       try {
         const bucket = getStorage().bucket("nghechonnguoi-f9eec.firebasestorage.app");
         const fileName = `pdfs/Bao-Cao-Dinh-Vi-${data.orderCode}-${Date.now()}.pdf`;
