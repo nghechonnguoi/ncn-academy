@@ -360,27 +360,13 @@ ${userInfo}
         const db = getFirestore();
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
 
-        // Firestore document limit = 1MB. Typical PDF ~200-500KB → base64 ~270-670KB → fits.
-        // If PDF is too large (>750KB raw), save without base64 and rely on email delivery.
-        const pdfSizeKB = Math.round(pdfBase64.length / 1024);
-
-        if (pdfSizeKB < 900) {
-          // PDF fits in Firestore — save base64 directly
-          await db.collection('orders').doc(String(data.orderCode)).update({
-            pdfBase64: pdfBase64,
-            pdfDone: true,
-            pdfGenerating: false
-          });
-          console.log(`✅ Saved PDF base64 (${pdfSizeKB}KB) to Firestore for order ${data.orderCode}`);
-        } else {
-          // PDF too large for Firestore — mark as done, user gets it via email
-          console.warn(`⚠️ PDF too large for Firestore (${pdfSizeKB}KB), skipping base64 save`);
-          await db.collection('orders').doc(String(data.orderCode)).update({
-            pdfDone: true,
-            pdfGenerating: false,
-            pdfNote: 'PDF quá lớn để lưu trực tiếp. Đã gửi qua email.'
-          });
-        }
+        // Save base64 directly to Firestore (Warning: May exceed 1MB limit)
+        await db.collection('orders').doc(String(data.orderCode)).update({
+          pdfBase64: pdfBase64,
+          pdfDone: true,
+          pdfGenerating: false
+        });
+        console.log(`✅ Saved PDF base64 to Firestore for order ${data.orderCode}`);
 
         if (emailErrorResponse) {
           return NextResponse.json({ success: true, emailError: emailErrorResponse });
