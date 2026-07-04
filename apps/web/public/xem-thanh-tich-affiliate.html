@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thành Tích Affiliate - NCN Academy</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        select,
+        input,
+        button {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            text-align: left;
+            font-size: 13px;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background: #0f172a;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tier-badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .tier-Thành.viên {
+            background: #475569;
+            color: #fff;
+        }
+
+        .tier-Bạc {
+            background: #94a3b8;
+            color: #1e293b;
+        }
+
+        .tier-Vàng {
+            background: #f59e0b;
+            color: #1e293b;
+        }
+
+        .tier-Kim.Cương {
+            background: #38bdf8;
+            color: #1e293b;
+        }
+
+        .money {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .total-row {
+            background: #0f172a;
+            font-weight: 700;
+        }
+
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+        }
+
+        .login-box {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 320px;
+        }
+
+        .login-box input {
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .login-box button {
+            width: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .payout-content {
+            font-family: monospace;
+            background: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="margin-bottom:16px;">🔒 Khu vực quản trị</h2>
+            <input type="password" id="pw-input" placeholder="Nhập mật khẩu">
+            <button onclick="checkPassword()">Vào xem</button>
+            <p id="pw-error" style="color:#ef4444;font-size:13px;margin-top:8px;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard" class="container hidden">
+        <h1>📊 Thành Tích Affiliate</h1>
+        <div class="controls">
+            <select id="month-select"></select>
+            <select id="year-select"></select>
+            <button onclick="loadReport()">🔄 Tải lại</button>
+        </div>
+        <div id="content">
+            <p class="empty">Đang tải dữ liệu...</p>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PASSWORD = "ncn2026admin"; // Chị nên đổi mật khẩu này
+
+        function checkPassword() {
+            const input = document.getElementById('pw-input').value;
+            if (input === CORRECT_PASSWORD) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                initDashboard();
+            } else {
+                document.getElementById('pw-error').innerText = 'Sai mật khẩu, vui lòng thử lại.';
+            }
+        }
+        document.getElementById('pw-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        function formatVND(n) {
+            return (n || 0).toLocaleString('vi-VN') + 'đ';
+        }
+
+        function initDashboard() {
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const now = new Date();
+
+            for (let m = 1; m <= 12; m++) {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.innerText = 'Tháng ' + m;
+                if (m === now.getMonth() + 1) opt.selected = true;
+                monthSelect.appendChild(opt);
+            }
+            for (let y = now.getFullYear() - 1; y <= now.getFullYear() + 1; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.innerText = y;
+                if (y === now.getFullYear()) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+
+            loadReport();
+        }
+
+        async function loadReport() {
+            const month = document.getElementById('month-select').value;
+            const year = document.getElementById('year-select').value;
+            const contentEl = document.getElementById('content');
+            contentEl.innerHTML = '<p class="empty">Đang tải dữ liệu...</p>';
+
+            try {
+                const res = await fetch(`https://ncn-academy-web.vercel.app/api/admin/affiliate-report?month=${month}&year=${year}`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    contentEl.innerHTML = `<p class="empty">Lỗi: ${data.error || 'Không xác định'}</p>`;
+                    return;
+                }
+
+                if (!data.report || data.report.length === 0) {
+                    contentEl.innerHTML = '<p class="empty">Chưa có dữ liệu cho tháng này.</p>';
+                    return;
+                }
+
+                let totalCommission = 0;
+                let totalOrders = 0;
+
+                let rows = data.report.map(r => {
+                    totalCommission += r.commissionOwed;
+                    totalOrders += r.monthOrderCount;
+                    const tierClass = 'tier-' + r.tierName.replace(/\s+/g, '.');
+                    return `
+          <tr>
+            <td><strong>${r.name || '—'}</strong><br><span style="color:#64748b;font-size:12px;">${r.referralCode}</span></td>
+            <td>${r.phone || '—'}</td>
+            <td><span class="tier-badge ${tierClass}">${r.tierName}</span></td>
+            <td>${r.lifetimeOrders}</td>
+            <td>${r.monthOrderCount}</td>
+            <td>${formatVND(r.monthRevenue)}</td>
+            <td>${(r.commissionRate * 100).toFixed(0)}%</td>
+            <td class="money">${formatVND(r.commissionOwed)}</td>
+            <td>${r.bankName || '—'}<br>${r.bankAccount || '—'}</td>
+            <td><span class="payout-content">${r.payoutContent}</span></td>
+          </tr>
+        `;
+                }).join('');
+
+                contentEl.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Affiliate</th>
+              <th>SĐT</th>
+              <th>Bậc</th>
+              <th>Đơn lifetime</th>
+              <th>Đơn tháng</th>
+              <th>Doanh thu tháng</th>
+              <th>% HH</th>
+              <th>Hoa hồng</th>
+              <th>Ngân hàng</th>
+              <th>Nội dung CK</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr class="total-row">
+              <td colspan="4">TỔNG CỘNG</td>
+              <td>${totalOrders}</td>
+              <td></td>
+              <td></td>
+              <td class="money">${formatVND(totalCommission)}</td>
+              <td colspan="2"></td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+            } catch (err) {
+                contentEl.innerHTML = `<p class="empty">Lỗi kết nối: ${err.message}</p>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
