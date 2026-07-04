@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 const NAV_LINKS = [
   { href: "/#services", label: "Dịch vụ" },
   { href: "/#products", label: "Sản phẩm" },
+  { href: "https://nghechonnguoi.com/dang-ky-affiliate.html", label: "Affiliate" },
   { href: "/#process", label: "Quy trình" },
   { href: "/#contact", label: "Liên hệ" },
 ];

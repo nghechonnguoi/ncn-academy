@@ -23,6 +23,7 @@ export function Footer() {
               <li><Link href="#process" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Quy trình</Link></li>
               <li><Link href="#testimonials" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Phản hồi</Link></li>
               <li><Link href="#contact" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Liên hệ</Link></li>
+              <li><Link href="https://nghechonnguoi.com/dang-ky-affiliate.html" className="text-[13.5px] text-ncn-gray transition-colors hover:text-ncn-orange">Affiliate</Link></li>
             </ul>
           </div>
 
