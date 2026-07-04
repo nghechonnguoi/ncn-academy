@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký Affiliate - NCN Academy</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 440px;
+            width: 100%;
+            border: 1px solid #334155;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            color: #f59e0b;
+            font-weight: 700;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #cbd5e1;
+            margin: 14px 0 6px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .code-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .code-row input {
+            flex: 1;
+        }
+
+        .btn-check {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #334155;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-submit {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .msg {
+            font-size: 13px;
+            margin-top: 6px;
+            min-height: 18px;
+        }
+
+        .msg.ok {
+            color: #10b981;
+        }
+
+        .msg.err {
+            color: #ef4444;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .result-box {
+            background: #0f172a;
+            border: 2px solid #10b981;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .result-box h3 {
+            color: #10b981;
+            margin-bottom: 10px;
+            font-size: 17px;
+        }
+
+        .link-row {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .link-row input {
+            flex: 1;
+            background: #1e293b;
+            font-size: 13px;
+        }
+
+        .btn-copy {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            background: #10b981;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .note {
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div id="form-section">
+            <h1>Trở thành Đối tác Giới thiệu</h1>
+            <p class="subtitle">Nhận <span class="highlight">20-30% hoa hồng</span> cho mỗi Báo Cáo Định Vị Nghề Nghiệp
+                được bán qua link riêng của bạn.</p>
+
+            <form id="affiliate-form">
+                <label>Họ và tên *</label>
+                <input id="aff-name" required placeholder="Nguyễn Văn A">
+
+                <label>Số điện thoại *</label>
+                <input id="aff-phone" required placeholder="09xxxxxxxx">
+
+                <label>Email (không bắt buộc)</label>
+                <input id="aff-email" type="email" placeholder="email@example.com">
+
+                <label>Số tài khoản ngân hàng (để nhận hoa hồng)</label>
+                <input id="aff-bank" placeholder="Số tài khoản">
+
+                <label>Tên ngân hàng</label>
+                <input id="aff-bankname" placeholder="Ví dụ: OCB, Vietcombank...">
+
+                <label>Mã giới thiệu của bạn</label>
+                <div class="code-row">
+                    <input id="aff-code" placeholder="Tự động gợi ý, có thể sửa">
+                    <button type="button" class="btn-check" onclick="checkCodeAvailability()">Kiểm tra</button>
+                </div>
+                <div id="code-msg" class="msg"></div>
+
+                <button type="submit" class="btn-submit" id="submit-btn">Đăng Ký & Lấy Link</button>
+            </form>
+        </div>
+
+        <div id="result-section" class="hidden">
+            <div class="result-box">
+                <h3>🎉 Đăng ký thành công!</h3>
+                <p style="color:#cbd5e1;font-size:14px;">Đây là link giới thiệu riêng của bạn:</p>
+                <div class="link-row">
+                    <input id="ref-link" readonly>
+                    <button class="btn-copy" onclick="copyLink()">Copy</button>
+                </div>
+                <p class="note">Chia sẻ link này bất cứ đâu. Mọi đơn hàng qua link sẽ tự động ghi nhận vào mã <strong
+                        id="code-display" style="color:#f59e0b;"></strong> của bạn. Đội ngũ NCN Academy sẽ đối soát và
+                    chuyển hoa hồng định kỳ.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXYwk4_lfXDGp3L8wcUt9NEdduNsGl_t4",
+            authDomain: "nghechonnguoi-f9eec.firebaseapp.com",
+            projectId: "nghechonnguoi-f9eec",
+            storageBucket: "nghechonnguoi-f9eec.firebasestorage.app",
+            messagingSenderId: "803032497022",
+            appId: "1:803032497022:web:bb8c7869c77c439c14912f",
+            measurementId: "G-0XDEKKR2WG"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function removeVietnameseTones(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+        }
+
+        function suggestCode() {
+            const name = document.getElementById('aff-name').value.trim();
+            const phone = document.getElementById('aff-phone').value.trim();
+            if (!name || !phone) return;
+            const namePart = removeVietnameseTones(name).replace(/[^A-Za-z\s]/g, '').trim().split(' ').pop().toUpperCase().substring(0, 8) || 'AFF';
+            const phonePart = phone.replace(/\D/g, '').slice(-3);
+            document.getElementById('aff-code').value = namePart + phonePart;
+        }
+        document.getElementById('aff-name').addEventListener('blur', suggestCode);
+        document.getElementById('aff-phone').addEventListener('blur', suggestCode);
+
+        async function checkCodeAvailability() {
+            const code = document.getElementById('aff-code').value.trim().toUpperCase();
+            const msgEl = document.getElementById('code-msg');
+            if (!code) { msgEl.className = 'msg err'; msgEl.innerText = 'Vui lòng nhập mã.'; return; }
+            msgEl.className = 'msg'; msgEl.innerText = 'Đang kiểm tra...';
+            try {
+                const doc = await db.collection('affiliates').doc(code).get();
+                if (doc.exists) {
+                    msgEl.className = 'msg err';
+                    msgEl.innerText = '❌ Mã này đã có người dùng, chị đổi mã khác nhé.';
+                } else {
+                    msgEl.className = 'msg ok';
+                    msgEl.innerText = '✅ Mã này còn trống, dùng được!';
+                }
+            } catch (e) {
+                msgEl.className = 'msg err';
+                msgEl.innerText = 'Lỗi kiểm tra, thử lại sau.';
+            }
+        }
+
+        document.getElementById('affiliate-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            const name = document.getElementById('aff-name').value.trim();
+            const phone = document.getElementById('aff-phone').value.trim();
+            const email = document.getElementById('aff-email').value.trim();
+            const bank = document.getElementById('aff-bank').value.trim();
+            const bankName = document.getElementById('aff-bankname').value.trim();
+            let code = document.getElementById('aff-code').value.trim().toUpperCase();
+
+            if (!name || !phone) { alert('Vui lòng nhập đủ Họ tên và Số điện thoại.'); return; }
+            if (!code) { suggestCode(); code = document.getElementById('aff-code').value.trim().toUpperCase(); }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Đang xử lý...';
+
+            try {
+                const docRef = db.collection('affiliates').doc(code);
+                const existing = await docRef.get();
+                if (existing.exists) {
+                    alert('Mã "' + code + '" đã có người dùng. Vui lòng bấm "Kiểm tra" để đổi mã khác trước khi đăng ký.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Đăng Ký & Lấy Link';
+                    return;
+                }
+
+                await docRef.set({
+                    referralCode: code,
+                    name: name,
+                    phone: phone,
+                    email: email || null,
+                    bankAccount: bank || null,
+                    bankName: bankName || null,
+                    status: 'pending',
+                    totalOrders: 0,
+                    totalPaidOrders: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                const link = 'https://quiz.nghechonnguoi.com/?ref=' + code;
+                document.getElementById('ref-link').value = link;
+                document.getElementById('code-display').innerText = code;
+                document.getElementById('form-section').classList.add('hidden');
+                document.getElementById('result-section').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                alert('Có lỗi xảy ra: ' + err.message + '. Vui lòng thử lại hoặc liên hệ Admin.');
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Đăng Ký & Lấy Link';
+            }
+        });
+    
