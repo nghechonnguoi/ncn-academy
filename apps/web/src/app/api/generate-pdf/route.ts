@@ -388,8 +388,6 @@ ${userInfo}
 
     let emailErrorResponse = null;
     // 🚀 Send email if email address is provided
-    // TẠM DỪNG THEO YÊU CẦU: Chỉ thực hiện tải về máy, không gửi email qua Resend
-    /*
     if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
       try {
         const resendResponse = await resend.emails.send({
@@ -424,7 +422,6 @@ ${userInfo}
         emailErrorResponse = emailError.message;
       }
     }
-    */
 
     // ✅ FIX: Save PDF as base64 to Firestore (NO Storage needed, works on Spark plan)
     if (data.orderCode && getApps().length) {
