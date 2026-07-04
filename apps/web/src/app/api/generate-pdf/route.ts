@@ -388,6 +388,8 @@ ${userInfo}
 
     let emailErrorResponse = null;
     // 🚀 Send email if email address is provided
+    // TẠM DỪNG THEO YÊU CẦU: Chỉ thực hiện tải về máy, không gửi email qua Resend
+    /*
     if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
       try {
         const resendResponse = await resend.emails.send({
@@ -422,6 +424,7 @@ ${userInfo}
         emailErrorResponse = emailError.message;
       }
     }
+    */
 
     // ✅ FIX: Save PDF as base64 to Firestore (NO Storage needed, works on Spark plan)
     if (data.orderCode && getApps().length) {
@@ -444,20 +447,22 @@ ${userInfo}
         // Return pdfBase64 directly in API response — frontend will handle download
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
         return NextResponse.json({
-          success: !aiGenerationFailed,
+          success: true, // Always return true if pdfBase64 is successfully generated, even with fallback text
           pdfBase64: pdfBase64,
           emailError: emailErrorResponse,
-          aiGenerationFailed: aiGenerationFailed
+          aiGenerationFailed: aiGenerationFailed,
+          error: aiGenerationFailed ? "Hệ thống AI đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
         });
       } catch (err: any) {
         console.error("❌ Failed to update Firestore:", err);
         // Still return the PDF even if Firestore update fails
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
         return NextResponse.json({
-          success: !aiGenerationFailed,
+          success: true, // Always return true if pdfBase64 is successfully generated
           pdfBase64: pdfBase64,
           emailError: emailErrorResponse,
-          aiGenerationFailed: aiGenerationFailed
+          aiGenerationFailed: aiGenerationFailed,
+          error: aiGenerationFailed ? "Hệ thống AI đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
         });
       }
     }
