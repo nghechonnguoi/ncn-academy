@@ -3,6 +3,8 @@ import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getTierByOrderCount } from '@/lib/affiliateTiers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         if (!getApps().length) {
