@@ -21,7 +21,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     assessmentApi.list()
-      .then((list) => { if (list.length > 0) setLatestAssessment(list[0]); })
+      .then((list) => { 
+        // Lọc bỏ kết quả cũ (trước ngày 05/07/2026)
+        const resetDate = new Date('2026-07-05T00:00:00.000Z');
+        const validAssessments = list.filter((a: any) => new Date(a.createdAt) >= resetDate);
+        if (validAssessments.length > 0) {
+          setLatestAssessment(validAssessments[0]); 
+        } else {
+          setLatestAssessment(null);
+        }
+      })
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, []);
