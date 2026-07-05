@@ -8,8 +8,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-// 50 valid codes
+// 51 valid codes (+ NADMIN admin code)
 const VALID_COUPONS = [
+  "NADMIN",
   "VIP-XUGUC", "VIP-VV4XY", "VIP-3J6PC", "GIFT-WNQ2J", "FREE-0MKTG", 
   "FREE-7PSNP", "VIP-YITXC", "NCN-7YJVL", "FREE-AZY5F", "PRO-8RHYW", 
   "NCN-LPB5S", "PRO-OKIEY", "VIP-DEICS", "NCN-WH8FL", "VIP-GPLKX", 
@@ -62,19 +63,24 @@ export async function POST(req: Request) {
     const db = getFirestore();
     const couponRef = db.collection('used_coupons').doc(couponCode);
     
+    // Mã NADMIN là mã admin đặc biệt — có thể dùng nhiều lần
+    const isAdminCode = couponCode === 'NADMIN';
+
     // Check if used in a transaction
     const result = await db.runTransaction(async (t) => {
       const doc = await t.get(couponRef);
-      if (doc.exists && doc.data()?.used) {
+      if (!isAdminCode && doc.exists && doc.data()?.used) {
         throw new Error("USED");
       }
       
-      // Mark as used
-      t.set(couponRef, {
-        used: true,
-        orderCode: orderCode,
-        usedAt: FieldValue.serverTimestamp()
-      });
+      // Mark as used (bỏ qua nếu là mã admin)
+      if (!isAdminCode) {
+        t.set(couponRef, {
+          used: true,
+          orderCode: orderCode,
+          usedAt: FieldValue.serverTimestamp()
+        });
+      }
       
       // Mark order as PAID so PDF will generate
       const orderRef = db.collection('orders').doc(orderCode);
