@@ -139,6 +139,7 @@ ${userInfo}
     } else if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
       const anthropicModelsToTry = [
+        "claude-sonnet-5",
         "claude-sonnet-4-6"
       ];
 
@@ -446,7 +447,7 @@ ${userInfo}
           pdfBase64: pdfBase64,
           emailError: emailErrorResponse,
           aiGenerationFailed: aiGenerationFailed,
-          error: aiGenerationFailed ? "Hệ thống AI đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
+          error: aiGenerationFailed ? "Hệ thống đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
         });
       } catch (err: any) {
         console.error("❌ Failed to update Firestore:", err);
@@ -457,7 +458,7 @@ ${userInfo}
           pdfBase64: pdfBase64,
           emailError: emailErrorResponse,
           aiGenerationFailed: aiGenerationFailed,
-          error: aiGenerationFailed ? "Hệ thống AI đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
+          error: aiGenerationFailed ? "Hệ thống đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
         });
       }
     }

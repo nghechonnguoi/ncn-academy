@@ -43,6 +43,7 @@ ${userInfo}
     let errorMessage = "";
     
     const anthropicModelsToTry = [
+      "claude-sonnet-5",
       "claude-sonnet-4-6"
     ];
 
@@ -114,27 +115,27 @@ ${userInfo}
               errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ") + " | OpenAI: " + (openaiError?.message || "Unknown error");
               console.error("Preview API all models failed", errorMessage);
               fallbackResult = {
-                AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
+                AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
                 AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
               };
             }
           } else {
-            errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ");
-            console.error("Preview API all models failed", errorMessage);
-            fallbackResult = {
-              AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
-              AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
-            };
+            const response = await result.response;
+            message = { content: response.text() };
           }
         } else {
-          const response = await result.response;
-          message = { content: response.text() };
+          errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ");
+          console.error("Preview API all models failed", errorMessage);
+          fallbackResult = {
+            AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
+            AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
+          };
         }
       } else {
         errorMessage = errors.join(" | ");
         console.error("Preview API all models failed", errorMessage);
         fallbackResult = {
-          AI_PAGE3_P1: `[AI Error: ${errorMessage}] Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.`,
+          AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
           AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
         };
       }
