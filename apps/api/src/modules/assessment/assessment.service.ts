@@ -61,15 +61,27 @@ export class AssessmentService {
   }
 
   async getUserAssessments(userId: string) {
+    // Reset point: July 5, 2026. Ignore older assessments.
+    const resetDate = new Date('2026-07-05T00:00:00.000Z');
     return this.prisma.assessment.findMany({
-      where: { userId },
+      where: { 
+        userId,
+        createdAt: { gte: resetDate }
+      },
       orderBy: { createdAt: 'desc' },
       select: { id: true, riasecResult: true, careerResult: true, createdAt: true },
     });
   }
 
   async getAssessmentById(id: string, userId: string) {
-    return this.prisma.assessment.findFirst({ where: { id, userId } });
+    const resetDate = new Date('2026-07-05T00:00:00.000Z');
+    return this.prisma.assessment.findFirst({ 
+      where: { 
+        id, 
+        userId,
+        createdAt: { gte: resetDate }
+      } 
+    });
   }
 
   private getCategoryForQuestion(questionId: string): RiasecKey | null {
