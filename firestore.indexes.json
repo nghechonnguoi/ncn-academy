@@ -1,0 +1,14 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "leads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "emailSequence.unsubscribed", "order": "ASCENDING" },
+        { "fieldPath": "purchases.coursePurchased", "order": "ASCENDING" },
+        { "fieldPath": "emailSequence.nextSendAt", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

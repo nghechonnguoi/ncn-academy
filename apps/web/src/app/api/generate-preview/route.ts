@@ -95,14 +95,6 @@ ${userInfo}
           const response = await result.response;
           message = { content: response.text() };
         }
-        } else {
-          errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ");
-          console.error("Preview API all models failed", errorMessage);
-          fallbackResult = {
-            AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
-            AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
-          };
-        }
       } else {
         errorMessage = errors.join(" | ");
         console.error("Preview API all models failed", errorMessage);

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bot, FileText, Route, ArrowRight, ClipboardList } from "lucide-react";
+import { Bot, Route, ArrowRight, ClipboardList } from "lucide-react";
 
 interface QuickActionsProps {
   hasAssessment?: boolean;
@@ -14,7 +14,6 @@ export function QuickActions({ hasAssessment }: QuickActionsProps) {
       color: "text-violet-600 bg-violet-50",
     },
     { icon: Bot, label: "Chat với Chuyên gia ảo", href: "/ai-tools", color: "text-[#635bff] bg-[#635bff]/10" },
-    { icon: FileText, label: "Tải báo cáo PDF", href: "/checkout?plan=pro", color: "text-blue-600 bg-blue-50" },
   ];
 
   return (

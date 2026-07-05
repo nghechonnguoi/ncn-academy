@@ -1,0 +1,60 @@
+
+> ncn-academy-web@1.0.0 build
+> next build
+
+  ▲ Next.js 14.2.5
+  - Environments: .env
+
+   Creating an optimized production build ...
+
+[1m[33mwarn[39m[22m - The class `duration-[350ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;350ms&rsqb;` to silence this warning.
+
+[1m[33mwarn[39m[22m - The class `ease-[cubic-bezier(0.34,1.56,0.64,1)]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `ease-&lsqb;cubic-bezier(0.34,1.56,0.64,1)&rsqb;` to silence this warning.
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/20) ...
+   Generating static pages (5/20) 
+   Generating static pages (10/20) 
+   Generating static pages (15/20) 
+ ✓ Generating static pages (20/20)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    45.3 kB         164 kB
+├ ○ /_not-found                          877 B          88.2 kB
+├ ○ /admin                               14.1 kB         215 kB
+├ ○ /affiliate                           3.98 kB         236 kB
+├ ○ /ai-tools                            3.57 kB         137 kB
+├ ƒ /api/admin/affiliate-report          0 B                0 B
+├ ƒ /api/admin/reset-orders              0 B                0 B
+├ ƒ /api/apply-coupon                    0 B                0 B
+├ ƒ /api/debug-order                     0 B                0 B
+├ ƒ /api/generate-pdf                    0 B                0 B
+├ ƒ /api/generate-preview                0 B                0 B
+├ ○ /api/list-anthropic-models           0 B                0 B
+├ ○ /api/list-models                     0 B                0 B
+├ ƒ /api/sepay/webhook                   0 B                0 B
+├ ƒ /api/test-anthropic                  0 B                0 B
+├ ƒ /api/test-gemini                     0 B                0 B
+├ ○ /assessment                          9.02 kB         128 kB
+├ ○ /auth/login                          3.6 kB          134 kB
+├ ○ /checkout                            3.34 kB         134 kB
+├ ○ /checkout/success                    175 B          94.3 kB
+├ ○ /dashboard                           4.55 kB         138 kB
+├ ○ /landing                             2.96 kB         121 kB
+└ ○ /sales                               2.96 kB         121 kB
++ First Load JS shared by all            87.3 kB
+  ├ chunks/1dd3208c-f7cb9843aa35a007.js  53.6 kB
+  ├ chunks/286-a5a94cc3b69ab4ed.js       31.7 kB
+  └ other shared chunks (total)          2 kB
+
+
+ƒ Middleware                             27.2 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

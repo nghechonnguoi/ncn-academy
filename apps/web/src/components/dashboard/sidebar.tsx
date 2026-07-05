@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Brain, Bot, Settings,
-  Users, LogOut, CreditCard, TrendingUp, ClipboardList,
+  Users, LogOut, TrendingUp, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ const navItems = [
   { label: "Làm bài test", href: "/assessment", icon: ClipboardList },
   { label: "AI Advisor", href: "/ai-tools", icon: Bot },
   { label: "Affiliate", href: "/affiliate", icon: Users },
-  { label: "Thanh toán", href: "/checkout?plan=pro", icon: CreditCard },
+
 ];
 
 export function DashboardSidebar() {

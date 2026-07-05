@@ -35,7 +35,7 @@ const plans = [
     period: "một lần",
     desc: "Báo cáo đầy đủ + Chuyên gia tư vấn ảo",
     cta: "Mua ngay",
-    href: "/checkout?plan=pro",
+    href: "/dashboard",
     highlight: true,
     badge: "Phổ biến nhất",
     features: [

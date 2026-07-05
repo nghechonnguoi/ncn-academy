@@ -105,7 +105,32 @@ export async function POST(req: Request) {
       
       console.log(`Order ${orderCode} marked as PAID and PDF generating in Firestore`);
 
-      // Đã chuyển phần gọi API generate-pdf sang cho Frontend (script.js) xử lý 
+      // Sync purchase status to the matching lead (if one exists) so the
+      // nurture sequence (onLeadCreated / dailyNurtureSend) reacts to this purchase.
+      const buyerEmail = data.payload?.EMAIL;
+      if (buyerEmail && buyerEmail !== 'Không cung cấp') {
+        const leadsSnap = await db.collection('leads').where('email', '==', buyerEmail).limit(1).get();
+        if (!leadsSnap.empty) {
+          const leadRef = leadsSnap.docs[0].ref;
+          const isCoursePurchase = String(data.productType || data.payload?.PRODUCT_TYPE || 'pdf').toLowerCase() === 'course';
+          const purchaseUpdate = isCoursePurchase
+            ? {
+                'purchases.coursePurchased': true,
+                'purchases.coursePurchasedAt': FieldValue.serverTimestamp(),
+                'emailSequence.unsubscribed': true,
+              }
+            : {
+                'purchases.pdfPurchased': true,
+                'purchases.pdfPurchasedAt': FieldValue.serverTimestamp(),
+              };
+          await leadRef.update(purchaseUpdate);
+          console.log(`Updated lead ${leadRef.id} purchases for order ${orderCode} (course=${isCoursePurchase})`);
+        } else {
+          console.log(`No lead found for email ${buyerEmail}, skipping emailSequence update.`);
+        }
+      }
+
+      // Đã chuyển phần gọi API generate-pdf sang cho Frontend (script.js) xử lý
       // để tránh việc Vercel Webhook bị timeout sau 10s (giới hạn của gói Hobby).
 
     } else {

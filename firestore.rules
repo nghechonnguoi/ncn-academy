@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // orders: script.js (quiz page) creates PENDING orders client-side
+    // and reads them to check payment status — must be publicly accessible.
+    match /orders/{orderId} {
+      allow read, write: if true;
+    }
+
+    // leads: read/write only via Admin SDK (server-side) — no client access.
+    match /leads/{leadId} {
+      allow read, write: if false;
+    }
+
+    // All other collections: locked down, only accessible via Admin SDK.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
