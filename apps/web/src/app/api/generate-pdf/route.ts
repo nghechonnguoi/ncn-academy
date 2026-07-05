@@ -139,9 +139,9 @@ ${userInfo}
     } else if (process.env.ANTHROPIC_API_KEY) {
       const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
       const anthropicModelsToTry = [
-        "claude-sonnet-5",
-        "claude-sonnet-4-6",
-        "claude-haiku-4-5-20251001"
+        "claude-3-5-sonnet-20240620",
+        "claude-3-haiku-20240307",
+        "claude-3-haiku-20240307"
       ];
 
       async function fetchClaudeJson(promptText: string) {
@@ -169,7 +169,7 @@ ${userInfo}
             const { GoogleGenerativeAI } = require('@google/generative-ai');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-            const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro", "gemini-2.0-flash-exp"];
+            const geminiModelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro", "gemini-2.0-flash-exp"];
             let result;
             let geminiErrors = [];
 
@@ -339,7 +339,9 @@ ${userInfo}
     html = html.replace(/{{(.*?)}}/g, (match, p1) => {
       const key = p1.trim();
       if (fullData[key] !== undefined) {
-        return String(fullData[key]).replace(/\n\n/g, '<br><br>');
+        return String(fullData[key])
+          .replace(/\n\n/g, '<br><br>')
+          .replace(/\n/g, '<br>');
       }
       return "";
     });

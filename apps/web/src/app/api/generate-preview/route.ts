@@ -43,10 +43,10 @@ ${userInfo}
     let errorMessage = "";
     
     const anthropicModelsToTry = [
-      "claude-sonnet-5",
-      "claude-fable-5",
-      "claude-sonnet-4-6",
-      "claude-haiku-4-5-20251001"
+      "claude-3-5-sonnet-20240620",
+      "claude-3-5-sonnet-20240620",
+      "claude-3-haiku-20240307",
+      "claude-3-haiku-20240307"
     ];
 
     let errors = [];
@@ -70,7 +70,7 @@ ${userInfo}
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        const geminiModelsToTry = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro", "gemini-2.0-flash-exp"];
+        const geminiModelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro", "gemini-2.0-flash-exp"];
         let result;
         let geminiErrors = [];
         
@@ -184,3 +184,4 @@ export async function OPTIONS() {
     },
   });
 }
+
