@@ -390,43 +390,50 @@ ${userInfo}
       }
     }
 
-    // ✅ FIX: Save PDF as base64 to Firestore (NO Storage needed, works on Spark plan)
+    // ✅ Save PDF and return to frontend
     if (data.orderCode && getApps().length) {
       try {
         const db = getFirestore();
 
-        // Mark order as done in Firestore (NO pdfBase64 — too large for Firestore's 1MB limit)
-        await db.collection('orders').doc(String(data.orderCode)).update({
-          pdfDone: !aiGenerationFailed,
-          pdfGenerating: false,
-          aiGenerationFailed: aiGenerationFailed,
-          aiErrorDetail: aiGenerationFailed ? String(aiTexts.DEBUG_ERROR) : null
-        });
+        // If AI failed, do NOT serve the broken PDF — block it
         if (aiGenerationFailed) {
-          console.error(`⚠️ Order ${data.orderCode}: pdfDone=false vì AI lỗi. Cần tạo lại thủ công.`);
-        } else {
-          console.log(`✅ Marked order ${data.orderCode} as done in Firestore`);
+          await db.collection('orders').doc(String(data.orderCode)).update({
+            pdfDone: false,
+            pdfGenerating: false,
+            aiGenerationFailed: true,
+            aiErrorDetail: String(aiTexts.DEBUG_ERROR)
+          });
+          console.error(`⚠️ Order ${data.orderCode}: pdfDone=false do hệ thống quá tải.`);
+          return NextResponse.json({
+            success: false,
+            error: "Hệ thống đang quá tải, vui lòng chờ trong giây lát"
+          }, { status: 503 });
         }
 
-        // Return pdfBase64 directly in API response — frontend will handle download
+        // Mark order as done
+        await db.collection('orders').doc(String(data.orderCode)).update({
+          pdfDone: true,
+          pdfGenerating: false,
+          aiGenerationFailed: false,
+          aiErrorDetail: null
+        });
+        console.log(`✅ Marked order ${data.orderCode} as done in Firestore`);
+
+        // Return pdfBase64 directly in API response
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
         return NextResponse.json({
-          success: true, // Always return true if pdfBase64 is successfully generated, even with fallback text
+          success: true,
           pdfBase64: pdfBase64,
           emailError: emailErrorResponse,
-          aiGenerationFailed: aiGenerationFailed,
-          error: aiGenerationFailed ? "Hệ thống đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
         });
       } catch (err: any) {
         console.error("❌ Failed to update Firestore:", err);
         // Still return the PDF even if Firestore update fails
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
         return NextResponse.json({
-          success: true, // Always return true if pdfBase64 is successfully generated
+          success: true,
           pdfBase64: pdfBase64,
           emailError: emailErrorResponse,
-          aiGenerationFailed: aiGenerationFailed,
-          error: aiGenerationFailed ? "Hệ thống đang quá tải, báo cáo đang sử dụng nội dung mẫu cho một số phần." : undefined
         });
       }
     }
@@ -445,7 +452,7 @@ ${userInfo}
     return NextResponse.json({ success: true, emailError: emailErrorResponse });
   } catch (error: any) {
     console.error("PDF Generation Error:", error);
-    return NextResponse.json({ success: false, error: error.message || "Unknown error" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Hệ thống đang quá tải, vui lòng chờ trong giây lát" }, { status: 503 });
   }
 }
 
