@@ -1,9 +1,5 @@
 {
   "buildCommand": "turbo run build --filter=ncn-academy-web",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
-  ]
+  "installCommand": "npm install"
 }
