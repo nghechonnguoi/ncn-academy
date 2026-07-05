@@ -85,44 +85,16 @@ ${userInfo}
         }
         
         if (!result) {
-          if (process.env.OPENAI_API_KEY) {
-            console.log("Gemini failed, falling back to OpenAI...");
-            const OpenAI = require('openai').default || require('openai');
-            const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-            const openaiModelsToTry = ["gpt-4o-mini", "gpt-4o"];
-            let openaiResponse;
-            let openaiError;
-            
-            for (const m of openaiModelsToTry) {
-              try {
-                openaiResponse = await openai.chat.completions.create({
-                  model: m,
-                  messages: [
-                    { role: "system", content: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG." },
-                    { role: "user", content: promptText }
-                  ],
-                  response_format: { type: "json_object" }
-                });
-                break;
-              } catch (e: any) {
-                openaiError = e;
-              }
-            }
-            
-            if (openaiResponse && openaiResponse.choices[0].message.content) {
-              message = { content: openaiResponse.choices[0].message.content };
-            } else {
-              errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ") + " | OpenAI: " + (openaiError?.message || "Unknown error");
-              console.error("Preview API all models failed", errorMessage);
-              fallbackResult = {
-                AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
-                AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
-              };
-            }
-          } else {
-            const response = await result.response;
-            message = { content: response.text() };
-          }
+          errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ");
+          console.error("Preview API all models failed", errorMessage);
+          fallbackResult = {
+            AI_PAGE3_P1: "Điểm sáng rực rỡ nhất ở bạn chính là ngọn lửa nhiệt huyết lan tỏa tự nhiên, khả năng kết nối con người bằng sự chân thành và thấu cảm sâu sắc.",
+            AI_PAGE3_P2: "Sự hòa quyện giữa tư duy sáng tạo linh hoạt và trái tim nhân ái mãnh liệt tạo nên một con người vừa giàu ý tưởng đột phá, vừa biết cách hiện thực hóa chúng."
+          };
+        } else {
+          const response = await result.response;
+          message = { content: response.text() };
+        }
         } else {
           errorMessage = errors.join(" | ") + " | Gemini: " + geminiErrors.join(" | ");
           console.error("Preview API all models failed", errorMessage);
