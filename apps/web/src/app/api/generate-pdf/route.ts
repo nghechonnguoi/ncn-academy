@@ -19,6 +19,35 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
+    // ── Lọc bỏ nghề "Nhân viên thực thi tổng hợp" khỏi danh sách Top 5 ──
+    const BLOCKED_CAREER = 'Nhân viên thực thi tổng hợp';
+    const topKeys = ['TOP1', 'TOP2', 'TOP3', 'TOP4', 'TOP5'] as const;
+    const careerFields = ['TITLE','NICHE','REF','FIELD','ICI','ICI_DETAIL','SUBJECTS','KNOWLEDGE','ADVICE','KIENTHUC','KYNANG','LOTRINH','VIECLEM'] as const;
+
+    // Collect non-blocked slots
+    const validSlots: number[] = [];
+    for (const key of topKeys) {
+      if ((data[`${key}_TITLE`] || '') !== BLOCKED_CAREER) {
+        validSlots.push(topKeys.indexOf(key) + 1);
+      }
+    }
+    // Re-map: compress valid slots to positions 1,2,3...
+    for (let newPos = 0; newPos < topKeys.length; newPos++) {
+      const srcPos = validSlots[newPos]; // may be undefined if ran out
+      const destKey = topKeys[newPos];
+      for (const field of careerFields) {
+        if (srcPos !== undefined) {
+          const srcKey = topKeys[srcPos - 1];
+          data[`${destKey}_${field}`] = data[`${srcKey}_${field}`] ?? '';
+        } else {
+          // Clear trailing slots
+          data[`${destKey}_${field}`] = ['ICI'].includes(field) ? 0 : '';
+        }
+      }
+    }
+    // ── End filter ──
+
+
     // Initialize Firebase Admin if not already initialized
     if (!getApps().length) {
       try {
