@@ -43,7 +43,7 @@ export function HeroSection() {
           </h1>
 
           <p className="text-[17px] text-ncn-gray-light leading-[1.7] max-w-[520px] mb-11">
-            Nghề Chọn Người cung cấp hệ thống phân tích nghề nghiệp đa biến hàng đầu Việt Nam — kết hợp các công cụ khoa học để định vị chính xác con đường sự nghiệp phù hợp nhất với bạn.
+            Nghề Chọn Người không giúp bạn chọn nghề. Chúng tôi giúp bạn không <strong>LÃNG PHÍ</strong> cuộc đời vì <strong>CHỌN SAI NGHỀ</strong>.
           </p>
 
           <div className="flex flex-wrap gap-4 mb-[70px]">
