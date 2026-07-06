@@ -145,6 +145,86 @@ tr:nth-child(even) td { background: #f8fafc; }
 .box-text { font-size: 8.5pt; color: #334155; line-height: 1.6; }
 .top-card-advice { font-size: 8.5pt; color: #d97706; display: flex; align-items: center; gap: 6px; font-weight: 500; }
 
+/* 5-BOX PREP GRID */
+.prep-header {
+  font-size: 9.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  background: linear-gradient(90deg, #eff6ff, #f0fdf4);
+  border-left: 4px solid #3b82f6;
+  border-radius: 6px 6px 0 0;
+  padding: 7px 12px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.prep-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  page-break-inside: avoid;
+}
+.prep-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 7px 8px;
+  page-break-inside: avoid;
+}
+.prep-box-title {
+  font-size: 7.5pt;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 5px;
+  padding-bottom: 4px;
+  border-bottom: 1.5px solid #dbeafe;
+  display: block;
+}
+.prep-box ul {
+  margin: 0;
+  padding-left: 12px;
+  list-style: disc;
+}
+.prep-box ul li {
+  font-size: 7.5pt;
+  color: #334155;
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+.prep-box-advice {
+  font-size: 7.5pt;
+  color: #1e3a8a;
+  line-height: 1.65;
+  font-style: italic;
+  font-weight: 500;
+}
+.prep-box-full {
+  grid-column: 1 / -1;
+  background: linear-gradient(90deg, #f0fdf4, #eff6ff);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  page-break-inside: avoid;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.prep-box-full .prep-box-title {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  flex-shrink: 0;
+  color: #065f46;
+}
+
+
 .career-card { border: 1px solid #e5e7eb; border-left: 5px solid #7c3aed; border-radius: 8px; padding: 6mm 6mm; margin-bottom: 6mm; background: #faf5ff; page-break-inside: avoid; }
 .career-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3mm; }
 .career-name { font-size: 12.5pt; font-weight: 800; color: #1a1040; }
@@ -185,7 +265,7 @@ tr:nth-child(even) td { background: #f8fafc; }
   <div class="cover-content">
     <div style="display: flex; gap: 4mm; margin-bottom: 4mm;">
       <div style="flex: 1; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 5mm;">
-        <h4 style="color: #a78bfa; font-size: 8pt; margin-bottom: 4mm; letter-spacing: 1px; text-transform: uppercase;">👤 Tố chất</h4>
+        <h4 style="color: #a78bfa; font-size: 8pt; margin-bottom: 4mm; letter-spacing: 1px; text-transform: uppercase;">👤 KHÁM PHÁ BẢN THÂN</h4>
         <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Tiềm năng bẩm sinh (Life Path)</span><span class="cover-id-value">{{LIFEPATH}}</span></div>
         <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Khao khát nội tại (Soul)</span><span class="cover-id-value">{{SOUL}}</span></div>
         <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Số Sứ mệnh (Mission)</span><span class="cover-id-value">{{MISSION}}</span></div>
@@ -193,7 +273,8 @@ tr:nth-child(even) td { background: #f8fafc; }
         <div class="cover-id-row" style="margin-bottom: 0;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Chỉ số Đam mê (Passion)</span><span class="cover-id-value">{{PASSION}}</span></div>
       </div>
       <div style="flex: 1; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; padding: 5mm;">
-        <h4 style="color: #f472b6; font-size: 8pt; margin-bottom: 4mm; letter-spacing: 1px; text-transform: uppercase;">🧠 Năng lực thực tế (MBTI &amp; HOLLAND)</h4>
+        <h4 style="color: #f472b6; font-size: 8pt; margin-bottom: 2mm; letter-spacing: 1px; text-transform: uppercase;">🧠 Năng lực thực tế (MBTI &amp; HOLLAND)</h4>
+        <div style="font-size: 6.5pt; color: #cbd5e1; margin-bottom: 3mm; line-height: 1.3;">(Đo lường năng lực ở thời điểm hiện tại, có thể thay đổi sau 6 tháng - 1 năm)</div>
         <div class="cover-id-row" style="margin-bottom: 2.5mm;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Mã tính cách</span><span class="cover-id-value">{{MBTI}}</span></div>
         <div class="cover-id-row" style="margin-bottom: 0;"><span class="cover-id-label" style="text-transform: none; letter-spacing: 0;">Holland vượt trội</span><span class="cover-id-value">{{HOLLAND}}</span></div>
       </div>
@@ -210,13 +291,26 @@ tr:nth-child(even) td { background: #f8fafc; }
   </div>
 </div>
 
+<!-- TRANG 1.5: THƯ GỬI PHỤ HUYNH -->
+<div class="content-section chapter-break">
+  <div class="page-header"><span class="page-header-left">Nghề Chọn Người · Gắn Kết Gia Đình</span><span class="page-header-right">Mã HS: {{MA_SO_HO_SO}}</span></div>
+  <div class="module-tag">GÓC NHÌN ĐỒNG HÀNH</div>
+  <h1 class="page-title">Thư Gửi Phụ Huynh</h1>
+  <p class="body-text">Kính gửi quý Phụ huynh,</p>
+  <p class="body-text">Báo cáo định vị nghề nghiệp này được xây dựng dựa trên các nền tảng khoa học tâm lý và đo lường hành vi uy tín. Mục đích cao nhất của báo cáo không phải là "đóng khung" tương lai của con, mà là cung cấp một bản đồ gợi ý để cha mẹ và con cái có thể cùng nhau trò chuyện và thấu hiểu lẫn nhau.</p>
+  <p class="body-text">Chúng tôi tin rằng, không có bài trắc nghiệm nào hoàn hảo bằng sự lắng nghe và đồng hành vô điều kiện từ gia đình. Hãy dùng những thông tin trong báo cáo này như một "điểm chạm" để bắt đầu những cuộc hội thoại mở, giúp con tự tin chia sẻ năng lực và mong muốn của mình.</p>
+  <p class="body-text">Trong hành trình trưởng thành của con, gia đình mãi là điểm tựa vững chắc nhất. Chúc quý Phụ huynh và các bạn học sinh có những bước chuẩn bị thật tốt cho tương lai phía trước.</p>
+  <div style="margin-top: 10mm; text-align: right; font-style: italic; color: #475569;">Trân trọng,<br><strong style="color:#1a1040">Đội ngũ Nghề Chọn Người</strong></div>
+</div>
+
 <!-- LỜI MỞ ĐẦU & MỤC LỤC -->
-<div class="content-section">
+<div class="content-section chapter-break">
   <div class="page-header"><span class="page-header-left">Nghề Chọn Người · Báo Cáo Định Vị Khoa Học</span><span class="page-header-right">Mã HS: {{MA_SO_HO_SO}}</span></div>
   <div class="module-tag">LỜI MỞ ĐẦU &amp; MỤC LỤC</div>
   <h1 class="page-title">Thông Điệp Từ Hội Đồng Chuyên Gia</h1>
   <div class="highlight-box" style="margin-bottom:8mm">
     <p>"Báo cáo này được tổng hợp từ bộ thuật toán đa biến độc quyền của Hệ thống Nghề Chọn Người — tích hợp dữ liệu từ mô hình Hexagonal Holland RIASEC (Holland, 1997), khung phân loại nhân cách MBTI/Jungian, ma trận Ikigai Định vị Nghề nghiệp và dữ liệu xu hướng thị trường lao động Việt Nam. Toàn bộ đầu ra phân tích được đối chiếu độc lập và không bị ảnh hưởng bởi bất kỳ yếu tố thương mại nào. Kết quả phản ánh trung thực nhất cấu trúc năng lực hành vi và tiềm năng phát triển sự nghiệp của cá nhân học viên theo góc nhìn khoa học khách quan."</p>
+    <p style="margin-top:2mm; font-size: 8.5pt; color: #64748b; font-style: italic;">*Lưu ý: Báo cáo này là tài liệu tham khảo khoa học, định hướng lộ trình cá nhân hoá. Quyết định lựa chọn nghề nghiệp cuối cùng vẫn thuộc về sự thấu hiểu và thống nhất giữa cá nhân học sinh cùng gia đình.*</p>
     <p style="margin-top:3mm;font-weight:700;color:#1a1040;font-style:normal;text-align:right">— Hội Đồng Khoa Học &amp; Phát triển Chuyên môn, Nghề Chọn Người System</p>
   </div>
   <h2 class="section-head">MỤC LỤC CHIẾN LƯỢC</h2>
@@ -252,7 +346,7 @@ tr:nth-child(even) td { background: #f8fafc; }
 
   <p class="body-text">{{AI_PAGE3_P3}}</p>
   
-  <h2 class="section-head">Ma Trận Nhận Thức &amp; Phương Thức Tư Duy</h2>
+  <h2 class="section-head">Cách Thức Nhận Thức &amp; Phương Thức Tư Duy</h2>
   <p class="body-text">{{AI_PAGE4_P1}}</p>
   <p class="body-text">{{AI_PAGE4_P2}}</p>
 
@@ -275,6 +369,12 @@ tr:nth-child(even) td { background: #f8fafc; }
   <div class="module-tag">CHƯƠNG II — TOP 5 HƯỚNG ĐI</div>
   <h1 class="page-title">Top 5 Hướng Đi Tiềm Năng &amp; Tổ Hợp Môn Cần Chuẩn Bị</h1>
   
+  <div class="highlight-box" style="margin-bottom: 6mm; padding: 4mm 6mm;">
+    <p style="font-size: 9pt; margin: 0 0 2mm 0; line-height: 1.5;">📌 <strong>Độ tương thích ICI (Index of Career Interest):</strong> Mức độ phù hợp giữa nhóm tính cách bẩm sinh và yêu cầu thực tế của nghề nghiệp.</p>
+    <p style="font-size: 9pt; margin: 0 0 2mm 0; line-height: 1.5;">🌟 <span style="color:#10b981; font-weight:bold;">PHÙ HỢP (Top 1-3):</span> Những nghề nghiệp có độ tương thích cao nhất với năng lực và tính cách hiện tại của bạn.</p>
+    <p style="font-size: 9pt; margin: 0; line-height: 1.5;">⚡ <span style="color:#d97706; font-weight:bold;">TIỀM NĂNG (Top 4-5):</span> Những nghề nghiệp bạn có thể làm tốt nếu được đào tạo đúng cách, là các lựa chọn mở rộng hấp dẫn.</p>
+  </div>
+  
   <!-- CARD 1 -->
   <div class="top-card">
     <div class="top-card-header">
@@ -287,11 +387,30 @@ tr:nth-child(even) td { background: #f8fafc; }
       <div>🎯 Độ tương thích ICI: <br><span class="meta-val">{{TOP1_ICI}}% <span class="meta-sub">({{TOP1_ICI_DETAIL}})</span></span></div>
       <div>📚 Tổ hợp môn: <br><span class="meta-val">{{TOP1_SUBJECTS}}</span></div>
     </div>
-    <div class="top-card-box">
-      <div class="box-title">📖 Khối kiến thức & kỹ năng nền tảng THPT cần xây dựng sớm:</div>
-      <div class="box-text">{{TOP1_KNOWLEDGE}}</div>
+    <div class="prep-header">⚠️ Mốn học yêu thích: {{TOP1_FIELD}} &nbsp;|&nbsp; 🎯 Độ tương thích: <strong>{{TOP1_ICI}}%</strong></div>
+    <div class="prep-header" style="margin-top:8px;border-left-color:#10b981;background:linear-gradient(90deg,#f0fdf4,#eff6ff);">🎯 Muốn theo nghề này, hãy bắt đầu từ đây</div>
+    <div class="prep-grid">
+      <div class="prep-box">
+        <span class="prep-box-title">📚 Kiến thức nền tảng</span>
+        <ul>{{TOP1_KIENTHUC}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🛠 Kỹ năng cần rèn</span>
+        <ul>{{TOP1_KYNANG}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🎓 Lộ trình học</span>
+        <ul>{{TOP1_LOTRINH}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">💼 Cơ hội việc làm</span>
+        <ul>{{TOP1_VIECLEM}}</ul>
+      </div>
+      <div class="prep-box-full">
+        <span class="prep-box-title">⭐ Lời khuyên NCN</span>
+        <div class="prep-box-advice">{{TOP1_ADVICE}}</div>
+      </div>
     </div>
-    <div class="top-card-advice">⚡ Lời khuyên chiến thuật: {{TOP1_ADVICE}}</div>
   </div>
 
   <!-- CARD 2 -->
@@ -306,11 +425,30 @@ tr:nth-child(even) td { background: #f8fafc; }
       <div>🎯 Độ tương thích ICI: <br><span class="meta-val">{{TOP2_ICI}}% <span class="meta-sub">({{TOP2_ICI_DETAIL}})</span></span></div>
       <div>📚 Tổ hợp môn: <br><span class="meta-val">{{TOP2_SUBJECTS}}</span></div>
     </div>
-    <div class="top-card-box">
-      <div class="box-title">📖 Khối kiến thức & kỹ năng nền tảng THPT cần xây dựng sớm:</div>
-      <div class="box-text">{{TOP2_KNOWLEDGE}}</div>
+    <div class="prep-header">⚠️ Mốn học yêu thích: {{TOP2_FIELD}} &nbsp;|&nbsp; 🎯 Độ tương thích: <strong>{{TOP2_ICI}}%</strong></div>
+    <div class="prep-header" style="margin-top:8px;border-left-color:#10b981;background:linear-gradient(90deg,#f0fdf4,#eff6ff);">🎯 Muốn theo nghề này, hãy bắt đầu từ đây</div>
+    <div class="prep-grid">
+      <div class="prep-box">
+        <span class="prep-box-title">📚 Kiến thức nền tảng</span>
+        <ul>{{TOP2_KIENTHUC}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🛠 Kỹ năng cần rèn</span>
+        <ul>{{TOP2_KYNANG}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🎓 Lộ trình học</span>
+        <ul>{{TOP2_LOTRINH}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">💼 Cơ hội việc làm</span>
+        <ul>{{TOP2_VIECLEM}}</ul>
+      </div>
+      <div class="prep-box-full">
+        <span class="prep-box-title">⭐ Lời khuyên NCN</span>
+        <div class="prep-box-advice">{{TOP2_ADVICE}}</div>
+      </div>
     </div>
-    <div class="top-card-advice">⚡ Lời khuyên chiến thuật: {{TOP2_ADVICE}}</div>
   </div>
 
   <!-- CARD 3 -->
@@ -325,11 +463,30 @@ tr:nth-child(even) td { background: #f8fafc; }
       <div>🎯 Độ tương thích ICI: <br><span class="meta-val">{{TOP3_ICI}}% <span class="meta-sub">({{TOP3_ICI_DETAIL}})</span></span></div>
       <div>📚 Tổ hợp môn: <br><span class="meta-val">{{TOP3_SUBJECTS}}</span></div>
     </div>
-    <div class="top-card-box">
-      <div class="box-title">📖 Khối kiến thức & kỹ năng nền tảng THPT cần xây dựng sớm:</div>
-      <div class="box-text">{{TOP3_KNOWLEDGE}}</div>
+    <div class="prep-header">⚠️ Mốn học yêu thích: {{TOP3_FIELD}} &nbsp;|&nbsp; 🎯 Độ tương thích: <strong>{{TOP3_ICI}}%</strong></div>
+    <div class="prep-header" style="margin-top:8px;border-left-color:#10b981;background:linear-gradient(90deg,#f0fdf4,#eff6ff);">🎯 Muốn theo nghề này, hãy bắt đầu từ đây</div>
+    <div class="prep-grid">
+      <div class="prep-box">
+        <span class="prep-box-title">📚 Kiến thức nền tảng</span>
+        <ul>{{TOP3_KIENTHUC}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🛠 Kỹ năng cần rèn</span>
+        <ul>{{TOP3_KYNANG}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🎓 Lộ trình học</span>
+        <ul>{{TOP3_LOTRINH}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">💼 Cơ hội việc làm</span>
+        <ul>{{TOP3_VIECLEM}}</ul>
+      </div>
+      <div class="prep-box-full">
+        <span class="prep-box-title">⭐ Lời khuyên NCN</span>
+        <div class="prep-box-advice">{{TOP3_ADVICE}}</div>
+      </div>
     </div>
-    <div class="top-card-advice">⚡ Lời khuyên chiến thuật: {{TOP3_ADVICE}}</div>
   </div>
 
   <!-- CARD 4 -->
@@ -344,11 +501,30 @@ tr:nth-child(even) td { background: #f8fafc; }
       <div>🎯 Độ tương thích ICI: <br><span class="meta-val">{{TOP4_ICI}}% <span class="meta-sub">({{TOP4_ICI_DETAIL}})</span></span></div>
       <div>📚 Tổ hợp môn: <br><span class="meta-val">{{TOP4_SUBJECTS}}</span></div>
     </div>
-    <div class="top-card-box">
-      <div class="box-title">📖 Khối kiến thức & kỹ năng nền tảng THPT cần xây dựng sớm:</div>
-      <div class="box-text">{{TOP4_KNOWLEDGE}}</div>
+    <div class="prep-header">⚠️ Mốn học yêu thích: {{TOP4_FIELD}} &nbsp;|&nbsp; 🎯 Độ tương thích: <strong>{{TOP4_ICI}}%</strong></div>
+    <div class="prep-header" style="margin-top:8px;border-left-color:#10b981;background:linear-gradient(90deg,#f0fdf4,#eff6ff);">🎯 Muốn theo nghề này, hãy bắt đầu từ đây</div>
+    <div class="prep-grid">
+      <div class="prep-box">
+        <span class="prep-box-title">📚 Kiến thức nền tảng</span>
+        <ul>{{TOP4_KIENTHUC}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🛠 Kỹ năng cần rèn</span>
+        <ul>{{TOP4_KYNANG}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🎓 Lộ trình học</span>
+        <ul>{{TOP4_LOTRINH}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">💼 Cơ hội việc làm</span>
+        <ul>{{TOP4_VIECLEM}}</ul>
+      </div>
+      <div class="prep-box-full">
+        <span class="prep-box-title">⭐ Lời khuyên NCN</span>
+        <div class="prep-box-advice">{{TOP4_ADVICE}}</div>
+      </div>
     </div>
-    <div class="top-card-advice">⚡ Lời khuyên chiến thuật: {{TOP4_ADVICE}}</div>
   </div>
 
   <!-- CARD 5 -->
@@ -363,12 +539,32 @@ tr:nth-child(even) td { background: #f8fafc; }
       <div>🎯 Độ tương thích ICI: <br><span class="meta-val">{{TOP5_ICI}}% <span class="meta-sub">({{TOP5_ICI_DETAIL}})</span></span></div>
       <div>📚 Tổ hợp môn: <br><span class="meta-val">{{TOP5_SUBJECTS}}</span></div>
     </div>
-    <div class="top-card-box">
-      <div class="box-title">📖 Khối kiến thức & kỹ năng nền tảng THPT cần xây dựng sớm:</div>
-      <div class="box-text">{{TOP5_KNOWLEDGE}}</div>
+    <div class="prep-header">⚠️ Mốn học yêu thích: {{TOP5_FIELD}} &nbsp;|&nbsp; 🎯 Độ tương thích: <strong>{{TOP5_ICI}}%</strong></div>
+    <div class="prep-header" style="margin-top:8px;border-left-color:#10b981;background:linear-gradient(90deg,#f0fdf4,#eff6ff);">🎯 Muốn theo nghề này, hãy bắt đầu từ đây</div>
+    <div class="prep-grid">
+      <div class="prep-box">
+        <span class="prep-box-title">📚 Kiến thức nền tảng</span>
+        <ul>{{TOP5_KIENTHUC}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🛠 Kỹ năng cần rèn</span>
+        <ul>{{TOP5_KYNANG}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">🎓 Lộ trình học</span>
+        <ul>{{TOP5_LOTRINH}}</ul>
+      </div>
+      <div class="prep-box">
+        <span class="prep-box-title">💼 Cơ hội việc làm</span>
+        <ul>{{TOP5_VIECLEM}}</ul>
+      </div>
+      <div class="prep-box-full">
+        <span class="prep-box-title">⭐ Lời khuyên NCN</span>
+        <div class="prep-box-advice">{{TOP5_ADVICE}}</div>
+      </div>
     </div>
-    <div class="top-card-advice">⚡ Lời khuyên chiến thuật: {{TOP5_ADVICE}}</div>
   </div>
+
 </div>
 
 <!-- CHƯƠNG II: KHÁM PHÁ SỰ PHÙ HỢP -->
@@ -451,21 +647,25 @@ tr:nth-child(even) td { background: #f8fafc; }
 
   <p class="body-text">Bạn thân mến, một điểm yếu thực chất chỉ là một điểm mạnh đang bị sử dụng sai bối cảnh hoặc đang vượt quá giới hạn cân bằng. Khi thấu hiểu những rủi ro phi nhận thức này, Bạn không chỉ kiểm soát được chúng mà còn chuyển hóa chúng thành lợi thế cạnh tranh tuyệt đối.</p>
 
-  <h2 class="section-head">3 "Rào Cản Tâm Lý" Cần Yêu Thương &amp; Vượt Qua</h2>
+  <h2 class="section-head">3 "Điểm Cần Lưu Ý" Cần Thấu Hiểu &amp; Vượt Qua</h2>
   <div class="info-box"><h3 class="sub-head" style="margin-top:0">{{WEAKNESS_1_TITLE}}</h3><p class="body-text">{{WEAKNESS_1_DESC}}</p></div>
   <div class="info-box"><h3 class="sub-head" style="margin-top:0">{{WEAKNESS_2_TITLE}}</h3><p class="body-text">{{WEAKNESS_2_DESC}}</p></div>
   <div class="info-box"><h3 class="sub-head" style="margin-top:0">{{WEAKNESS_3_TITLE}}</h3><p class="body-text">{{WEAKNESS_3_DESC}}</p></div>
 
   <h2 class="section-head" style="margin-top:6mm">Chiến Lược Quản Trị Rủi Ro Cốt Lõi</h2>
-  <div class="two-col">
+  <div class="two-col" style="margin-bottom: 2mm;">
+    <div class="highlight-box" style="margin:0">
+      <h3 class="sub-head" style="margin-top:0">Ngay bây giờ (Trong học kỳ này)</h3>
+      <p class="body-text" style="font-size:9pt">{{RISK_NOW}}</p>
+    </div>
     <div class="highlight-box" style="margin:0">
       <h3 class="sub-head" style="margin-top:0">Ngắn hạn (0 - 6 tháng)</h3>
       <p class="body-text" style="font-size:9pt">{{RISK_SHORT_TERM}}</p>
     </div>
-    <div class="highlight-box" style="margin:0">
-      <h3 class="sub-head" style="margin-top:0">Dài hạn (6 - 24 tháng)</h3>
-      <p class="body-text" style="font-size:9pt">{{RISK_LONG_TERM}}</p>
-    </div>
+  </div>
+  <div class="highlight-box" style="margin:0">
+    <h3 class="sub-head" style="margin-top:0">Dài hạn (6 - 24 tháng)</h3>
+    <p class="body-text" style="font-size:9pt">{{RISK_LONG_TERM}}</p>
   </div>
 </div>
 
@@ -481,7 +681,7 @@ tr:nth-child(even) td { background: #f8fafc; }
   <h2 class="section-head" style="margin-top:5mm">Môi Trường Gây Ức Chế: Cạm Bẫy Trầm Kha</h2>
   <p class="body-text">{{TOXIC_ENVIRONMENT}}</p>
 
-  <h2 class="section-head" style="margin-top:6mm">Bảng Xếp Hạng Loại Hình Tổ Chức (Culture Fit Matrix)</h2>
+  <h2 class="section-head" style="margin-top:6mm">Mức Độ Phù Hợp Loại Hình Tổ Chức (Culture Fit Matrix)</h2>
   <table>
     <thead><tr><th>Loại hình tổ chức</th><th>Mức độ phù hợp</th><th>Phân tích độ tương thích với Bạn</th></tr></thead>
     <tbody>
@@ -544,7 +744,12 @@ tr:nth-child(even) td { background: #f8fafc; }
     </div>
   </div>
 
-  <div style="text-align:center;margin-top:12mm;padding-top:5mm;border-top:1px solid #e2e8f0">
+  <div style="margin-top:8mm; background: #f8fafc; border-radius: 8px; padding: 6mm; text-align: center; border: 1px dashed #cbd5e1;">
+    <h3 style="font-size:10pt; color:#475569; margin-bottom: 2mm;">🔄 Hệ Thống Hỗ Trợ Phản Hồi (Feedback Loop)</h3>
+    <p style="font-size:8.5pt; color:#64748b; margin-bottom: 0;">Nếu sau 6 tháng thực hành, Bạn có những thay đổi lớn về nhận thức hoặc kỹ năng, hãy liên hệ lại với Hệ thống Nghề Chọn Người để được cập nhật "Khám phá bản thân" và điều chỉnh bản đồ sự nghiệp cho phù hợp với phiên bản mới của Bạn.</p>
+  </div>
+
+  <div style="text-align:center;margin-top:8mm;padding-top:5mm;border-top:1px solid #e2e8f0">
     <p style="font-size:7.5pt;color:#94a3b8;letter-spacing:1.5px;font-weight:700;text-transform:uppercase">BẢN QUYỀN HỆ THỐNG ĐỊNH VỊ SỰ NGHIỆP NGHỀ CHỌN NGƯỜI © 2026</p>
   </div>
 </div>
