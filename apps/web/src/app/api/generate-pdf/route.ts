@@ -154,6 +154,7 @@ ${userInfo}
         "claude-haiku-4-5-20251001"     // fallback 2, rẻ và nhanh
       ];
 
+
       async function fetchClaudeJson(promptText: string) {
         let message;
         let errors = [];
@@ -162,7 +163,7 @@ ${userInfo}
             message = await anthropic.messages.create({
               model: modelName,
               max_tokens: 8192,
-              system: "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG.",
+              system: "You are a JSON generator. Return ONLY a valid JSON object with no markdown, no code blocks, no explanation. All string values must use proper JSON escaping (backslash-n for newlines, backslash-quote for quotes). Do not truncate the output.",
               messages: [
                 { role: "user", content: promptText }
               ]
@@ -187,7 +188,7 @@ ${userInfo}
               try {
                 const model = genAI.getGenerativeModel({ model: m });
                 result = await model.generateContent(
-                  "Bạn chỉ được phép trả về duy nhất một object JSON hợp lệ. TUYỆT ĐỐI CHỈ SỬ DỤNG CHỮ CÁI, CHỮ SỐ, DẤU CHẤM, DẤU PHẨY ĐỂ VIẾT CÂU. TUYỆT ĐỐI KHÔNG SỬ DỤNG DẤU NGOẶC KÉP (\"), DẤU NHÁY ĐƠN ('), DẤU NGOẶC ĐƠN, KÝ TỰ XUỐNG DÒNG (ENTER), DẤU GẠCH NGANG HAY BẤT KỲ KÝ TỰ ĐẶC BIỆT NÀO KHÁC BÊN TRONG NỘI DUNG VĂN BẢN (VALUES) CỦA JSON. VIỆC DÙNG KÝ TỰ ĐẶC BIỆT SẼ LÀM HỎNG TRÌNH BIÊN DỊCH JSON VÀ GÂY LỖI HỆ THỐNG TRẦM TRỌNG.\n\n" + promptText
+                  "Return ONLY a valid JSON object with no markdown, no code blocks, no explanation.\n\n" + promptText
                 );
                 break; // success
               } catch (e: any) {
@@ -216,17 +217,25 @@ ${userInfo}
           textResult = JSON.stringify(message);
         }
 
-        textResult = textResult.replace(/^\s*```json\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        // Strip markdown code fences
+        textResult = textResult.replace(/^[\s\S]*?```(?:json)?\s*/i, '').replace(/\s*```[\s\S]*$/i, '').trim();
 
+        // Extract the JSON object
         const jsonMatch = textResult.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           textResult = jsonMatch[0];
         }
 
-        // Remove literal newlines and control characters that break JSON strings
+        // Replace literal newlines/tabs INSIDE string values only (safe cleanup)
         textResult = textResult.replace(/[\r\n\t]+/g, ' ');
 
-        return JSON.parse(textResult);
+        try {
+          return JSON.parse(textResult);
+        } catch (parseErr: any) {
+          console.error("JSON.parse failed. Raw AI output (first 500 chars):", textResult.substring(0, 500));
+          console.error("Parse error:", parseErr.message);
+          throw new Error(`JSON parse failed: ${parseErr.message}`);
+        }
       }
 
       try {
