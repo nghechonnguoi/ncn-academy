@@ -70,8 +70,12 @@ export const authApi = {
 
 // ── Assessment endpoints ────────────────────────────────────
 export const assessmentApi = {
-  submit: (answers: { questionId: string; answer: number }[]) =>
-    api.post("/assessment/submit", { answers }).then((r) => r.data),
+  submit: (
+    answers: { questionId: string; answer: number | string }[],
+    track?: 'university' | 'vocational',
+    profile?: Record<string, string>,
+  ) =>
+    api.post("/assessment/submit", { answers, track, profile }).then((r) => r.data),
 
   list: () => api.get("/assessment").then((r) => r.data),
 
