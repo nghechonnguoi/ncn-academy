@@ -43,9 +43,9 @@ ${userInfo}
     let errorMessage = "";
     
     const anthropicModelsToTry = [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-5-haiku-20241022",
-      "claude-3-haiku-20240307"
+      "claude-sonnet-5",              // model chính, mới nhất
+      "claude-sonnet-4-6",            // fallback 1, ổn định
+      "claude-haiku-4-5-20251001"     // fallback 2, rẻ và nhanh
     ];
 
     let errors = [];
