@@ -261,6 +261,18 @@ export default function AssessmentPage() {
     try {
       const answersArray = Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer }));
       const result = await submit(answersArray, track ?? "university", profile);
+
+      // Đăng ký lead để kích hoạt chuỗi mail chăm sóc khách hàng (không chặn điều hướng nếu lỗi)
+      fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: profile.email,
+          name: profile.fullName,
+          hollandCode: result.riasecResult?.topCode,
+        }),
+      }).catch(() => {});
+
       toast({ title: "Phân tích hoàn tất! 🎉", description: "Đang chuyển đến kết quả của bạn..." });
       router.push(`/dashboard?assessment=${result.assessment.id}`);
     } catch {
