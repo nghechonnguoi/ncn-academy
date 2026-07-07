@@ -1990,7 +1990,7 @@ async function generateReportUI() {
       window.pdfPayload[`TOP${i}_TITLE`] = profInfo.profession ? `${profInfo.profession}${profInfo.nicheStr}` : entry.niche;
       window.pdfPayload[`TOP${i}_NICHE`] = entry.niche;
       window.pdfPayload[`TOP${i}_REF`] = entry.industry || "Chưa phân loại";
-      window.pdfPayload[`TOP${i}_FIELD`] = entry.study_major || "Đa ngành";
+      window.pdfPayload[`TOP${i}_FIELD`] = entry.study_major || entry.industry || "Xem tư vấn";
       window.pdfPayload[`TOP${i}_ICI`] = entry.ICI;
       window.pdfPayload[`TOP${i}_ICI_DETAIL`] = `Id:${entry.S_identity} · Ni:${entry.S_niche} · Mk:${entry.S_market}`;
       window.pdfPayload[`TOP${i}_SUBJECTS`] = entry.displayCombo || "Theo trường";
