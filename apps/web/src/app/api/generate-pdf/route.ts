@@ -74,7 +74,7 @@ export async function POST(req: Request) {
           const orderData = orderSnap.data();
           if (orderData?.aiTextsCache) {
             cachedAiTexts = JSON.parse(orderData.aiTextsCache);
-            console.log(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
+            console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
           }
         }
       } catch (e) {
@@ -214,7 +214,7 @@ ${userInfo}
 
         if (!message) {
           if (process.env.GEMINI_API_KEY) {
-            console.log("Anthropic failed, falling back to Gemini...");
+            console.warn("Anthropic failed, falling back to Gemini...");
             const { GoogleGenerativeAI } = require('@google/generative-ai');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -299,7 +299,7 @@ ${userInfo}
         await dbSave.collection('orders').doc(String(data.orderCode)).update({
           aiTextsCache: JSON.stringify(aiTexts)
         });
-        console.log(`💾 Đã lưu nội dung AI cho đơn ${data.orderCode} để dùng lại các lần sau.`);
+        console.warn(`💾 Đã lưu nội dung AI cho đơn ${data.orderCode} để dùng lại các lần sau.`);
       } catch (e) {
         console.warn("Không lưu được cache nội dung AI:", e);
       }
@@ -382,6 +382,13 @@ ${userInfo}
       PILLAR_2_DESC: aiTexts.PILLAR_2_DESC || "",
       PILLAR_3_TITLE: aiTexts.PILLAR_3_TITLE || "",
       PILLAR_3_DESC: aiTexts.PILLAR_3_DESC || "",
+      // ── 3 nghề nên tránh (từ dashboard-ai cache, truyền vào qua payload) ──
+      AVOID_1_TITLE:  data.AVOID_1_TITLE  || "",
+      AVOID_1_REASON: data.AVOID_1_REASON || "",
+      AVOID_2_TITLE:  data.AVOID_2_TITLE  || "",
+      AVOID_2_REASON: data.AVOID_2_REASON || "",
+      AVOID_3_TITLE:  data.AVOID_3_TITLE  || "",
+      AVOID_3_REASON: data.AVOID_3_REASON || "",
     };
 
     const templatePath = path.join(process.cwd(), 'public', 'bao-cao-pdf-template.html');
@@ -466,7 +473,7 @@ ${userInfo}
           console.error("❌ Resend API returned an error:", resendResponse.error);
           emailErrorResponse = resendResponse.error;
         } else {
-          console.log("✅ Email sent successfully to", data.EMAIL);
+          console.warn("✅ Email sent successfully to", data.EMAIL);
         }
       } catch (emailError: any) {
         console.error("❌ Failed to send email:", emailError);
@@ -501,7 +508,7 @@ ${userInfo}
           aiGenerationFailed: false,
           aiErrorDetail: null
         });
-        console.log(`✅ Marked order ${data.orderCode} as done in Firestore`);
+        console.warn(`✅ Marked order ${data.orderCode} as done in Firestore`);
 
         // Return pdfBase64 directly in API response
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
