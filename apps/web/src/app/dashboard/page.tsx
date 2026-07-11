@@ -165,6 +165,19 @@ function DashboardContent() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [matchScore, setMatchScore] = useState(0);
 
+  /** Lấy top 5 nghề từ assessment (cùng nguồn với báo cáo đầy đủ) */
+  function getAssessmentCareers(a: any): Career[] {
+    const raw = a?.careerResult;
+    const list: any[] = Array.isArray(raw) ? raw : (raw?.university ?? raw?.vocational ?? []);
+    return list.slice(0, 5).map((c: any, i: number) => ({
+      rank: i + 1,
+      title: c.name ?? c.title ?? "",
+      match: Math.round(c.pct ?? c.match ?? 0),
+      reason: c.niche ?? c.reason ?? "",
+      locked: i < 2,
+    }));
+  }
+
   const countdownKey = `ncn_countdown_${user?.id ?? "guest"}`;
   const countdown = useCountdown(countdownKey);
 
@@ -342,7 +355,7 @@ function DashboardContent() {
             5 nghề phù hợp nhất với bạn
           </h2>
 
-          {aiLoading ? (
+          {isLoading ? (
             <div className="flex flex-col gap-3">
               {[0,1,2,3,4].map((i) => (
                 <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: "#e2e8f0" }} />
@@ -350,7 +363,7 @@ function DashboardContent() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {(aiData?.careers?.top_careers ?? []).map((career) => (
+              {getAssessmentCareers(assessment).map((career) => (
                 <CareerCard key={career.rank} career={career} onUnlock={() => setCheckoutOpen(true)} />
               ))}
             </div>
