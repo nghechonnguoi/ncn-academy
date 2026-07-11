@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Loader2, Download, Mail, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Loader2, Mail, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ExportReportButtonProps {
   assessment: any;
+  avoidCareers?: { title: string; reason: string }[];
   className?: string;
 }
 
@@ -22,7 +23,7 @@ const MBTI_TYPES: Record<string, string> = {
   ISTP:"Thợ Thủ Công", ISFP:"Nhà Thám Hiểm", ESTP:"Doanh Nhân", ESFP:"Người Giải Trí",
 };
 
-export function ExportReportButton({ assessment, className }: ExportReportButtonProps) {
+export function ExportReportButton({ assessment, avoidCareers = [], className }: ExportReportButtonProps) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -124,6 +125,14 @@ export function ExportReportButton({ assessment, className }: ExportReportButton
       // Thương hiệu
       BRAND_NAME:   "NCN Academy",
       REPORT_TITLE: "BÁO CÁO KHOA HỌC: ĐỊNH VỊ NĂNG LỰC HÀNH VI & BẢN ĐỒ CHIẾN LƯỢC SỰ NGHIỆP",
+
+      // 3 nghề nên tránh
+      AVOID_1_TITLE:  avoidCareers[0]?.title  ?? "",
+      AVOID_1_REASON: avoidCareers[0]?.reason ?? "",
+      AVOID_2_TITLE:  avoidCareers[1]?.title  ?? "",
+      AVOID_2_REASON: avoidCareers[1]?.reason ?? "",
+      AVOID_3_TITLE:  avoidCareers[2]?.title  ?? "",
+      AVOID_3_REASON: avoidCareers[2]?.reason ?? "",
     };
 
     try {
@@ -182,7 +191,7 @@ export function ExportReportButton({ assessment, className }: ExportReportButton
         onClick={handleExport}
         disabled={status === "loading"}
         className={cn(
-          "w-full gap-2 h-11 rounded-xl font-semibold text-sm transition-all",
+          "gap-2 h-9 rounded-xl font-semibold text-sm transition-all whitespace-nowrap",
           status === "success"
             ? "bg-emerald-500 hover:bg-emerald-600 text-white"
             : status === "error"

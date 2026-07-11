@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Briefcase, GraduationCap, Loader2, TrendingUp, Trophy, Download } from "lucide-react";
+import { ArrowRight, Briefcase, GraduationCap, Loader2, TrendingUp, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ExportReportButton } from "@/components/dashboard/export-report-button";
@@ -10,6 +10,7 @@ import { ExportReportButton } from "@/components/dashboard/export-report-button"
 interface CareerResultsProps {
   assessment: any;
   isLoading: boolean;
+  avoidCareers?: { title: string; reason: string }[];
 }
 
 // Màu sắc và tên tiếng Việt cho từng nhóm tính cách
@@ -45,12 +46,9 @@ function getIndustryColor(industry: string) {
   return INDUSTRY_COLORS[industry] ?? "bg-gray-100 text-gray-600";
 }
 
-// Chuyển mã RIASEC (vd: "RIC") thành nhãn tiếng Việt (vd: "Thực Tế · Nghiên Cứu · Quy Củ")
-function riasecToLabel(code: string) {
-  return code.split("").map((c) => RIASEC_LABELS[c] ?? c).join(" · ");
-}
 
-export function CareerResults({ assessment, isLoading }: CareerResultsProps) {
+
+export function CareerResults({ assessment, isLoading, avoidCareers = [] }: CareerResultsProps) {
   const [activeTab, setActiveTab] = useState<"university" | "vocational">("vocational");
 
   if (isLoading) {
@@ -128,7 +126,7 @@ export function CareerResults({ assessment, isLoading }: CareerResultsProps) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <ExportReportButton assessment={assessment} />
+            <ExportReportButton assessment={assessment} avoidCareers={avoidCareers} />
             <Link href="/assessment">
               <Button variant="outline" size="sm" className="rounded-xl text-xs gap-1.5">
                 <TrendingUp className="w-3.5 h-3.5" />
