@@ -298,7 +298,7 @@ function DashboardContent() {
           <p className="text-xs font-bold uppercase tracking-widest mb-2 text-center" style={{ color: "#E8A838" }}>
             CHÂN DUNG CỦA BẠN
           </p>
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-8" style={{ color: "#1B2A4A" }}>
             Những điều có thể bạn chưa từng nghe ai nói
           </h2>
 
@@ -338,7 +338,7 @@ function DashboardContent() {
           <p className="text-xs font-bold uppercase tracking-widest mb-2 text-center" style={{ color: "#E8A838" }}>
             GỢI Ý NGHỀ NGHIỆP
           </p>
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-8" style={{ color: "#1B2A4A" }}>
             5 nghề phù hợp nhất với bạn
           </h2>
 
@@ -448,7 +448,7 @@ function DashboardContent() {
           <p className="text-xs font-bold uppercase tracking-widest mb-2 text-center" style={{ color: "#2BA88C" }}>
             CƠ HỘI
           </p>
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-8" style={{ color: "#1B2A4A" }}>
             Nếu chọn đúng ngành, bạn có thể...
           </h2>
 
@@ -477,7 +477,7 @@ function DashboardContent() {
           <p className="text-xs font-bold uppercase tracking-widest mb-2 text-center" style={{ color: "#E8A838" }}>
             BẰNG CHỨNG
           </p>
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-8" style={{ color: "#1B2A4A" }}>
             Không chỉ bạn — hàng ngàn học sinh đã hành động
           </h2>
 
@@ -523,7 +523,7 @@ function DashboardContent() {
           <p className="text-xs font-bold uppercase tracking-widest mb-2 text-center" style={{ color: "#E8A838" }}>
             BÁO CÁO ĐẦY ĐỦ BAO GỒM
           </p>
-          <h2 className="text-xl sm:text-2xl font-black text-gray-900 text-center mb-8">
+          <h2 className="text-xl sm:text-2xl font-black text-center mb-8" style={{ color: "#1B2A4A" }}>
             Toàn bộ bản đồ sự nghiệp — cá nhân hóa cho bạn
           </h2>
 
