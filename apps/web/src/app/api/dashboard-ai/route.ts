@@ -44,7 +44,6 @@ function initFirebase() {
 }
 
 async function callClaudeJson(anthropic: Anthropic, promptText: string): Promise<any> {
-  // ── Model list — KHÔNG đổi tên model ──────────────────────────────────────
   const modelsToTry = [
     "claude-sonnet-5",
     "claude-sonnet-4-6",
@@ -69,7 +68,6 @@ async function callClaudeJson(anthropic: Anthropic, promptText: string): Promise
         textResult = String(message.content);
       }
 
-      // Strip markdown fences
       textResult = textResult
         .replace(/^[\s\S]*?```(?:json)?\s*/i, '')
         .replace(/\s*```[\s\S]*$/i, '')
@@ -114,6 +112,89 @@ async function callClaudeJson(anthropic: Anthropic, promptText: string): Promise
   throw new Error(`All models failed. Last: ${lastError}`);
 }
 
+// ── Tính avoid_careers deterministic từ RIASEC pool ─────────────────────────
+// Logic: tìm nghề có primary RIASEC code KHÔNG khớp với top3 của người dùng
+// → nghề thuộc nhóm/môi trường ngược với xu hướng năng lực & tính cách
+function computeAvoidCareers(hollandStr: string): { title: string; reason: string }[] {
+  // Trích top 3 chữ RIASEC từ chuỗi (vd: "SAE", "S/A/E", "ESC")
+  const top3Letters = hollandStr.replace(/[^RIASCE]/g, '').split('').slice(0, 3);
+  if (top3Letters.length < 2) return []; // thiếu dữ liệu
+
+  const ALL_C: { name: string; riasec: string; industry: string }[] = [
+    // Nhóm R (kỹ thuật – máy móc)
+    { name: 'Lập trình viên hệ thống / Nhúng (C/C++)', riasec: 'RIC', industry: 'Kỹ thuật – Phần mềm nhúng' },
+    { name: 'Kỹ sư cơ khí chế tạo máy', riasec: 'RIC', industry: 'Cơ khí – Kỹ thuật' },
+    { name: 'Kỹ sư điện – điện tử công nghiệp', riasec: 'RIC', industry: 'Điện – Điện tử' },
+    { name: 'Kỹ sư xây dựng dân dụng', riasec: 'RIE', industry: 'Xây dựng – Kiến trúc' },
+    { name: 'Kỹ thuật viên vận hành máy CNC', riasec: 'RCI', industry: 'Sản xuất – Gia công' },
+    // Nhóm I (nghiên cứu – phân tích)
+    { name: 'Nhà khoa học dữ liệu (Data Scientist)', riasec: 'ICA', industry: 'Dữ liệu – Phân tích' },
+    { name: 'Nghiên cứu viên / Giảng viên đại học', riasec: 'IAS', industry: 'Nghiên cứu – Hàn lâm' },
+    { name: 'Kỹ sư DevOps / SRE hệ thống', riasec: 'IRC', industry: 'Hạ tầng Công nghệ' },
+    { name: 'Chuyên viên thống kê / Kinh tế lượng', riasec: 'ICR', industry: 'Thống kê – Kinh tế' },
+    // Nhóm A (nghệ thuật – sáng tạo độc lập)
+    { name: 'Họa sĩ / Illustrator tự do', riasec: 'AEI', industry: 'Nghệ thuật – Thiết kế' },
+    { name: 'Nhạc sĩ / Nghệ sĩ biểu diễn sân khấu', riasec: 'ASE', industry: 'Nghệ thuật – Âm nhạc' },
+    { name: 'Nhà văn / Biên kịch sáng tác', riasec: 'AIE', industry: 'Sáng tác – Xuất bản' },
+    // Nhóm S (chăm sóc – hỗ trợ con người)
+    { name: 'Giáo viên mầm non / tiểu học', riasec: 'SAC', industry: 'Giáo dục' },
+    { name: 'Công tác xã hội viên / Tư vấn cộng đồng', riasec: 'SAE', industry: 'Xã hội – Cộng đồng' },
+    { name: 'Điều dưỡng viên / Hộ sinh', riasec: 'SRC', industry: 'Y tế – Sức khỏe' },
+    // Nhóm E (lãnh đạo – kinh doanh – thuyết phục)
+    { name: 'Chuyên viên kinh doanh bất động sản', riasec: 'ESC', industry: 'Bất động sản' },
+    { name: 'Đại lý bảo hiểm / Tư vấn tài chính cá nhân', riasec: 'ESC', industry: 'Tài chính – Bảo hiểm' },
+    { name: 'Luật sư doanh nghiệp / Tư vấn pháp lý', riasec: 'ECA', industry: 'Pháp lý – Luật' },
+    // Nhóm C (quy trình – hành chính – số liệu)
+    { name: 'Kế toán viên / Kế toán tổng hợp', riasec: 'CSI', industry: 'Kế toán – Tài chính' },
+    { name: 'Kiểm toán viên', riasec: 'CIE', industry: 'Kiểm toán – Tài chính' },
+    { name: 'Nhân viên hành chính – văn thư lưu trữ', riasec: 'CSE', industry: 'Hành chính – Văn phòng' },
+    { name: 'Chuyên viên tuân thủ pháp lý (Compliance)', riasec: 'CEI', industry: 'Tuân thủ – Pháp lý' },
+  ];
+
+  const RIASEC_ENV: Record<string, string> = {
+    R: 'môi trường kỹ thuật – làm việc trực tiếp với máy móc và công cụ vật lý',
+    I: 'nghiên cứu độc lập – phân tích dữ liệu và giải quyết vấn đề trừu tượng',
+    A: 'biểu đạt nghệ thuật tự do và thẩm mỹ cá nhân',
+    S: 'giao tiếp – chăm sóc và hỗ trợ con người trực tiếp',
+    E: 'lãnh đạo – kinh doanh và thuyết phục người khác',
+    C: 'quy trình chặt chẽ – xử lý số liệu và chi tiết hành chính',
+  };
+
+  // Xác định bottom letters = các nhóm KHÔNG có trong top3
+  const allLetters = ['R', 'I', 'A', 'S', 'E', 'C'];
+  const bottom = allLetters.filter(l => !top3Letters.includes(l));
+
+  // Lọc nghề có primary code thuộc bottom (không phù hợp vòng 1 RIASEC)
+  const candidates = ALL_C.filter(c => bottom.includes(c.riasec[0]));
+
+  // Ưu tiên nghề có TẤT CẢ RIASEC codes đều không khớp top3 (hoàn toàn ngược)
+  const fullyOpposite = candidates.filter(c =>
+    c.riasec.split('').every(l => !top3Letters.includes(l))
+  );
+  const partial = candidates.filter(c => !fullyOpposite.includes(c));
+
+  // Chọn 3 nghề từ 3 ngành KHÁC NHAU
+  const picked: typeof candidates = [];
+  const usedIndustries = new Set<string>();
+  for (const career of [...fullyOpposite, ...partial]) {
+    if (picked.length >= 3) break;
+    if (!usedIndustries.has(career.industry)) {
+      picked.push(career);
+      usedIndustries.add(career.industry);
+    }
+  }
+
+  // Tạo lý do từ RIASEC mismatch
+  const personEnvs = top3Letters.slice(0, 2)
+    .map(l => RIASEC_ENV[l] ?? l)
+    .join(' và ');
+
+  return picked.map(career => ({
+    title: career.name,
+    reason: `Nghề này đòi hỏi ${RIASEC_ENV[career.riasec[0]] ?? 'năng lực khác biệt'}, trong khi bạn phát triển tốt nhất ở ${personEnvs} — sự mâu thuẫn môi trường này dễ dẫn đến kiệt sức và mất động lực lâu dài.`,
+  }));
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -125,6 +206,9 @@ export async function POST(req: Request) {
 
     const hollandStr = Array.isArray(holland) ? holland.join('/') : String(holland);
 
+    // ── Tính avoid_careers ngay từ đầu (deterministic, không cần AI) ─────────
+    const avoidCareers = computeAvoidCareers(hollandStr);
+
     // ── Check Firestore cache ────────────────────────────────────────────────
     initFirebase();
     if (assessmentId && getApps().length) {
@@ -135,59 +219,22 @@ export async function POST(req: Request) {
           const cached = snap.data()?.dashboardAiCache;
           if (cached) {
             const parsed = JSON.parse(cached);
-            const hasAvoidCareers =
-              Array.isArray(parsed?.careers?.avoid_careers) &&
-              parsed.careers.avoid_careers.length > 0;
+            const hasTopCareers =
+              Array.isArray(parsed?.careers?.top_careers) &&
+              parsed.careers.top_careers.length > 0;
 
-            if (hasAvoidCareers) {
-              // Cache đầy đủ — trả về luôn
-              console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
-              return NextResponse.json({ ...parsed, cached: true });
-            }
-
-            // Cache cũ thiếu avoid_careers → chỉ tái tạo phần careers (partial regen)
-            console.warn(`⚠️ Cache thiếu avoid_careers cho ${assessmentId} — partial regen careers...`);
-            if (process.env.ANTHROPIC_API_KEY) {
-              const anthropicPartial = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-              const promptCPartial = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Dựa trên tổ hợp tính cách ${mbti} kết hợp với nhóm nghề nghiệp Holland ${hollandStr} và số chủ đạo ${lifePath || 'không xác định'}, hãy gợi ý nghề nghiệp phù hợp.\n\nYÊU CẦU: Đưa ra chính xác 5 nghề phù hợp và 3 nghề nên tránh, mỗi nghề có tên tiếng Việt + % phù hợp (70-96%) + lý do ngắn gọn.\n\nTrả lời ĐÚNG định dạng JSON:\n{\n  "top_careers": [\n    {"rank": 1, "title": "...", "match": 96, "reason": "..."},\n    {"rank": 2, "title": "...", "match": 94, "reason": "..."},\n    {"rank": 3, "title": "...", "match": 88, "reason": "..."},\n    {"rank": 4, "title": "...", "match": 85, "reason": "..."},\n    {"rank": 5, "title": "...", "match": 82, "reason": "..."}\n  ],\n  "avoid_careers": [\n    {"title": "...", "reason": "..."},\n    {"title": "...", "reason": "..."},\n    {"title": "...", "reason": "..."}\n  ]\n}`;
-              let newCareersData = FALLBACK_DATA.careers;
-              try {
-                const careersResult = await callClaudeJson(anthropicPartial, promptCPartial);
-                newCareersData = careersResult;
-              } catch (e) {
-                console.warn('Partial regen AI failed, using fallback careers:', e);
-              }
-              const mergedCareers = {
-                ...newCareersData,
-                top_careers: (newCareersData.top_careers || []).map((c: any) => ({
-                  ...c,
-                  locked: c.rank <= 2,
-                })),
-              };
-              const mergedResult = {
+            if (hasTopCareers) {
+              // Cache đầy đủ — patch avoid_careers với phiên bản deterministic mới
+              const patchedResult = {
                 ...parsed,
-                careers: mergedCareers,
+                careers: {
+                  ...parsed.careers,
+                  avoid_careers: avoidCareers.length >= 3 ? avoidCareers : (parsed.careers.avoid_careers || FALLBACK_DATA.careers.avoid_careers),
+                },
               };
-              // Update Firestore với data đầy đủ
-              try {
-                await db.collection('assessments').doc(assessmentId).update({
-                  dashboardAiCache: JSON.stringify(mergedResult),
-                });
-                console.warn(`💾 Partial regen saved for assessment ${assessmentId}`);
-              } catch (e) {
-                console.warn('Partial regen cache save failed:', e);
-              }
-              return NextResponse.json({ ...mergedResult, cached: false });
+              console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
+              return NextResponse.json({ ...patchedResult, cached: true });
             }
-            // Không có API key → trả cache cũ kèm fallback avoid_careers
-            const patchedResult = {
-              ...parsed,
-              careers: {
-                ...parsed.careers,
-                avoid_careers: FALLBACK_DATA.careers.avoid_careers,
-              },
-            };
-            return NextResponse.json({ ...patchedResult, cached: true });
           }
         }
       } catch (e) {
@@ -198,7 +245,14 @@ export async function POST(req: Request) {
     // ── Return fallback if no API key ────────────────────────────────────────
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn('No ANTHROPIC_API_KEY — returning fallback data');
-      return NextResponse.json(FALLBACK_DATA);
+      const fallbackWithDeterministic = {
+        ...FALLBACK_DATA,
+        careers: {
+          ...FALLBACK_DATA.careers,
+          avoid_careers: avoidCareers.length >= 3 ? avoidCareers : FALLBACK_DATA.careers.avoid_careers,
+        },
+      };
+      return NextResponse.json(fallbackWithDeterministic);
     }
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -229,12 +283,11 @@ YÊU CẦU BẮT BUỘC:
 Trả lời ĐÚNG định dạng JSON:
 {"risk_percent": 73, "risk_description": "..."}`;
 
-    // ── Prompt C: Top 5 Careers (Section 3) ─────────────────────────────────
+    // ── Prompt C: Top 5 Careers only — avoid_careers đã có từ deterministic ──
     const promptC = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Dựa trên tổ hợp tính cách ${mbti} kết hợp với nhóm nghề nghiệp Holland ${hollandStr} và số chủ đạo ${lifePath || 'không xác định'}, hãy gợi ý nghề nghiệp phù hợp.
 
 YÊU CẦU BẮT BUỘC:
 - Đưa ra chính xác 5 nghề phù hợp nhất, xếp theo % phù hợp giảm dần
-- Đưa ra chính xác 3 nghề nên tránh
 - Mỗi nghề có: tên tiếng Việt, % phù hợp (70-96%), lý do ngắn gọn (1 câu, dưới 20 từ)
 - Nghề thực tế trên thị trường lao động Việt Nam
 - KHÔNG dùng thuật ngữ MBTI, Holland trong lý do
@@ -248,11 +301,6 @@ Trả lời ĐÚNG định dạng JSON:
     {"rank": 3, "title": "...", "match": 88, "reason": "..."},
     {"rank": 4, "title": "...", "match": 85, "reason": "..."},
     {"rank": 5, "title": "...", "match": 82, "reason": "..."}
-  ],
-  "avoid_careers": [
-    {"title": "...", "reason": "..."},
-    {"title": "...", "reason": "..."},
-    {"title": "...", "reason": "..."}
   ]
 }`;
 
@@ -265,15 +313,15 @@ Trả lời ĐÚNG định dạng JSON:
 
     const insights = insightsRaw.status === 'fulfilled' ? insightsRaw.value : FALLBACK_DATA.insights;
     const risk = riskRaw.status === 'fulfilled' ? riskRaw.value : FALLBACK_DATA.risk;
-    const careersData = careersRaw.status === 'fulfilled' ? careersRaw.value : FALLBACK_DATA.careers;
+    const careersData = careersRaw.status === 'fulfilled' ? careersRaw.value : {};
 
-    // Add locked flags to top_careers
+    // Add locked flags + merge deterministic avoid_careers
     const careers = {
-      ...careersData,
-      top_careers: (careersData.top_careers || []).map((c: any) => ({
+      top_careers: ((careersData as any).top_careers || FALLBACK_DATA.careers.top_careers).map((c: any) => ({
         ...c,
         locked: c.rank <= 2,
       })),
+      avoid_careers: avoidCareers.length >= 3 ? avoidCareers : FALLBACK_DATA.careers.avoid_careers,
     };
 
     const result = { insights, risk, careers };

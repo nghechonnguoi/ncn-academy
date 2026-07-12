@@ -73,8 +73,14 @@ export async function POST(req: Request) {
         if (orderSnap.exists) {
           const orderData = orderSnap.data();
           if (orderData?.aiTextsCache) {
-            cachedAiTexts = JSON.parse(orderData.aiTextsCache);
-            console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
+            const parsed = JSON.parse(orderData.aiTextsCache);
+            // Chỉ dùng cache nếu có CAREER fields thực sự (tránh cache cũ không đủ)
+            if (parsed?.CAREER_1_KIENTHUC && parsed?.CAREER_1_SCIENCE) {
+              cachedAiTexts = parsed;
+              console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode}`);
+            } else {
+              console.warn(`⚠️ Cache đơn ${data.orderCode} thiếu CAREER fields — regenerate`);
+            }
           }
         }
       } catch (e) {
@@ -140,7 +146,15 @@ ${userInfo}
   "AI_PAGE4_RECOVERY": "Lời khuyên để vượt qua áp lực (dài ~60 chữ).",
   "AI_PAGE5_P1": "Lời khen ngợi về năng lực thiên bẩm, tập trung đào sâu vào ý nghĩa của chỉ số Tài năng (ngày sinh) của ứng viên nhưng TUYỆT ĐỐI KHÔNG nhắc đến tên chỉ số hay ngày sinh (dài ~150 chữ).",
   "AI_PAGE5_P2": "Di sản và giá trị dài hạn ứng viên có thể tạo ra cho xã hội, tập trung đào sâu ý nghĩa của Số chủ đạo (tiềm năng bẩm sinh) và Số sứ mệnh nhưng TUYỆT ĐỐI KHÔNG nhắc đến tên chỉ số, viết thật sâu sắc chạm cảm xúc để khơi gợi lý tưởng sống (dài ~120 chữ).",
-  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~120 chữ).",
+  "AI_CLOSING_MESSAGE": "Lời kết truyền cảm hứng mạnh mẽ cuối báo cáo (dài ~120 chữ)."
+}`;
+
+    // prompt1b: Chi tiết các nghề 1-3 (tách ra để tránh truncate)
+    const prompt1b = `${instruction}
+Thông tin ứng viên:
+${userInfo}
+
+{
   "CAREER_1_KIENTHUC": "3-5 mục kiến thức nền tảng cần có cho nghề 1. Mỗi mục viết ngắn 3-5 từ. Trả về dưới dạng HTML: <li>...</li>.",
   "CAREER_1_KYNANG": "5-6 kỹ năng cần rèn cho nghề 1. Mỗi kỹ năng 2-4 từ. Trả về dạng HTML: <li>...</li>.",
   "CAREER_1_LOTRINH": "3-4 buớc lộ trình học ngắn gọn (nghề ngắn hạn/cao đẳng/đại học). Trả về dạng HTML: <li>...</li>.",
@@ -166,6 +180,7 @@ ${userInfo}
   "CAREER_3_TREND": "Xu hướng phát triển tương lai của nghề 3 (~80 chữ, không dùng dấu gạch nắng).",
   "CAREER_3_SKILLS": "Kỹ năng cốt lõi cần phát triển cho nghề 3 (~80 chữ, không dùng dấu gạch nắng)."
 }`;
+
 
     const prompt2 = `${instruction}
 Thông tin ứng viên:
@@ -310,21 +325,27 @@ ${userInfo}
         }
       }
 
-      // Dùng Promise.allSettled để 2 prompt chạy độc lập — tránh cascade lỗi
-      const [settled1, settled2] = await Promise.allSettled([
+      // Chạy 3 prompt song song (prompt1=personality, prompt1b=career 1-3, prompt2=career 4-5+rest)
+      const [settled1, settled1b, settled2] = await Promise.allSettled([
         fetchClaudeJson(prompt1),
+        fetchClaudeJson(prompt1b),
         fetchClaudeJson(prompt2)
       ]);
       if (settled1.status === 'fulfilled') {
         aiTexts = { ...aiTexts, ...settled1.value };
       } else {
-        console.error("⚠️ Prompt1 AI thất bại:", settled1.reason);
+        console.error("⚠️ Prompt1 (personality) AI thất bại:", settled1.reason);
         aiTexts.DEBUG_ERROR = String(settled1.reason?.message || settled1.reason);
+      }
+      if (settled1b.status === 'fulfilled') {
+        aiTexts = { ...aiTexts, ...settled1b.value };
+      } else {
+        console.error("⚠️ Prompt1b (career 1-3) AI thất bại:", settled1b.reason);
       }
       if (settled2.status === 'fulfilled') {
         aiTexts = { ...aiTexts, ...settled2.value };
       } else {
-        console.error("⚠️ Prompt2 AI thất bại:", settled2.reason);
+        console.error("⚠️ Prompt2 (career 4-5+rest) AI thất bại:", settled2.reason);
         if (!aiTexts.DEBUG_ERROR) aiTexts.DEBUG_ERROR = String(settled2.reason?.message || settled2.reason);
       }
     }
