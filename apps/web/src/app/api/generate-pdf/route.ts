@@ -73,14 +73,8 @@ export async function POST(req: Request) {
         if (orderSnap.exists) {
           const orderData = orderSnap.data();
           if (orderData?.aiTextsCache) {
-            const parsed = JSON.parse(orderData.aiTextsCache);
-            // Cache cũ thiếu RISK_NOW → bỏ qua, sinh lại để PDF đầy đủ
-            if (parsed?.RISK_NOW !== undefined && parsed.RISK_NOW !== '') {
-              cachedAiTexts = parsed;
-              console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
-            } else {
-              console.warn(`⚠️ aiTextsCache cho đơn ${data.orderCode} thiếu RISK_NOW — sinh lại nội dung AI mới.`);
-            }
+            cachedAiTexts = JSON.parse(orderData.aiTextsCache);
+            console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
           }
         }
       } catch (e) {

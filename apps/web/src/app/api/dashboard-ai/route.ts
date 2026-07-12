@@ -135,17 +135,8 @@ export async function POST(req: Request) {
           const cached = snap.data()?.dashboardAiCache;
           if (cached) {
             const parsed = JSON.parse(cached);
-            // Kiểm tra cache có đầy đủ avoid_careers không
-            // Nếu cache cũ thiếu avoid_careers → bỏ qua, gọi AI lại để sinh đầy đủ
-            const hasAvoidCareers =
-              Array.isArray(parsed?.careers?.avoid_careers) &&
-              parsed.careers.avoid_careers.length > 0;
-            if (hasAvoidCareers) {
-              console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
-              return NextResponse.json({ ...parsed, cached: true });
-            } else {
-              console.warn(`⚠️ dashboard-ai cache for ${assessmentId} missing avoid_careers — regenerating...`);
-            }
+            console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
+            return NextResponse.json({ ...parsed, cached: true });
           }
         }
       } catch (e) {
