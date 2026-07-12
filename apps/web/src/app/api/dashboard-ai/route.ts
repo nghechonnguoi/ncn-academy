@@ -135,8 +135,59 @@ export async function POST(req: Request) {
           const cached = snap.data()?.dashboardAiCache;
           if (cached) {
             const parsed = JSON.parse(cached);
-            console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
-            return NextResponse.json({ ...parsed, cached: true });
+            const hasAvoidCareers =
+              Array.isArray(parsed?.careers?.avoid_careers) &&
+              parsed.careers.avoid_careers.length > 0;
+
+            if (hasAvoidCareers) {
+              // Cache đầy đủ — trả về luôn
+              console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
+              return NextResponse.json({ ...parsed, cached: true });
+            }
+
+            // Cache cũ thiếu avoid_careers → chỉ tái tạo phần careers (partial regen)
+            console.warn(`⚠️ Cache thiếu avoid_careers cho ${assessmentId} — partial regen careers...`);
+            if (process.env.ANTHROPIC_API_KEY) {
+              const anthropicPartial = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+              const promptCPartial = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Dựa trên tổ hợp tính cách ${mbti} kết hợp với nhóm nghề nghiệp Holland ${hollandStr} và số chủ đạo ${lifePath || 'không xác định'}, hãy gợi ý nghề nghiệp phù hợp.\n\nYÊU CẦU: Đưa ra chính xác 5 nghề phù hợp và 3 nghề nên tránh, mỗi nghề có tên tiếng Việt + % phù hợp (70-96%) + lý do ngắn gọn.\n\nTrả lời ĐÚNG định dạng JSON:\n{\n  "top_careers": [\n    {"rank": 1, "title": "...", "match": 96, "reason": "..."},\n    {"rank": 2, "title": "...", "match": 94, "reason": "..."},\n    {"rank": 3, "title": "...", "match": 88, "reason": "..."},\n    {"rank": 4, "title": "...", "match": 85, "reason": "..."},\n    {"rank": 5, "title": "...", "match": 82, "reason": "..."}\n  ],\n  "avoid_careers": [\n    {"title": "...", "reason": "..."},\n    {"title": "...", "reason": "..."},\n    {"title": "...", "reason": "..."}\n  ]\n}`;
+              let newCareersData = FALLBACK_DATA.careers;
+              try {
+                const careersResult = await callClaudeJson(anthropicPartial, promptCPartial);
+                newCareersData = careersResult;
+              } catch (e) {
+                console.warn('Partial regen AI failed, using fallback careers:', e);
+              }
+              const mergedCareers = {
+                ...newCareersData,
+                top_careers: (newCareersData.top_careers || []).map((c: any) => ({
+                  ...c,
+                  locked: c.rank <= 2,
+                })),
+              };
+              const mergedResult = {
+                ...parsed,
+                careers: mergedCareers,
+              };
+              // Update Firestore với data đầy đủ
+              try {
+                await db.collection('assessments').doc(assessmentId).update({
+                  dashboardAiCache: JSON.stringify(mergedResult),
+                });
+                console.warn(`💾 Partial regen saved for assessment ${assessmentId}`);
+              } catch (e) {
+                console.warn('Partial regen cache save failed:', e);
+              }
+              return NextResponse.json({ ...mergedResult, cached: false });
+            }
+            // Không có API key → trả cache cũ kèm fallback avoid_careers
+            const patchedResult = {
+              ...parsed,
+              careers: {
+                ...parsed.careers,
+                avoid_careers: FALLBACK_DATA.careers.avoid_careers,
+              },
+            };
+            return NextResponse.json({ ...patchedResult, cached: true });
           }
         }
       } catch (e) {

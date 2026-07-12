@@ -283,15 +283,22 @@ ${userInfo}
         }
       }
 
-      try {
-        const [res1, res2] = await Promise.all([
-          fetchClaudeJson(prompt1),
-          fetchClaudeJson(prompt2)
-        ]);
-        aiTexts = { ...res1, ...res2 };
-      } catch (e: any) {
-        console.error("Anthropic API Error:", e);
-        aiTexts.DEBUG_ERROR = String(e.message || e);
+      // Dùng Promise.allSettled để 2 prompt chạy độc lập — tránh cascade lỗi
+      const [settled1, settled2] = await Promise.allSettled([
+        fetchClaudeJson(prompt1),
+        fetchClaudeJson(prompt2)
+      ]);
+      if (settled1.status === 'fulfilled') {
+        aiTexts = { ...aiTexts, ...settled1.value };
+      } else {
+        console.error("⚠️ Prompt1 AI thất bại:", settled1.reason);
+        aiTexts.DEBUG_ERROR = String(settled1.reason?.message || settled1.reason);
+      }
+      if (settled2.status === 'fulfilled') {
+        aiTexts = { ...aiTexts, ...settled2.value };
+      } else {
+        console.error("⚠️ Prompt2 AI thất bại:", settled2.reason);
+        if (!aiTexts.DEBUG_ERROR) aiTexts.DEBUG_ERROR = String(settled2.reason?.message || settled2.reason);
       }
     }
 
@@ -300,6 +307,10 @@ ${userInfo}
       console.error("⚠️ AI content generation failed completely:", aiTexts.DEBUG_ERROR);
     }
     const fallback = "Đây là phần đánh giá chuyên sâu dành riêng cho nhóm tính cách của Bạn. Sự nhạy bén và trực giác giúp Bạn thấu hiểu thế giới theo một cách rất riêng.";
+    const fallbackRisk = "Hành động quan trọng nhất ngay bây giờ là nghiên cứu kỹ lưỡng về những nghề nghiệp phù hợp và lên kế hoạch học tập cụ thể, rõ ràng. Đừng để sự chần chừ lấy mất cơ hội của bạn.";
+    const fallbackWeakness = "Điểm cần cải thiện";
+    const fallbackEnv = "Môi trường làm việc lý tưởng là nơi phát huy tối đa năng lực và đam mê của bạn, nơi bạn được tự do sáng tạo và phát triển.";
+    const fallbackFit = "Phù hợp";
     if (data.orderCode && getApps().length && !cachedAiTexts && !aiGenerationFailed) {
       try {
         const dbSave = getFirestore();
@@ -365,38 +376,38 @@ ${userInfo}
       CAREER_5_SCIENCE: aiTexts.CAREER_5_SCIENCE || '',
       CAREER_5_TREND:   aiTexts.CAREER_5_TREND   || '',
       CAREER_5_SKILLS:  aiTexts.CAREER_5_SKILLS  || '',
-      WEAKNESS_1_TITLE: aiTexts.WEAKNESS_1_TITLE || "",
-      WEAKNESS_1_DESC: aiTexts.WEAKNESS_1_DESC || "",
-      WEAKNESS_2_TITLE: aiTexts.WEAKNESS_2_TITLE || "",
-      WEAKNESS_2_DESC: aiTexts.WEAKNESS_2_DESC || "",
-      WEAKNESS_3_TITLE: aiTexts.WEAKNESS_3_TITLE || "",
-      WEAKNESS_3_DESC: aiTexts.WEAKNESS_3_DESC || "",
-      RISK_NOW: aiTexts.RISK_NOW || "",
-      RISK_SHORT_TERM: aiTexts.RISK_SHORT_TERM || "",
-      RISK_LONG_TERM: aiTexts.RISK_LONG_TERM || "",
-      IDEAL_ENVIRONMENT: aiTexts.IDEAL_ENVIRONMENT || "",
-      TOXIC_ENVIRONMENT: aiTexts.TOXIC_ENVIRONMENT || "",
-      MNC_FIT: aiTexts.MNC_FIT || "",
-      MNC_DESC: aiTexts.MNC_DESC || "",
-      SOLO_FIT: aiTexts.SOLO_FIT || "",
-      SOLO_DESC: aiTexts.SOLO_DESC || "",
-      STARTUP_FIT: aiTexts.STARTUP_FIT || "",
-      STARTUP_DESC: aiTexts.STARTUP_DESC || "",
-      PUBLIC_FIT: aiTexts.PUBLIC_FIT || "",
-      PUBLIC_DESC: aiTexts.PUBLIC_DESC || "",
-      PILLAR_1_TITLE: aiTexts.PILLAR_1_TITLE || "",
-      PILLAR_1_DESC: aiTexts.PILLAR_1_DESC || "",
-      PILLAR_2_TITLE: aiTexts.PILLAR_2_TITLE || "",
-      PILLAR_2_DESC: aiTexts.PILLAR_2_DESC || "",
-      PILLAR_3_TITLE: aiTexts.PILLAR_3_TITLE || "",
-      PILLAR_3_DESC: aiTexts.PILLAR_3_DESC || "",
+      WEAKNESS_1_TITLE: aiTexts.WEAKNESS_1_TITLE || fallbackWeakness,
+      WEAKNESS_1_DESC:  aiTexts.WEAKNESS_1_DESC  || fallback,
+      WEAKNESS_2_TITLE: aiTexts.WEAKNESS_2_TITLE || fallbackWeakness,
+      WEAKNESS_2_DESC:  aiTexts.WEAKNESS_2_DESC  || fallback,
+      WEAKNESS_3_TITLE: aiTexts.WEAKNESS_3_TITLE || fallbackWeakness,
+      WEAKNESS_3_DESC:  aiTexts.WEAKNESS_3_DESC  || fallback,
+      RISK_NOW:         aiTexts.RISK_NOW         || fallbackRisk,
+      RISK_SHORT_TERM:  aiTexts.RISK_SHORT_TERM  || fallbackRisk,
+      RISK_LONG_TERM:   aiTexts.RISK_LONG_TERM   || fallbackRisk,
+      IDEAL_ENVIRONMENT:  aiTexts.IDEAL_ENVIRONMENT  || fallbackEnv,
+      TOXIC_ENVIRONMENT:  aiTexts.TOXIC_ENVIRONMENT  || fallbackEnv,
+      MNC_FIT:     aiTexts.MNC_FIT     || fallbackFit,
+      MNC_DESC:    aiTexts.MNC_DESC    || fallback,
+      SOLO_FIT:    aiTexts.SOLO_FIT    || fallbackFit,
+      SOLO_DESC:   aiTexts.SOLO_DESC   || fallback,
+      STARTUP_FIT: aiTexts.STARTUP_FIT || fallbackFit,
+      STARTUP_DESC:aiTexts.STARTUP_DESC|| fallback,
+      PUBLIC_FIT:  aiTexts.PUBLIC_FIT  || fallbackFit,
+      PUBLIC_DESC: aiTexts.PUBLIC_DESC || fallback,
+      PILLAR_1_TITLE: aiTexts.PILLAR_1_TITLE || "Kỹ năng Chuyên môn",
+      PILLAR_1_DESC:  aiTexts.PILLAR_1_DESC  || fallback,
+      PILLAR_2_TITLE: aiTexts.PILLAR_2_TITLE || "Kỹ năng Mềm",
+      PILLAR_2_DESC:  aiTexts.PILLAR_2_DESC  || fallback,
+      PILLAR_3_TITLE: aiTexts.PILLAR_3_TITLE || "Kỹ năng Tư duy",
+      PILLAR_3_DESC:  aiTexts.PILLAR_3_DESC  || fallback,
       // ── 3 nghề nên tránh (từ dashboard-ai cache, truyền vào qua payload) ──
-      AVOID_1_TITLE:  data.AVOID_1_TITLE  || "",
-      AVOID_1_REASON: data.AVOID_1_REASON || "",
-      AVOID_2_TITLE:  data.AVOID_2_TITLE  || "",
-      AVOID_2_REASON: data.AVOID_2_REASON || "",
-      AVOID_3_TITLE:  data.AVOID_3_TITLE  || "",
-      AVOID_3_REASON: data.AVOID_3_REASON || "",
+      AVOID_1_TITLE:  data.AVOID_1_TITLE  || "Nghề không phù hợp",
+      AVOID_1_REASON: data.AVOID_1_REASON || fallback,
+      AVOID_2_TITLE:  data.AVOID_2_TITLE  || "Nghề không phù hợp",
+      AVOID_2_REASON: data.AVOID_2_REASON || fallback,
+      AVOID_3_TITLE:  data.AVOID_3_TITLE  || "Nghề không phù hợp",
+      AVOID_3_REASON: data.AVOID_3_REASON || fallback,
     };
 
     const templatePath = path.join(process.cwd(), 'public', 'bao-cao-pdf-template.html');
