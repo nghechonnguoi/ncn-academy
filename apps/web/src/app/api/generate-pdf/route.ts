@@ -73,8 +73,14 @@ export async function POST(req: Request) {
         if (orderSnap.exists) {
           const orderData = orderSnap.data();
           if (orderData?.aiTextsCache) {
-            cachedAiTexts = JSON.parse(orderData.aiTextsCache);
-            console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
+            const parsed = JSON.parse(orderData.aiTextsCache);
+            // Cache cũ thiếu RISK_NOW → bỏ qua, sinh lại để PDF đầy đủ
+            if (parsed?.RISK_NOW !== undefined && parsed.RISK_NOW !== '') {
+              cachedAiTexts = parsed;
+              console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode} — kết quả sẽ giống hệt lần trước.`);
+            } else {
+              console.warn(`⚠️ aiTextsCache cho đơn ${data.orderCode} thiếu RISK_NOW — sinh lại nội dung AI mới.`);
+            }
           }
         }
       } catch (e) {
@@ -167,6 +173,7 @@ ${userInfo}
   "WEAKNESS_2_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 2 (dài ~80 chữ).",
   "WEAKNESS_3_TITLE": "Tên điểm mù / rào cản tâm lý số 3 (ngắn gọn).",
   "WEAKNESS_3_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 3 (dài ~80 chữ).",
+  "RISK_NOW": "Chiến lược quản trị rủi ro ngay hiện tại (0 tháng): hành động cụ thể nhất cần làm ngay hôm nay để không đi sai hướng (dài ~70 chữ).",
   "RISK_SHORT_TERM": "Chiến lược quản trị rủi ro cốt lõi trong ngắn hạn 0-6 tháng (dài ~70 chữ).",
   "RISK_LONG_TERM": "Chiến lược quản trị rủi ro cốt lõi trong dài hạn 6-24 tháng (dài ~70 chữ).",
   "IDEAL_ENVIRONMENT": "Mô tả môi trường làm việc lý tưởng giúp giải phóng năng lực (dài ~80 chữ).",
@@ -370,6 +377,7 @@ ${userInfo}
       WEAKNESS_2_DESC: aiTexts.WEAKNESS_2_DESC || "",
       WEAKNESS_3_TITLE: aiTexts.WEAKNESS_3_TITLE || "",
       WEAKNESS_3_DESC: aiTexts.WEAKNESS_3_DESC || "",
+      RISK_NOW: aiTexts.RISK_NOW || "",
       RISK_SHORT_TERM: aiTexts.RISK_SHORT_TERM || "",
       RISK_LONG_TERM: aiTexts.RISK_LONG_TERM || "",
       IDEAL_ENVIRONMENT: aiTexts.IDEAL_ENVIRONMENT || "",
