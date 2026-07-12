@@ -325,6 +325,41 @@ ${userInfo}
     const fullData = {
 
       ...data,
+
+      // ── Key alias fixes: payload dùng tên khác với template ──────────────
+      NGAY_SINH:     data.NGAY_SINH     || data.NGAYSINH   || "—",
+      DIEN_THOAI:    data.DIEN_THOAI    || data.PHONE       || "—",
+      NGAY_XUAT_BAN: data.NGAY_XUAT_BAN || data.NGAYTAO     || new Date().toLocaleDateString('vi-VN'),
+      MA_SO_HO_SO:   data.MA_SO_HO_SO   || (data.orderCode ? `NCN-${data.orderCode}` : `NCN-${Date.now()}`),
+      EMAIL:         data.EMAIL         || "—",
+      // ── TOP 1-5: map PCT → ICI, NICHE → REF, INDUSTRY → FIELD ───────────
+      TOP1_ICI:         data.TOP1_ICI         || data.TOP1_PCT      || "—",
+      TOP1_ICI_DETAIL:  data.TOP1_ICI_DETAIL  || (data.TOP1_PCT ? `${data.TOP1_PCT}% tương thích` : "—"),
+      TOP1_REF:         data.TOP1_REF         || data.TOP1_NICHE    || "—",
+      TOP1_FIELD:       data.TOP1_FIELD       || data.TOP1_INDUSTRY || "—",
+      TOP1_SUBJECTS:    data.TOP1_SUBJECTS    || "Theo hướng đào tạo phù hợp",
+      TOP2_ICI:         data.TOP2_ICI         || data.TOP2_PCT      || "—",
+      TOP2_ICI_DETAIL:  data.TOP2_ICI_DETAIL  || (data.TOP2_PCT ? `${data.TOP2_PCT}% tương thích` : "—"),
+      TOP2_REF:         data.TOP2_REF         || data.TOP2_NICHE    || "—",
+      TOP2_FIELD:       data.TOP2_FIELD       || data.TOP2_INDUSTRY || "—",
+      TOP2_SUBJECTS:    data.TOP2_SUBJECTS    || "Theo hướng đào tạo phù hợp",
+      TOP3_ICI:         data.TOP3_ICI         || data.TOP3_PCT      || "—",
+      TOP3_ICI_DETAIL:  data.TOP3_ICI_DETAIL  || (data.TOP3_PCT ? `${data.TOP3_PCT}% tương thích` : "—"),
+      TOP3_REF:         data.TOP3_REF         || data.TOP3_NICHE    || "—",
+      TOP3_FIELD:       data.TOP3_FIELD       || data.TOP3_INDUSTRY || "—",
+      TOP3_SUBJECTS:    data.TOP3_SUBJECTS    || "Theo hướng đào tạo phù hợp",
+      TOP4_ICI:         data.TOP4_ICI         || data.TOP4_PCT      || "—",
+      TOP4_ICI_DETAIL:  data.TOP4_ICI_DETAIL  || (data.TOP4_PCT ? `${data.TOP4_PCT}% tương thích` : "—"),
+      TOP4_REF:         data.TOP4_REF         || data.TOP4_NICHE    || "—",
+      TOP4_FIELD:       data.TOP4_FIELD       || data.TOP4_INDUSTRY || "—",
+      TOP4_SUBJECTS:    data.TOP4_SUBJECTS    || "Theo hướng đào tạo phù hợp",
+      TOP5_ICI:         data.TOP5_ICI         || data.TOP5_PCT      || "—",
+      TOP5_ICI_DETAIL:  data.TOP5_ICI_DETAIL  || (data.TOP5_PCT ? `${data.TOP5_PCT}% tương thích` : "—"),
+      TOP5_REF:         data.TOP5_REF         || data.TOP5_NICHE    || "—",
+      TOP5_FIELD:       data.TOP5_FIELD       || data.TOP5_INDUSTRY || "—",
+      TOP5_SUBJECTS:    data.TOP5_SUBJECTS    || "Theo hướng đào tạo phù hợp",
+      // ─────────────────────────────────────────────────────────────────────
+
       AI_PAGE3_P1: aiTexts.AI_PAGE3_P1 || fallback,
       AI_PAGE3_P2: aiTexts.AI_PAGE3_P2 || fallback,
       AI_PAGE3_P3: aiTexts.AI_PAGE3_P3 || fallback,
