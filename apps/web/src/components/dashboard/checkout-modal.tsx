@@ -37,15 +37,25 @@ export function CheckoutModal({
   const [coupon, setCoupon]             = useState("");
   const [couponMsg, setCouponMsg]       = useState("");
   const [couponOk, setCouponOk]         = useState(false);
+  const [couponCode, setCouponCode]     = useState(""); // mã đã validate thành công
   const [finalAmount, setFinalAmount]   = useState(PRICE);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder]   = useState(false);
   const [qrUrl, setQrUrl]               = useState("");
   const [qrDesc, setQrDesc]             = useState("");
-  const [orderCode, setOrderCode]       = useState<number>(0);
   const [pdfUrl, setPdfUrl]             = useState("");
   const [errorMsg, setErrorMsg]         = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // orderCode được tạo 1 lần duy nhất khi modal mở, dùng chung cho mọi bước
+  const orderCodeRef = useRef<number>(0);
+
+  // Tạo orderCode từ assessment id (stable)
+  function buildOrderCode() {
+    const rawId = assessment?.id ?? "";
+    const nums = rawId.replace(/[^0-9]/g, "");
+    if (nums) return parseInt(nums.slice(-8));
+    return Math.floor(Math.random() * 900000) + 100000;
+  }
 
   // Reset khi đóng modal
   useEffect(() => {
@@ -53,19 +63,17 @@ export function CheckoutModal({
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = null;
       setPayStep("form");
-      setCoupon(""); setCouponMsg(""); setCouponOk(false);
+      setCoupon(""); setCouponMsg(""); setCouponOk(false); setCouponCode("");
       setFinalAmount(PRICE); setQrUrl(""); setQrDesc("");
-      setErrorMsg(""); setPdfUrl(""); setOrderCode(0);
+      setErrorMsg(""); setPdfUrl("");
+      orderCodeRef.current = 0;
+    } else {
+      // Generate orderCode 1 lần duy nhất khi modal mở
+      if (!orderCodeRef.current) {
+        orderCodeRef.current = buildOrderCode();
+      }
     }
   }, [open]);
-
-  // Tạo orderCode từ assessment id
-  function buildOrderCode() {
-    const rawId = assessment?.id ?? "";
-    const nums = rawId.replace(/[^0-9]/g, "");
-    if (nums) return parseInt(nums.slice(-8));
-    return Math.floor(Math.random() * 900000) + 100000;
-  }
 
   // ── Polling order status ──────────────────────────────────────────────────
   function startPolling(oc: number) {
@@ -95,21 +103,21 @@ export function CheckoutModal({
     }, 3000);
   }
 
-  // ── Áp dụng mã giảm giá ─────────────────────────────────────────────────
+  // ── Áp dụng mã giảm giá (chỉ validate, KHÔNG mark USED) ─────────────────
   async function handleApplyCoupon() {
     const code = coupon.trim().toUpperCase();
     if (!code) { setCouponMsg("Vui lòng nhập mã giảm giá"); return; }
     setIsApplyingCoupon(true); setCouponMsg("");
-    const tempOC = String(buildOrderCode());
     try {
-      const res  = await fetch("/api/apply-coupon", {
+      const res = await fetch("/api/apply-coupon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coupon: code, orderCode: tempOC }),
+        // action: "validate" — chỉ kiểm tra mã, chưa ghi gì vào database
+        body: JSON.stringify({ coupon: code, action: "validate" }),
       });
       const data = await res.json();
       if (data.success) {
-        setCouponOk(true); setFinalAmount(0);
+        setCouponOk(true); setCouponCode(code); setFinalAmount(0);
         setCouponMsg("✅ Mã hợp lệ! Miễn phí 100%");
       } else {
         setCouponMsg(`❌ ${data.message || "Mã không hợp lệ"}`);
@@ -124,11 +132,55 @@ export function CheckoutModal({
   // ── Tạo đơn hàng + hiển thị QR ──────────────────────────────────────────
   async function handleCreateOrder() {
     setIsCreatingOrder(true); setErrorMsg("");
-    const oc = buildOrderCode();
-    setOrderCode(oc);
+    // Dùng orderCode đã được generate 1 lần từ khi mở modal
+    const oc = orderCodeRef.current || buildOrderCode();
+    if (!orderCodeRef.current) orderCodeRef.current = oc;
     const pdfPayload = buildPdfPayload(assessment, userName, userEmail, userPhone, avoidCareers);
 
     try {
+      if (finalAmount === 0) {
+        // Miễn phí — apply coupon (mark USED + update order) rồi tạo PDF
+        setPayStep("processing");
+
+        // 1. Apply coupon: mark USED và cập nhật order status PAID
+        const applyRes = await fetch("/api/apply-coupon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coupon: couponCode, orderCode: String(oc), action: "apply" }),
+        });
+        const applyData = await applyRes.json();
+        if (!applyData.success) {
+          throw new Error(applyData.message || "Lỗi áp dụng mã ưu đãi");
+        }
+
+        // 2. Tạo order record (có thể đã được set bởi apply-coupon, dùng merge)
+        await fetch("/api/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderCode:     oc,
+            orderId:       `NCN-${oc}`,
+            amount:        0,
+            customerName:  userName,
+            customerEmail: userEmail ?? "",
+            customerPhone: userPhone ?? "",
+            payload:       pdfPayload,
+          }),
+        });
+
+        // 3. Tạo PDF
+        const pdfRes = await fetch("/api/generate-pdf", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(pdfPayload),
+        });
+        if (!pdfRes.ok) throw new Error("Lỗi tạo PDF");
+        const blob = await pdfRes.blob();
+        setPdfUrl(URL.createObjectURL(blob));
+        setPayStep("done");
+        return;
+      }
+
       // 1. Tạo order PENDING qua API route (dùng firebase-admin server-side)
       await fetch("/api/create-order", {
         method: "POST",
@@ -144,23 +196,8 @@ export function CheckoutModal({
         }),
       });
 
-      if (finalAmount === 0) {
-        // Miễn phí — gọi generate-pdf
-        setPayStep("processing");
-        const pdfRes = await fetch("/api/generate-pdf", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(pdfPayload),
-        });
-        if (!pdfRes.ok) throw new Error("Lỗi tạo PDF");
-        const blob = await pdfRes.blob();
-        setPdfUrl(URL.createObjectURL(blob));
-        setPayStep("done");
-        return;
-      }
-
       // 2. Gọi PayOS
-      const res  = await fetch("/api/payos/create", {
+      const res = await fetch("/api/payos/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -464,12 +501,15 @@ function buildPdfPayload(
 
   return {
     HOTEN:    name || profile.fullName || "Học sinh NCN",
-    NGAYSINH: profile.birthDate ?? "",
+    NGAYSINH:  profile.birthDate ?? "",
+    NGAY_SINH: profile.birthDate ?? "",
     EMAIL:    email || profile.email || "",
     PHONE:    phone || profile.phone || "",
+    DIEN_THOAI: phone || profile.phone || "",
     TRACK:    track === "university" ? "Đại học / Cao đẳng" : "Học nghề",
     LOTRINHCHON: track === "university" ? "Học Đại Học / Cao Đẳng" : "Học Nghề – Đi Làm Luôn",
     NGAYTAO:  dateStr,
+    NGAY_XUAT_BAN: dateStr,
     R_PCT: String(riasec.R ?? 0), I_PCT: String(riasec.I ?? 0),
     A_PCT: String(riasec.A ?? 0), S_PCT: String(riasec.S ?? 0),
     E_PCT: String(riasec.E ?? 0), C_PCT: String(riasec.C ?? 0),
@@ -481,11 +521,11 @@ function buildPdfPayload(
     MISSION:  String(riasec.numerology?.mission ?? "—"),
     TALENT:   String(riasec.numerology?.talent ?? "—"),
     PASSION:  String(riasec.numerology?.passionNums?.[0] ?? "—"),
-    TOP1_TITLE: top[0]?.name ?? "", TOP1_NICHE: top[0]?.niche ?? "", TOP1_PCT: String(top[0]?.pct ?? ""),
-    TOP2_TITLE: top[1]?.name ?? "", TOP2_NICHE: top[1]?.niche ?? "", TOP2_PCT: String(top[1]?.pct ?? ""),
-    TOP3_TITLE: top[2]?.name ?? "", TOP3_NICHE: top[2]?.niche ?? "", TOP3_PCT: String(top[2]?.pct ?? ""),
-    TOP4_TITLE: top[3]?.name ?? "", TOP4_NICHE: top[3]?.niche ?? "", TOP4_PCT: String(top[3]?.pct ?? ""),
-    TOP5_TITLE: top[4]?.name ?? "", TOP5_NICHE: top[4]?.niche ?? "", TOP5_PCT: String(top[4]?.pct ?? ""),
+    TOP1_TITLE: top[0]?.name ?? "", TOP1_NICHE: top[0]?.niche ?? "", TOP1_PCT: String(top[0]?.pct ?? ""), TOP1_INDUSTRY: top[0]?.industry ?? "",
+    TOP2_TITLE: top[1]?.name ?? "", TOP2_NICHE: top[1]?.niche ?? "", TOP2_PCT: String(top[1]?.pct ?? ""), TOP2_INDUSTRY: top[1]?.industry ?? "",
+    TOP3_TITLE: top[2]?.name ?? "", TOP3_NICHE: top[2]?.niche ?? "", TOP3_PCT: String(top[2]?.pct ?? ""), TOP3_INDUSTRY: top[2]?.industry ?? "",
+    TOP4_TITLE: top[3]?.name ?? "", TOP4_NICHE: top[3]?.niche ?? "", TOP4_PCT: String(top[3]?.pct ?? ""), TOP4_INDUSTRY: top[3]?.industry ?? "",
+    TOP5_TITLE: top[4]?.name ?? "", TOP5_NICHE: top[4]?.niche ?? "", TOP5_PCT: String(top[4]?.pct ?? ""), TOP5_INDUSTRY: top[4]?.industry ?? "",
     MONHOC:      profile.favoriteSubjects   ?? "",
     HOATDONG:    profile.pastActivities     ?? "",
     GIADINHDINH: profile.familyOrientation  ?? "",
