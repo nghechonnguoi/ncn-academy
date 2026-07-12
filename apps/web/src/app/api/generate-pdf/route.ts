@@ -88,32 +88,65 @@ export async function POST(req: Request) {
       }
     }
 
-    // ── Tự fetch avoid_careers từ Firestore nếu không có trong payload ────────
-    // Xảy ra khi aiData chưa load xong trên client khi user nhấn mua
-    if (!data.AVOID_1_TITLE && data.assessmentId && getApps().length) {
-      try {
-        const dbA = getFirestore();
-        const assessSnap = await dbA.collection('assessments').doc(String(data.assessmentId)).get();
-        if (assessSnap.exists) {
-          const cached = assessSnap.data()?.dashboardAiCache;
-          if (cached) {
-            const parsedCache = JSON.parse(cached);
-            const avoidList: any[] = parsedCache?.careers?.avoid_careers ?? [];
-            if (avoidList.length > 0) {
-              data.AVOID_1_TITLE  = avoidList[0]?.title  || "";
-              data.AVOID_1_REASON = avoidList[0]?.reason || "";
-              data.AVOID_2_TITLE  = avoidList[1]?.title  || "";
-              data.AVOID_2_REASON = avoidList[1]?.reason || "";
-              data.AVOID_3_TITLE  = avoidList[2]?.title  || "";
-              data.AVOID_3_REASON = avoidList[2]?.reason || "";
-              console.warn(`✅ Tự fetch avoid_careers từ Firestore cho assessment ${data.assessmentId}`);
-            }
-          }
-        }
-      } catch (e) {
-        console.warn("Không fetch được avoid_careers từ Firestore:", e);
+    // ── Tính avoid_careers deterministic từ RIASEC ──────────────────────────────
+    // Luôn ghi đè AVOID fields bằng thuật toán RIASEC — không dùng cache cũ từ Firestore
+    (() => {
+      const hollandStr = String(data.HOLLAND || '');
+      const top3 = hollandStr.replace(/[^RIASCE]/g, '').substring(0, 3);
+      if (top3.length < 2) return;
+      const ALL_C = [
+        { name: 'Lập trình viên hệ thống / Nhúng (C/C++)', riasec: 'RIC', industry: 'Kỹ thuật – Phần mềm nhúng' },
+        { name: 'Kỹ sư cơ khí chế tạo máy', riasec: 'RIC', industry: 'Cơ khí – Kỹ thuật' },
+        { name: 'Kỹ sư điện – điện tử công nghiệp', riasec: 'RIC', industry: 'Điện – Điện tử' },
+        { name: 'Kỹ sư xây dựng dân dụng', riasec: 'RIE', industry: 'Xây dựng – Kiến trúc' },
+        { name: 'Kỹ thuật viên CNC / sản xuất cơ khí', riasec: 'RCI', industry: 'Sản xuất – Gia công' },
+        { name: 'Nhà khoa học dữ liệu (Data Scientist)', riasec: 'ICA', industry: 'Dữ liệu – Phân tích' },
+        { name: 'Nghiên cứu viên / Giảng viên đại học', riasec: 'IAS', industry: 'Nghiên cứu – Hàn lâm' },
+        { name: 'Kỹ sư DevOps / SRE hệ thống', riasec: 'IRC', industry: 'Hạ tầng Công nghệ' },
+        { name: 'Chuyên viên thống kê / Kinh tế lượng', riasec: 'ICR', industry: 'Thống kê – Kinh tế' },
+        { name: 'Họa sĩ / Illustrator tự do', riasec: 'AEI', industry: 'Nghệ thuật – Thiết kế' },
+        { name: 'Nhạc sĩ / Nghệ sĩ biểu diễn sân khấu', riasec: 'ASE', industry: 'Nghệ thuật – Âm nhạc' },
+        { name: 'Nhà văn / Biên kịch sáng tác', riasec: 'AIE', industry: 'Sáng tác – Xuất bản' },
+        { name: 'Giáo viên mầm non / tiểu học', riasec: 'SAC', industry: 'Giáo dục' },
+        { name: 'Công tác xã hội viên / Tư vấn cộng đồng', riasec: 'SAE', industry: 'Xã hội – Cộng đồng' },
+        { name: 'Điều dưỡng viên / Hộ sinh', riasec: 'SRC', industry: 'Y tế – Sức khỏe' },
+        { name: 'Chuyên viên kinh doanh bất động sản', riasec: 'ESC', industry: 'Bất động sản' },
+        { name: 'Đại lý bảo hiểm / Tư vấn tài chính cá nhân', riasec: 'ESC', industry: 'Tài chính – Bảo hiểm' },
+        { name: 'Luật sư doanh nghiệp / Tư vấn pháp lý', riasec: 'ECA', industry: 'Pháp lý – Luật' },
+        { name: 'Kế toán viên / Kế toán tổng hợp', riasec: 'CSI', industry: 'Kế toán – Tài chính' },
+        { name: 'Kiểm toán viên', riasec: 'CIE', industry: 'Kiểm toán – Tài chính' },
+        { name: 'Nhân viên hành chính – văn thư lưu trữ', riasec: 'CSE', industry: 'Hành chính – Văn phòng' },
+        { name: 'Chuyên viên tuân thủ pháp lý (Compliance)', riasec: 'CEI', industry: 'Tuân thủ – Pháp lý' },
+      ];
+      const RIASEC_ENV: Record<string, string> = {
+        R: 'môi trường kỹ thuật – làm việc trực tiếp với máy móc và công cụ vật lý',
+        I: 'nghiên cứu độc lập – phân tích dữ liệu và giải quyết vấn đề trừu tượng',
+        A: 'biểu đạt nghệ thuật tự do và thẩm mỹ cá nhân',
+        S: 'giao tiếp – chăm sóc và hỗ trợ con người',
+        E: 'lãnh đạo – kinh doanh và thuyết phục',
+        C: 'quy trình chặt chẽ – dữ liệu và chi tiết hành chính',
+      };
+      const top3Letters = top3.split('');
+      const bottom = ['R','I','A','S','E','C'].filter((l: string) => !top3Letters.includes(l));
+      const candidates = ALL_C.filter((c: any) => bottom.includes(c.riasec[0]));
+      const fully = candidates.filter((c: any) => c.riasec.split('').every((l: string) => !top3Letters.includes(l)));
+      const partial = candidates.filter((c: any) => !fully.includes(c));
+      const picked: any[] = [];
+      const usedInd = new Set<string>();
+      for (const career of [...fully, ...partial]) {
+        if (picked.length >= 3) break;
+        if (!usedInd.has(career.industry)) { picked.push(career); usedInd.add(career.industry); }
       }
-    }
+      if (picked.length < 3) return;
+      const personEnvs = top3Letters.slice(0, 2).map((l: string) => RIASEC_ENV[l] ?? l).join(' và ');
+      picked.forEach((career: any, i: number) => {
+        const n = i + 1;
+        data[`AVOID_${n}_TITLE`]  = career.name;
+        data[`AVOID_${n}_REASON`] = `Nghề này yêu cầu ${RIASEC_ENV[career.riasec[0]] ?? 'năng lực khác biệt'}, trong khi bạn phát triển tốt nhất ở ${personEnvs} — sự mâu thuẫn môi trường này dễ dẫn đến kiệt sức và mất động lực lâu dài.`;
+      });
+      console.warn(`✅ avoid_careers deterministic: HOLLAND=${top3} → [${picked.map((c: any) => c.name).join(' | ')}]`);
+    })();
+
     const userInfo = `- Tên: ${data.HOTEN}
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
