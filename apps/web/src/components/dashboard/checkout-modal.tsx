@@ -135,7 +135,7 @@ export function CheckoutModal({
     // Dùng orderCode đã được generate 1 lần từ khi mở modal
     const oc = orderCodeRef.current || buildOrderCode();
     if (!orderCodeRef.current) orderCodeRef.current = oc;
-    const pdfPayload = buildPdfPayload(assessment, userName, userEmail, userPhone, avoidCareers);
+    const pdfPayload = buildPdfPayload(assessment, userName, userEmail, userPhone, avoidCareers, assessment?.id);
 
     try {
       if (finalAmount === 0) {
@@ -479,6 +479,7 @@ function buildPdfPayload(
   email?: string,
   phone?: string,
   avoidCareers: { title: string; reason: string }[] = [],
+  assessmentId?: string,
 ) {
   const riasec = assessment?.riasecResult ?? {};
   const careerResultRaw = assessment?.careerResult;
@@ -510,6 +511,7 @@ function buildPdfPayload(
     LOTRINHCHON: track === "university" ? "Học Đại Học / Cao Đẳng" : "Học Nghề – Đi Làm Luôn",
     NGAYTAO:  dateStr,
     NGAY_XUAT_BAN: dateStr,
+    assessmentId: assessmentId || "",
     R_PCT: String(riasec.R ?? 0), I_PCT: String(riasec.I ?? 0),
     A_PCT: String(riasec.A ?? 0), S_PCT: String(riasec.S ?? 0),
     E_PCT: String(riasec.E ?? 0), C_PCT: String(riasec.C ?? 0),

@@ -81,6 +81,33 @@ export async function POST(req: Request) {
         console.warn("Không đọc được cache nội dung AI:", e);
       }
     }
+
+    // ── Tự fetch avoid_careers từ Firestore nếu không có trong payload ────────
+    // Xảy ra khi aiData chưa load xong trên client khi user nhấn mua
+    if (!data.AVOID_1_TITLE && data.assessmentId && getApps().length) {
+      try {
+        const dbA = getFirestore();
+        const assessSnap = await dbA.collection('assessments').doc(String(data.assessmentId)).get();
+        if (assessSnap.exists) {
+          const cached = assessSnap.data()?.dashboardAiCache;
+          if (cached) {
+            const parsedCache = JSON.parse(cached);
+            const avoidList: any[] = parsedCache?.careers?.avoid_careers ?? [];
+            if (avoidList.length > 0) {
+              data.AVOID_1_TITLE  = avoidList[0]?.title  || "";
+              data.AVOID_1_REASON = avoidList[0]?.reason || "";
+              data.AVOID_2_TITLE  = avoidList[1]?.title  || "";
+              data.AVOID_2_REASON = avoidList[1]?.reason || "";
+              data.AVOID_3_TITLE  = avoidList[2]?.title  || "";
+              data.AVOID_3_REASON = avoidList[2]?.reason || "";
+              console.warn(`✅ Tự fetch avoid_careers từ Firestore cho assessment ${data.assessmentId}`);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Không fetch được avoid_careers từ Firestore:", e);
+      }
+    }
     const userInfo = `- Tên: ${data.HOTEN}
 - Nhóm tính cách MBTI: ${data.MBTI}
 - Mã Holland: ${data.HOLLAND}
