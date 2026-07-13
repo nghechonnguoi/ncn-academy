@@ -432,7 +432,7 @@ export default function LandingPage() {
         .report-item p { font-size: 13px; color: #888; line-height: 1.5; }
 
         @media (max-width: 600px) {
-          .prose { font-size: 16px; line-height: 2; }
+          .prose { font-size: 16px; line-height: 1.7; }
           .hero h1 { font-size: 26px; }
           .cta-row { flex-direction: column; }
           .cta-ghost { margin-left: 0; }
