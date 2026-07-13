@@ -1,21 +1,18 @@
-"use client";
-import React, { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const QUIZ_URL = "https://quiz.nghechonnguoi.com";
 const REPORT_PRICE = "568.000đ";
 
 function FadeIn({ children, className = "" }) {
-  const ref = React.useRef(null);
-  const [visible, setVisible] = React.useState(false);
-  React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el); } },
-      { threshold: 0.1 }
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setVisible(true); },
+      { threshold: 0.15 }
     );
-    obs.observe(el);
-    return () => obs.disconnect();
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
   }, []);
   return (
     <div ref={ref} className={className} style={{
@@ -182,19 +179,19 @@ export default function LandingPage() {
         /* ===== LETTER PROSE ===== */
         .prose {
           font-family: var(--serif);
-          font-size: 17px; line-height: 2.1;
+          font-size: 17px; line-height: 1.75;
           color: #2a2a2a;
         }
-        .prose p { margin-bottom: 22px; }
+        .prose p { margin-bottom: 16px; }
         .prose .em { color: var(--red); font-weight: 700; font-style: italic; }
         .prose .big {
           font-size: 21px; font-weight: 700;
-          color: var(--text); margin: 38px 0 18px; line-height: 1.4;
+          color: var(--text); margin: 28px 0 12px; line-height: 1.35;
         }
         .prose .quiet { color: var(--text-muted); font-size: 15px; }
         .prose-hr {
           width: 50px; height: 3px;
-          background: var(--accent); margin: 42px 0; border: none;
+          background: var(--accent); margin: 28px 0; border: none;
         }
 
         /* ===== FEAR GRID ===== */
@@ -743,7 +740,7 @@ export default function LandingPage() {
                 <h3>✅ Có Định vị Sự nghiệp</h3>
                 {[
                   "Hiểu bản thân, hiểu thế mạnh, hiểu môi trường.",
-                  "Tự tin hơn khi chọn nghề.",
+                  "Tự tin hơn khi chọn ngành.",
                   "Có định hướng rõ ràng, có động lực.",
                   "Giảm rủi ro chọn sai.",
                   "Có lộ trình phát triển sớm hơn bạn bè.",
@@ -834,7 +831,7 @@ export default function LandingPage() {
               </p>
               <p>
                 Sứ mệnh của chúng tôi: <strong style={{ color: "#fff" }}>Giúp mỗi học sinh Việt Nam 
-                hiểu mình trước khi chọn nghề — để không ai phải hối hận vì một quyết định 
+                hiểu mình trước khi chọn ngành — để không ai phải hối hận vì một quyết định 
                 được đưa ra trong mơ hồ.</strong>
               </p>
             </div>
