@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/admin/process-pending-pdfs",
-      "schedule": "*/5 * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }

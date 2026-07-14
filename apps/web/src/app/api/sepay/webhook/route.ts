@@ -136,8 +136,19 @@ export async function POST(req: Request) {
         }
       }
 
-      // Đã chuyển phần gọi API generate-pdf sang cho Frontend (script.js) xử lý
-      // để tránh việc Vercel Webhook bị timeout sau 10s (giới hạn của gói Hobby).
+      // Trigger generate-pdf ngay sau khi mark PAID (fire-and-forget)
+      // Cron 1 phút sẽ làm backup nếu lần này fail
+      const orderPayload = data.payload ?? {};
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nghechonnguoi.com';
+      fetch(`${appUrl}/api/generate-pdf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...orderPayload, orderCode: Number(orderCode) }),
+      }).then(r => {
+        console.warn(`[webhook] generate-pdf triggered for order ${orderCode}: ${r.status}`);
+      }).catch(err => {
+        console.error(`[webhook] generate-pdf trigger failed for order ${orderCode}:`, err.message);
+      });
 
     } else {
       console.error("Cannot update Firestore because Firebase Admin is not initialized.");
