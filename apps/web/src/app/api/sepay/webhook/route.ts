@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { waitUntil } from '@vercel/functions';
 
 export const maxDuration = 300;
 
@@ -136,19 +137,21 @@ export async function POST(req: Request) {
         }
       }
 
-      // Trigger generate-pdf ngay sau khi mark PAID (fire-and-forget)
-      // Cron 1 phút sẽ làm backup nếu lần này fail
+      // Trigger generate-pdf ngay sau khi mark PAID dùng waitUntil
+      // waitUntil giữ function sống sau khi webhook đã trả response về SePay
       const orderPayload = data.payload ?? {};
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nghechonnguoi.com';
-      fetch(`${appUrl}/api/generate-pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...orderPayload, orderCode: Number(orderCode) }),
-      }).then(r => {
-        console.warn(`[webhook] generate-pdf triggered for order ${orderCode}: ${r.status}`);
-      }).catch(err => {
-        console.error(`[webhook] generate-pdf trigger failed for order ${orderCode}:`, err.message);
-      });
+      waitUntil(
+        fetch(`${appUrl}/api/generate-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...orderPayload, orderCode: Number(orderCode) }),
+        }).then(r => {
+          console.warn(`[webhook] generate-pdf done for order ${orderCode}: HTTP ${r.status}`);
+        }).catch(err => {
+          console.error(`[webhook] generate-pdf error for order ${orderCode}:`, err.message);
+        })
+      );
 
     } else {
       console.error("Cannot update Firestore because Firebase Admin is not initialized.");
