@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 // ─────────────────────────────────────────────────────────────────────────────
 const PRICE = 568000;
 const PRICE_DISPLAY = "568.000đ";
-const BANK_BIN    = process.env.NEXT_PUBLIC_BANK_BIN    ?? "OCB";
-const BANK_ACCT   = process.env.NEXT_PUBLIC_BANK_ACCT   ?? "61666666";
-const BANK_OWNER  = process.env.NEXT_PUBLIC_BANK_OWNER  ?? "PHAM THI NGAN";
+const BANK_BIN    = process.env.NEXT_PUBLIC_BANK_BIN    ?? "970422";
+const BANK_ACCT   = process.env.NEXT_PUBLIC_BANK_ACCT   ?? "768688678";
+const BANK_OWNER  = process.env.NEXT_PUBLIC_BANK_OWNER  ?? "HO KINH DOANH NGHE CHON NGUOI";
 
 // ─────────────────────────────────────────────────────────────────────────────
 interface CheckoutModalProps {
@@ -48,6 +48,10 @@ export function CheckoutModal({
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // orderCode được tạo 1 lần duy nhất khi modal mở, dùng chung cho mọi bước
   const orderCodeRef = useRef<number>(0);
+  // Tránh gọi generate-pdf nhiều lần khi đang xử lý
+  const pdfCalledRef = useRef<boolean>(false);
+  // Lưu payload PDF để dùng khi polling phát hiện PAID
+  const pdfPayloadRef = useRef<any>(null);
 
   // Tạo orderCode từ assessment id (stable)
   function buildOrderCode() {
@@ -67,6 +71,8 @@ export function CheckoutModal({
       setFinalAmount(PRICE); setQrUrl(""); setQrDesc("");
       setErrorMsg(""); setPdfUrl("");
       orderCodeRef.current = 0;
+      pdfCalledRef.current = false;
+      pdfPayloadRef.current = null;
     } else {
       // Generate orderCode 1 lần duy nhất khi modal mở
       if (!orderCodeRef.current) {
@@ -82,21 +88,74 @@ export function CheckoutModal({
     pollRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/order-status?orderCode=${oc}`);
-        const data = await res.json();
+        const orderData = await res.json();
 
-        if (data.status === "PAID" && !data.pdfBase64 && !data.pdfDone) {
+        // Đã PAID nhưng PDF chưa xong → gọi generate-pdf (chỉ 1 lần)
+        if (
+          orderData.status === "PAID" &&
+          !orderData.pdfDone &&
+          !pdfCalledRef.current &&
+          pdfPayloadRef.current
+        ) {
+          pdfCalledRef.current = true;
           setPayStep("processing");
-        }
 
-        if (data.pdfDone && data.pdfBase64) {
+          // Stop polling trước khi gọi generate-pdf (có thể mất vài phút)
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
-          // Decode base64 → blob URL
+
           try {
-            const bytes = Uint8Array.from(atob(data.pdfBase64), (c) => c.charCodeAt(0));
+            const pdfRes = await fetch("/api/generate-pdf", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(pdfPayloadRef.current),
+            });
+
+            if (!pdfRes.ok) {
+              const errJson = await pdfRes.json().catch(() => ({}));
+              throw new Error(errJson?.error || `Lỗi tạo báo cáo (HTTP ${pdfRes.status})`);
+            }
+
+            const pdfJson = await pdfRes.json();
+
+            if (pdfJson.success && pdfJson.pdfBase64) {
+              // Decode base64 → blob URL để download
+              const bytes = Uint8Array.from(atob(pdfJson.pdfBase64), (c) => c.charCodeAt(0));
+              const blob = new Blob([bytes], { type: "application/pdf" });
+              setPdfUrl(URL.createObjectURL(blob));
+              setPayStep("done");
+            } else if (pdfJson.success) {
+              // PDF đã được gửi qua email, không có base64
+              setPayStep("done");
+            } else {
+              throw new Error(pdfJson.error || "Hệ thống đang quá tải, vui lòng thử lại");
+            }
+          } catch (pdfErr: any) {
+            // Nếu generate-pdf thất bại, cho phép thử lại
+            pdfCalledRef.current = false;
+            setErrorMsg(pdfErr.message || "Lỗi tạo báo cáo, vui lòng liên hệ hỗ trợ");
+            setPayStep("error");
+          }
+          return;
+        }
+
+        // pdfDone=true và có pdfBase64 lưu sẵn trong Firestore (trường hợp dự phòng)
+        if (orderData.pdfDone && orderData.pdfBase64) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
+          try {
+            const bytes = Uint8Array.from(atob(orderData.pdfBase64), (c) => c.charCodeAt(0));
             const blob = new Blob([bytes], { type: "application/pdf" });
             setPdfUrl(URL.createObjectURL(blob));
           } catch {}
+          setPayStep("done");
+          return;
+        }
+
+        // pdfDone=true nhưng không có base64 (email đã gửi)
+        if (orderData.pdfDone && !orderData.pdfBase64) {
+          if (pollRef.current) clearInterval(pollRef.current);
+          pollRef.current = null;
           setPayStep("done");
         }
       } catch {}
@@ -109,16 +168,28 @@ export function CheckoutModal({
     if (!code) { setCouponMsg("Vui lòng nhập mã giảm giá"); return; }
     setIsApplyingCoupon(true); setCouponMsg("");
     try {
+      // Đảm bảo orderCode đã được tạo trước khi validate
+      if (!orderCodeRef.current) orderCodeRef.current = buildOrderCode();
       const res = await fetch("/api/apply-coupon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // action: "validate" — chỉ kiểm tra mã, chưa ghi gì vào database
-        body: JSON.stringify({ coupon: code, action: "validate" }),
+        // Truyền orderCode để server phân biệt retry cùng đơn vs dùng lại mã khác
+        body: JSON.stringify({ coupon: code, action: "validate", orderCode: String(orderCodeRef.current) }),
       });
       const data = await res.json();
       if (data.success) {
-        setCouponOk(true); setCouponCode(code); setFinalAmount(0);
-        setCouponMsg("✅ Mã hợp lệ! Miễn phí 100%");
+        const discount = Number(data.discountAmount ?? 0);
+        const newFinal = discount === 0 ? 0 : Math.max(0, PRICE - discount);
+        setCouponOk(true);
+        setCouponCode(code);
+        setFinalAmount(newFinal);
+        if (newFinal === 0) {
+          setCouponMsg("✅ Mã hợp lệ! Miễn phí 100%");
+        } else {
+          const savedStr  = discount.toLocaleString("vi-VN");
+          const finalStr  = newFinal.toLocaleString("vi-VN");
+          setCouponMsg(`✅ Mã hợp lệ! Giảm ${savedStr}đ — còn lại ${finalStr}đ`);
+        }
       } else {
         setCouponMsg(`❌ ${data.message || "Mã không hợp lệ"}`);
       }
@@ -136,6 +207,8 @@ export function CheckoutModal({
     const oc = orderCodeRef.current || buildOrderCode();
     if (!orderCodeRef.current) orderCodeRef.current = oc;
     const pdfPayload = buildPdfPayload(assessment, userName, userEmail, userPhone, avoidCareers, assessment?.id);
+    // Lưu payload vào ref để startPolling có thể dùng khi PAID
+    pdfPayloadRef.current = { ...pdfPayload, orderCode: oc };
 
     try {
       if (finalAmount === 0) {
@@ -168,15 +241,34 @@ export function CheckoutModal({
           }),
         });
 
-        // 3. Tạo PDF
+        // 3. Tạo PDF — dùng pdfPayloadRef (có orderCode) để server lưu Firestore đúng
+        const freePdfPayload = pdfPayloadRef.current ?? { ...pdfPayload, orderCode: oc };
         const pdfRes = await fetch("/api/generate-pdf", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(pdfPayload),
+          body: JSON.stringify(freePdfPayload),
         });
-        if (!pdfRes.ok) throw new Error("Lỗi tạo PDF");
-        const blob = await pdfRes.blob();
-        setPdfUrl(URL.createObjectURL(blob));
+
+        if (!pdfRes.ok) {
+          const errJson = await pdfRes.json().catch(() => ({}));
+          throw new Error(errJson?.error || "Lỗi tạo PDF");
+        }
+
+        // Response có thể là JSON (có orderCode) hoặc blob PDF (không có orderCode)
+        const contentType = pdfRes.headers.get("content-type") ?? "";
+        if (contentType.includes("application/pdf")) {
+          const blob = await pdfRes.blob();
+          setPdfUrl(URL.createObjectURL(blob));
+        } else {
+          const pdfJson = await pdfRes.json();
+          if (pdfJson.success && pdfJson.pdfBase64) {
+            const bytes = Uint8Array.from(atob(pdfJson.pdfBase64), (c) => c.charCodeAt(0));
+            const blob = new Blob([bytes], { type: "application/pdf" });
+            setPdfUrl(URL.createObjectURL(blob));
+          } else if (!pdfJson.success) {
+            throw new Error(pdfJson.error || "Lỗi tạo PDF");
+          }
+        }
         setPayStep("done");
         return;
       }
@@ -196,32 +288,18 @@ export function CheckoutModal({
         }),
       });
 
-      // 2. Gọi PayOS
-      const res = await fetch("/api/payos/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderCode: oc,
-          amount:    finalAmount,
-          description: `NCN ${oc}`,
-          buyerName:  userName,
-          buyerPhone: userPhone ?? "",
-        }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Không thể tạo link thanh toán");
-
-      const { bin, accountNumber, accountName, amount, description } = data.data;
-      const bBin  = bin  || BANK_BIN;
-      const bAcct = accountNumber || BANK_ACCT;
-      const bName = accountName   || BANK_OWNER;
-      const qrImgUrl = `https://img.vietqr.io/image/${bBin}-${bAcct}-compact2.png?amount=${amount ?? finalAmount}&addInfo=${encodeURIComponent(description ?? `NCN ${oc}`)}&accountName=${encodeURIComponent(bName)}`;
+      // 2. Tạo QR VietQR trực tiếp — không cần PayOS
+      const desc = `NCN ${oc}`;
+      const qrImgUrl = `https://img.vietqr.io/image/${BANK_BIN}-${BANK_ACCT}-compact2.png`
+        + `?amount=${finalAmount}`
+        + `&addInfo=${encodeURIComponent(desc)}`
+        + `&accountName=${encodeURIComponent(BANK_OWNER)}`;
 
       setQrUrl(qrImgUrl);
-      setQrDesc(description ?? `NCN ${oc}`);
+      setQrDesc(desc);
       setPayStep("qr");
 
-      // 3. Polling order status
+      // 3. Polling order status (SePay webhook sẽ cập nhật Firestore)
       startPolling(oc);
 
     } catch (err: any) {

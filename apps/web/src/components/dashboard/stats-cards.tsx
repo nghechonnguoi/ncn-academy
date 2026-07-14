@@ -10,7 +10,17 @@ export function StatsCards({ assessment }: StatsCardsProps) {
   const riasec = assessment?.riasecResult;
   const topCode = riasec?.top3 ?? "—";
   const topScore = riasec ? Math.max(riasec.R, riasec.I, riasec.A, riasec.S, riasec.E, riasec.C) : null;
-  const careerCount = assessment?.careerResult?.length ?? 0;
+
+  // Hỗ trợ cả format cũ (array) và mới (object với university/vocational)
+  const careerResultRaw = assessment?.careerResult;
+  let careerCount = 0;
+  if (Array.isArray(careerResultRaw)) {
+    careerCount = careerResultRaw.length;
+  } else if (careerResultRaw?.track === "vocational" && Array.isArray(careerResultRaw?.vocational)) {
+    careerCount = careerResultRaw.vocational.length;
+  } else if (Array.isArray(careerResultRaw?.university)) {
+    careerCount = careerResultRaw.university.length;
+  }
 
   const stats = [
     {

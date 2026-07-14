@@ -2,6 +2,7 @@ version: '3.9'
 services:
   postgres:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ncn_academy
       POSTGRES_USER: postgres
@@ -10,25 +11,43 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api:
     build:
       context: ./apps/api
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "3001:3001"
     environment:
       DATABASE_URL: postgresql://postgres:password@postgres:5432/ncn_academy
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - ./apps/api:/app
       - /app/node_modules
+    # Origin server ở đây là nguồn gây 502 khi nó crash/treo. Healthcheck
+    # này gọi endpoint /api/v1/health (thêm ở app.controller.ts) — nếu
+    # process treo im lặng (không crash hẳn) thay vì trả lỗi, Docker vẫn
+    # phát hiện được qua healthcheck và tự khởi động lại container.
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   web:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:

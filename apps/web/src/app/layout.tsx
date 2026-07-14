@@ -5,8 +5,9 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

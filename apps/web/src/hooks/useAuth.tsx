@@ -14,6 +14,7 @@ interface User {
   affiliateCode?: string;
 }
 
+/* eslint-disable no-unused-vars */
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -22,6 +23,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, referralCode?: string) => Promise<void>;
   logout: () => Promise<void>;
 }
+/* eslint-enable no-unused-vars */
+
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -55,6 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("ncn_access_token", data.accessToken);
     localStorage.setItem("ncn_refresh_token", data.refreshToken);
     localStorage.setItem("ncn_user", JSON.stringify(data.user));
+    // Set cookies for middleware detection
+    const isSecure = typeof window !== "undefined" && window.location.protocol === "https:";
+    const cookieFlags = `path=/; max-age=2592000; SameSite=Lax${isSecure ? "; Secure" : ""}`;
+    document.cookie = `ncn_auth=1; ${cookieFlags}`;
+    document.cookie = `ncn_role=${data.user.role}; ${cookieFlags}`;
     setUser(data.user);
   }, []);
 
@@ -63,6 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("ncn_access_token", data.accessToken);
     localStorage.setItem("ncn_refresh_token", data.refreshToken);
     localStorage.setItem("ncn_user", JSON.stringify(data.user));
+    // Set cookies for middleware detection
+    const isSecure = typeof window !== "undefined" && window.location.protocol === "https:";
+    const cookieFlags = `path=/; max-age=2592000; SameSite=Lax${isSecure ? "; Secure" : ""}`;
+    document.cookie = `ncn_auth=1; ${cookieFlags}`;
+    document.cookie = `ncn_role=${data.user.role}; ${cookieFlags}`;
     setUser(data.user);
   }, []);
 
@@ -71,6 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("ncn_access_token");
     localStorage.removeItem("ncn_refresh_token");
     localStorage.removeItem("ncn_user");
+    // Clear auth cookies so middleware stops treating user as authenticated
+    document.cookie = "ncn_auth=; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "ncn_role=; path=/; max-age=0; SameSite=Lax";
     setUser(null);
     toast({ title: "Đã đăng xuất", description: "Hẹn gặp lại bạn!" });
   }, []);

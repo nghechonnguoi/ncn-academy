@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { MobileSidebarTrigger } from "@/components/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Send, Bot, User, Sparkles, RefreshCw, AlertCircle } from "lucide-react";
+import { Send, Bot, User, Sparkles, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAI } from "@/hooks/useAI";
 
@@ -28,7 +29,7 @@ Dựa trên kết quả phân tích RIASEC của bạn, tôi có thể tư vấn
 Bạn muốn khám phá điều gì trước?`;
 
 export default function AiToolsPage() {
-  const { messages, isLoading, remainingMessages, error, sendMessage, clearMessages, setMessages } = useAI();
+  const { messages, isLoading, remainingMessages, sendMessage, clearMessages } = useAI();
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -60,8 +61,9 @@ export default function AiToolsPage() {
       <DashboardSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b border-gray-100 px-4 lg:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
+            <MobileSidebarTrigger />
             <div className="w-9 h-9 rounded-xl bg-[#635bff]/10 flex items-center justify-center">
               <Bot className="w-5 h-5 text-[#635bff]" />
             </div>

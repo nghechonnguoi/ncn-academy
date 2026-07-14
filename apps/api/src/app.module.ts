@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -10,6 +11,7 @@ import { AffiliateModule } from './modules/affiliate/affiliate.module';
 import { AiModule } from './modules/ai/ai.module';
 
 @Module({
+  controllers: [AppController],
   imports: [
     // Config
     ConfigModule.forRoot({ isGlobal: true }),

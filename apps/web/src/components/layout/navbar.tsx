@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 
 const NAV_LINKS = [
   { href: "/#services", label: "Dịch vụ" },
@@ -15,7 +13,6 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <>

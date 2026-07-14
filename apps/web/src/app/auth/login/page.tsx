@@ -40,13 +40,11 @@ function LoginForm() {
     try {
       if (tab === "login") {
         await login(form.email, form.password);
-        document.cookie = "ncn_auth=1; path=/; max-age=2592000; SameSite=Lax";
         toast({ title: "Đăng nhập thành công!", variant: "success" as any });
         router.push(callbackUrl);
       } else {
         if (!form.name.trim()) { setError("Vui lòng nhập họ tên"); return; }
         await register(form.name, form.email, form.password, form.referralCode || undefined);
-        document.cookie = "ncn_auth=1; path=/; max-age=2592000; SameSite=Lax";
         toast({ title: "Tạo tài khoản thành công!", description: "Chào mừng bạn đến NCN Academy 🎉" });
         router.push("/assessment");
       }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { MobileSidebarTrigger } from "@/components/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,8 +19,10 @@ export default function AffiliatePage() {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const affiliateCode = stats?.affiliateCode ?? user?.affiliateCode ?? "—";
-  const affiliateLink = `https://nghechonnguoi.com/ref/${affiliateCode}`;
+  const affiliateCode = stats?.affiliateCode ?? user?.affiliateCode ?? null;
+  const affiliateLink = affiliateCode
+    ? `https://nghechonnguoi.com/ref/${affiliateCode}`
+    : "";
 
   useEffect(() => {
     Promise.all([
@@ -58,7 +61,12 @@ export default function AffiliatePage() {
     <div className="flex h-screen bg-gray-50">
       <DashboardSidebar />
       <div className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-6xl mx-auto">
+        {/* Mobile top bar */}
+        <div className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-30">
+          <MobileSidebarTrigger />
+          <span className="font-bold text-gray-900 text-sm">Affiliate</span>
+        </div>
+        <div className="p-6 lg:p-8 max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -104,20 +112,20 @@ export default function AffiliatePage() {
                   </h2>
                   <div className="flex gap-2">
                     <Input
-                      value={affiliateCode !== "—" ? affiliateLink : "Chưa có mã affiliate"}
+                      value={affiliateCode ? affiliateLink : (isLoading ? "Đang tải..." : "Chưa có mã affiliate")}
                       readOnly
                       className="rounded-xl bg-gray-50 text-sm font-mono border-gray-200"
                     />
                     <Button
                       onClick={handleCopy}
-                      disabled={affiliateCode === "—"}
-                      className={`rounded-xl px-4 flex-shrink-0 ${copied ? "bg-green-500 hover:bg-green-600" : "bg-ncn-purple hover:bg-ncn-purple-dark"}`}
+                      disabled={!affiliateCode}
+                      className={`rounded-xl px-4 flex-shrink-0 text-white ${copied ? "bg-green-500 hover:bg-green-600" : "bg-ncn-purple hover:bg-ncn-purple-dark"}`}
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </Button>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    Mã: <strong className="text-gray-600">{affiliateCode}</strong> · Hoa hồng: <strong className="text-green-600">20%</strong> mỗi đơn
+                    Mã: <strong className="text-gray-600">{affiliateCode ?? "—"}</strong> · Hoa hồng: <strong className="text-green-600">20%</strong> mỗi đơn
                   </p>
 
                   {chartData.length > 0 && (
