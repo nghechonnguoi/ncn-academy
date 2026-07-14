@@ -23,38 +23,25 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-// GET /api/admin/retry-pdf?orderCode=XXXXX
-// POST /api/admin/retry-pdf  { orderCode: "XXXXX" }
-export async function GET(req: Request) {
-  return handler(req);
-}
-export async function POST(req: Request) {
-  return handler(req);
-}
+export async function GET(req: Request) { return handler(req); }
+export async function POST(req: Request) { return handler(req); }
 
 async function handler(req: Request) {
   try {
     const db = initFirebase();
     const url = new URL(req.url);
-    
     let orderCode = url.searchParams.get('orderCode');
-    
-    // Nếu POST, đọc body
+    const payloadOnly = url.searchParams.get('payload') === 'true';
+
     if (req.method === 'POST') {
-      try {
-        const body = await req.json();
-        orderCode = orderCode || body.orderCode;
-      } catch {}
+      try { const body = await req.json(); orderCode = orderCode || body.orderCode; } catch {}
     }
 
-    // Nếu không có orderCode, trả về danh sách PAID orders
+    // List recent orders nếu không có orderCode
     if (!orderCode) {
       const snap = await db.collection('orders')
         .where('status', 'in', ['PAID', 'PARTIAL_PAID', 'PENDING'])
-        .orderBy('createdAt', 'desc')
-        .limit(20)
-        .get();
-      
+        .orderBy('createdAt', 'desc').limit(20).get();
       const orders = snap.docs.map(d => ({
         id: d.id,
         status: d.data().status,
@@ -64,47 +51,46 @@ async function handler(req: Request) {
         pdfGenerating: d.data().pdfGenerating,
         createdAt: d.data().createdAt?.toDate?.()?.toISOString() ?? null,
       }));
-      
       return NextResponse.json({ orders }, { headers: corsHeaders });
     }
 
-    // Lấy order cụ thể
+    // Lấy order
     const docRef = db.collection('orders').doc(String(orderCode));
     const docSnap = await docRef.get();
-    
     if (!docSnap.exists) {
       return NextResponse.json({ error: `Order ${orderCode} not found` }, { status: 404, headers: corsHeaders });
     }
-    
+
     const data = docSnap.data()!;
     const payload = data.payload;
-    
+
     if (!payload || Object.keys(payload).length === 0) {
-      return NextResponse.json({ 
-        error: 'Order found but no payload stored. Cannot retry PDF.',
+      return NextResponse.json({
+        error: 'Order found but no payload stored.',
         order: { status: data.status, email: data.customerEmail }
       }, { status: 400, headers: corsHeaders });
     }
 
-    // Gọi generate-pdf với payload từ Firestore
+    // ?payload=true → chỉ trả về payload, không gọi generate-pdf
+    if (payloadOnly) {
+      return NextResponse.json({
+        orderCode, status: data.status,
+        email: data.customerEmail || payload?.EMAIL,
+        payload,
+      }, { headers: corsHeaders });
+    }
+
+    // Gọi generate-pdf trực tiếp (có thể timeout)
     const origin = new URL(req.url).origin;
     const pdfRes = await fetch(`${origin}/api/generate-pdf`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    
     const pdfData = await pdfRes.json().catch(() => ({}));
-    
-    // Cập nhật Firestore
-    await docRef.set({ 
-      retryPdfAt: new Date().toISOString(),
-      pdfRetryStatus: pdfRes.ok ? 'triggered' : 'failed',
-    }, { merge: true });
 
     return NextResponse.json({
-      success: pdfRes.ok,
-      orderCode,
+      success: pdfRes.ok, orderCode,
       status: data.status,
       email: data.customerEmail || payload?.EMAIL,
       pdfResponse: pdfData,
