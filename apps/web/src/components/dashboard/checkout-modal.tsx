@@ -4,12 +4,25 @@ import { useState, useEffect, useRef } from "react";
 import { X, Loader2, CheckCircle, Copy, Tag, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ─────────────────────────────────────────────────────────────────────────────
-const PRICE = 568000;
-const PRICE_DISPLAY = "568.000đ";
+// ── Giá chiến dịch theo thời gian ────────────────────────────────────────────
+const PRICE_ORIGINAL   = 568000;   // Giá gốc (luôn hiển thị gạch ngang)
+const PRICE_CAMPAIGN   = 399000;   // Giá ưu đãi chiến dịch
+const CAMPAIGN_START   = new Date("2026-07-15T00:00:00+07:00");
+const CAMPAIGN_END     = new Date("2026-07-28T23:59:59+07:00");
+
+function getCampaignPrice(): { price: number; display: string; isCampaign: boolean } {
+  const now = new Date();
+  const isCampaign = now >= CAMPAIGN_START && now <= CAMPAIGN_END;
+  return isCampaign
+    ? { price: PRICE_CAMPAIGN, display: "399.000đ", isCampaign: true  }
+    : { price: PRICE_ORIGINAL, display: "568.000đ", isCampaign: false };
+}
+
+const { price: PRICE, display: PRICE_DISPLAY, isCampaign: IS_CAMPAIGN } = getCampaignPrice();
 const BANK_BIN    = process.env.NEXT_PUBLIC_BANK_BIN    ?? "970422";
 const BANK_ACCT   = process.env.NEXT_PUBLIC_BANK_ACCT   ?? "768688678";
 const BANK_OWNER  = process.env.NEXT_PUBLIC_BANK_OWNER  ?? "HO KINH DOANH NGHE CHON NGUOI";
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 interface CheckoutModalProps {
@@ -369,12 +382,18 @@ export function CheckoutModal({
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    1.358.000đ
+                    {IS_CAMPAIGN ? "568.000đ" : "1.358.000đ"}
                   </span>
                   <span className="text-3xl font-black" style={{ color: "#E8A838" }}>
                     {finalAmount === 0 ? "MIỄN PHÍ" : PRICE_DISPLAY}
                   </span>
                 </div>
+                {IS_CAMPAIGN && finalAmount !== 0 && (
+                  <span className="text-xs font-bold px-3 py-1 rounded-full mt-2 inline-block"
+                    style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>
+                    🔥 Ưu đãi chiến dịch · Kết thúc 28/7/2026
+                  </span>
+                )}
                 {couponOk && (
                   <span className="text-xs font-semibold px-3 py-1 rounded-full mt-2 inline-block"
                     style={{ background: "rgba(43,168,140,0.15)", color: "#2BA88C", border: "1px solid rgba(43,168,140,0.3)" }}>

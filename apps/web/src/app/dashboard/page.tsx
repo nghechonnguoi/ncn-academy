@@ -593,21 +593,39 @@ function DashboardContent() {
           )}
 
           {/* Giá */}
-          <div className="mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-              style={{ background: "rgba(43,168,140,0.15)", border: "1px solid rgba(43,168,140,0.3)" }}>
-              <span className="text-xs font-bold" style={{ color: "#2BA88C" }}>Tiết kiệm 790.000đ</span>
-            </div>
-            <div className="flex items-baseline justify-center gap-3">
-              <span className="text-base line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
-                1.358.000đ
-              </span>
-              <span className="text-4xl font-black" style={{ color: "#E8A838" }}>568.000đ</span>
-            </div>
-            <p className="text-sm mt-3 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Chỉ hơn 500k để tránh quyết định sai có thể khiến bạn mất 4 năm đại học và hàng trăm triệu đồng.
-            </p>
-          </div>
+          {(() => {
+            const now = new Date();
+            const isCampaign = now >= new Date("2026-07-15T00:00:00+07:00") && now <= new Date("2026-07-28T23:59:59+07:00");
+            return (
+              <div className="mb-6">
+                {isCampaign ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                    style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                    <span className="text-xs font-bold" style={{ color: "#f87171" }}>🔥 Ưu đãi chiến dịch · Kết thúc 28/7/2026</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                    style={{ background: "rgba(43,168,140,0.15)", border: "1px solid rgba(43,168,140,0.3)" }}>
+                    <span className="text-xs font-bold" style={{ color: "#2BA88C" }}>Tiết kiệm 790.000đ</span>
+                  </div>
+                )}
+                <div className="flex items-baseline justify-center gap-3">
+                  <span className="text-base line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    {isCampaign ? "568.000đ" : "1.358.000đ"}
+                  </span>
+                  <span className="text-4xl font-black" style={{ color: "#E8A838" }}>
+                    {isCampaign ? "399.000đ" : "568.000đ"}
+                  </span>
+                </div>
+                <p className="text-sm mt-3 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  {isCampaign
+                    ? "Giá ưu đãi chiến dịch — chỉ còn đến hết ngày 28/7/2026."
+                    : "Chỉ hơn 500k để tránh quyết định sai có thể khiến bạn mất 4 năm đại học và hàng trăm triệu đồng."}
+                </p>
+              </div>
+            );
+          })()}
+
 
           {/* CTA Button */}
           <button
