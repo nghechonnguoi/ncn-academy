@@ -23,6 +23,10 @@ const BANK_BIN    = process.env.NEXT_PUBLIC_BANK_BIN    ?? "970422";
 const BANK_ACCT   = process.env.NEXT_PUBLIC_BANK_ACCT   ?? "768688678";
 const BANK_OWNER  = process.env.NEXT_PUBLIC_BANK_OWNER  ?? "HO KINH DOANH NGHE CHON NGUOI";
 
+// API base — tự detect: nếu đang chạy trên subdomain quiz.* thì trỏ về domain chính
+const API_BASE = typeof window !== "undefined" && window.location.hostname.startsWith("quiz.")
+  ? `${window.location.protocol}//${window.location.hostname.replace(/^quiz\./, "")}`
+  : "";
 
 // ─────────────────────────────────────────────────────────────────────────────
 interface CheckoutModalProps {
@@ -183,7 +187,7 @@ export function CheckoutModal({
     try {
       // Đảm bảo orderCode đã được tạo trước khi validate
       if (!orderCodeRef.current) orderCodeRef.current = buildOrderCode();
-      const res = await fetch("/api/apply-coupon", {
+      const res = await fetch(`${API_BASE}/api/apply-coupon`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Truyền orderCode để server phân biệt retry cùng đơn vs dùng lại mã khác
@@ -229,7 +233,7 @@ export function CheckoutModal({
         setPayStep("processing");
 
         // 1. Apply coupon: mark USED và cập nhật order status PAID
-        const applyRes = await fetch("/api/apply-coupon", {
+        const applyRes = await fetch(`${API_BASE}/api/apply-coupon`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ coupon: couponCode, orderCode: String(oc), action: "apply" }),
@@ -240,7 +244,7 @@ export function CheckoutModal({
         }
 
         // 2. Tạo order record (có thể đã được set bởi apply-coupon, dùng merge)
-        await fetch("/api/create-order", {
+        await fetch(`${API_BASE}/api/create-order`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -256,7 +260,7 @@ export function CheckoutModal({
 
         // 3. Tạo PDF — dùng pdfPayloadRef (có orderCode) để server lưu Firestore đúng
         const freePdfPayload = pdfPayloadRef.current ?? { ...pdfPayload, orderCode: oc };
-        const pdfRes = await fetch("/api/generate-pdf", {
+        const pdfRes = await fetch(`${API_BASE}/api/generate-pdf`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(freePdfPayload),
@@ -287,7 +291,7 @@ export function CheckoutModal({
       }
 
       // 1. Tạo order PENDING qua API route (dùng firebase-admin server-side)
-      await fetch("/api/create-order", {
+      await fetch(`${API_BASE}/api/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
