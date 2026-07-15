@@ -163,7 +163,7 @@ export async function POST(req: Request) {
   4. ${data.TOP4_TITLE || "Chưa có"}
   5. ${data.TOP5_TITLE || "Chưa có"}`;
 
-    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG TỐI THƯỢNG: 1. Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ. 2. TRONG TOÀN BỘ CÁC MỤC (TỪ TÍNH CÁCH, NGHỀ NGHIỆP, RÀO CẢN ĐẾN MÔI TRƯỜNG), PHẢI LUÔN LỒNG GHÉP VÀ TỔNG HÒA sâu sắc ý nghĩa của 5 khía cạnh cốt lõi (Tiềm năng bẩm sinh, Khao khát nội tâm, Sứ mệnh, Tài năng, Đam mê) cùng với MBTI và Holland. 3. KHÔNG BAO GIỜ được gọi đích danh tên các công cụ/chỉ số (như MBTI, Holland, Số chủ đạo, Số sứ mệnh, v.v...). Phải biến các chỉ số này thành những mô tả phẩm chất con người thật tự nhiên và thấu cảm. 4. DANH XƯNG GIAO TIẾP: Xuyên suốt báo cáo, chỉ được phép xưng hô với khách hàng bằng Tên thật của họ, hoặc Họ Tên, hoặc dùng đại từ 'bạn'.";
+    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp cho học sinh THPT Việt Nam (15-18 tuổi). Dựa trên thông tin học sinh, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU BẮT BUỘC: 1. NGÔN TỪ: Viết đơn giản, gần gũi, dễ hiểu — như một người anh/chị đi trước nói chuyện trực tiếp với học sinh. TUYỆT ĐỐI KHÔNG dùng những cụm từ trừu tượng, hoa mỹ, hoặc ngôn ngữ sách giáo khoa khó hiểu. Không dùng các từ: 'kiến tạo', 'khai phóng', 'thăng hoa', 'cộng hưởng', 'vận mệnh', 'thiên khải', 'chất xúc tác', 'bản thể', 'hiện hữu', 'viễn kiến' hoặc các từ tương tự. 2. DANH XƯNG: Chỉ được xưng hô với học sinh bằng Tên thật của họ hoặc đại từ 'bạn'. TUYỆT ĐỐI KHÔNG dùng 'con', 'em', 'cậu', 'mình'. 3. NỘI DUNG: Lồng ghép ý nghĩa của các chỉ số phân tích thành mô tả tự nhiên về đặc điểm con người. KHÔNG BAO GIỜ gọi tên công cụ/chỉ số (MBTI, Holland, Số chủ đạo, Số sứ mệnh, v.v...) trong nội dung."; 
 
     const prompt1 = `${instruction}
 Thông tin ứng viên:
@@ -364,7 +364,9 @@ ${userInfo}
       // ── Prompt: 3 nghề KHÔNG phù hợp — AI phân tích 3 góc chuyên sâu ──────────────────
       const instructionAvoid = [
         "Bạn là chuyên gia tư vấn hướng nghiệp cho học sinh THPT Việt Nam (15–17 tuổi).",
-        "Giọng văn: thẳng thắn nhưng không phán xét, như một người anh/chị đi trước chia sẻ thực tế — không dọa, không lên lớp.",
+        "Giọng văn: thẳng thắn, gần gũi — như một người anh/chị đi trước chia sẻ thực tế. Không dọa, không lên lớp, không hoa mỹ.",
+        "NGÔN TỪ: Dùng từ đơn giản, dễ hiểu. KHÔNG dùng: 'kiến tạo', 'khai phóng', 'thăng hoa', 'bản thể', 'vận mệnh', 'thiên khải', hay các từ sách vở trừu tượng khác.",
+        "DANH XƯNG: Chỉ xưng 'bạn' hoặc tên thật của học sinh. KHÔNG dùng 'con', 'em', 'cậu'.",
         "Trả về ONLY JSON hợp lệ, không có markdown wrapper, không giải thích thêm."
       ].join(" ");
 
@@ -380,12 +382,14 @@ YÊu CẦU:
    Nghề tránh #3 → GÓC GIÁ TRỊ & ĐỘNG LỰC: chỉ ra nghề này thưởng cho điều gì (độ chính xác, tuân thủ quy trình, cạnh tranh doanh số) và vì sao điều đó ngược với nguồn năng lượng chính của học sinh.
 
 3. Mỗi nghề kết bằng 1 câu ngắn gợi ý hướng thay thế gần nhất phù hợp hơn với profile.
-4. Độ dài: 120–180 từ mỗi nghề.
+4. Độ dài: BẮT BUỘC ít nhất 120 từ mỗi nghề (không được dưới 100 từ).
 
 CẤM:
 - Không dùng cùng mẫu câu mở đầu cho 2 nghề bất kỳ.
 - Không lặp cụm "dễ dẫn đến kiệt sức" hay "gây mệt mỏi kéo dài" — diễn đạt hệ quả bằng cách khác mỗi lần.
-- Mỗi đoạn phải có ít nhất 1 chi tiết cụ thể riêng của nghề đó (ví dụ: "ngồi debug code 8 tiếng liên tục", "đứng dây chuyền kiểm hàng ca đêm", "báo cáo KPI doanh số hàng tuần cho trưởng phòng").
+- Không dùng từ ngữ hoa mỹ, trừu tượng như: 'kiến tạo', 'khai phóng', 'thăng hoa', 'bản thể', 'cộng hưởng', 'vận mệnh'. Dùng từ đơn giản, cụ thể.
+- Mỗi đoạn phải có ít nhất 1 chi tiết cụ thể của nghề đó (ví dụ: "ngồi debug code 8 tiếng liên tục", "đứng dây chuyền kiểm hàng ca đêm", "báo cáo KPI doanh số hàng tuần cho trưởng phòng").
+- Xưng 'bạn' với học sinh. KHÔNG dùng 'con', 'em', 'cậu'.
 - Không nhắc Holland Code, MBTI, RIASEC hay bất kỳ phương pháp luận nào — chỉ nói về đặc điểm của học sinh.
 
 FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
