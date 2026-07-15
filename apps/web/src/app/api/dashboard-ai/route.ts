@@ -173,14 +173,35 @@ function computeAvoidCareers(hollandStr: string): { title: string; reason: strin
   );
   const partial = candidates.filter(c => !fullyOpposite.includes(c));
 
-  // Chọn 3 nghề từ 3 ngành KHÁC NHAU
+  // Chọn 3 nghề từ 3 ngành KHÁC NHAU và 3 primary RIASEC code KHÁC NHAU
+  // → đảm bảo mỗi reason có nội dung khác nhau (không bị lặp)
   const picked: typeof candidates = [];
   const usedIndustries = new Set<string>();
+  const usedPrimaryCode = new Set<string>();
   for (const career of [...fullyOpposite, ...partial]) {
     if (picked.length >= 3) break;
-    if (!usedIndustries.has(career.industry)) {
+    const primaryCode = career.riasec[0];
+    if (!usedIndustries.has(career.industry) && !usedPrimaryCode.has(primaryCode)) {
       picked.push(career);
       usedIndustries.add(career.industry);
+      usedPrimaryCode.add(primaryCode);
+    }
+  }
+  // Fallback: nếu strict constraint không đủ 3 → thả lỏng constraint industry
+  if (picked.length < 3) {
+    for (const career of [...fullyOpposite, ...partial]) {
+      if (picked.length >= 3) break;
+      if (!picked.includes(career) && !usedPrimaryCode.has(career.riasec[0])) {
+        picked.push(career);
+        usedPrimaryCode.add(career.riasec[0]);
+      }
+    }
+  }
+  // Final fallback: nếu vẫn chưa đủ → lấy bất kỳ miễn không trùng
+  if (picked.length < 3) {
+    for (const career of [...fullyOpposite, ...partial]) {
+      if (picked.length >= 3) break;
+      if (!picked.includes(career)) picked.push(career);
     }
   }
 
