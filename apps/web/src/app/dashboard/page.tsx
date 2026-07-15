@@ -706,6 +706,23 @@ function DashboardContent() {
                 </Link>
               </div>
             </div>
+
+            {/* Zalo community link */}
+            <div className="mt-3 text-center">
+              <a
+                href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ color: "#2BA88C" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" rx="10" fill="#2BA88C"/>
+                  <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold" fontFamily="Arial">Z</text>
+                </svg>
+                Tham gia Cộng đồng Affiliate Nghề Chọn Người
+              </a>
+            </div>
           </div>
         </section>
       )}
