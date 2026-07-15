@@ -43,6 +43,12 @@ export async function GET(req: Request) {
       pdfBase64:     data.pdfBase64     ?? null,
       pdfUrl:        data.pdfUrl        ?? null,
       pdfNote:       data.pdfNote       ?? null,
+      // Debug fields
+      paidAmount:    data.paidAmount    ?? null,
+      paidAt:        data.paidAt        ?? null,
+      amount:        data.amount        ?? null,
+      hasSepayData:  !!data.sepayData,
+      createdAt:     data.createdAt     ?? null,
     });
   } catch (err: any) {
     return NextResponse.json({ status: 'ERROR', error: err.message }, { status: 500 });
