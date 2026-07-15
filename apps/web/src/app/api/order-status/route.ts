@@ -37,10 +37,12 @@ export async function GET(req: Request) {
 
     const data = snap.data()!;
     return NextResponse.json({
-      status:        data.status     ?? 'PENDING',
+      status:        data.status        ?? 'PENDING',
       pdfGenerating: data.pdfGenerating ?? false,
-      pdfDone:       data.pdfDone    ?? false,
-      pdfBase64:     data.pdfBase64  ?? null,
+      pdfDone:       data.pdfDone       ?? false,
+      pdfBase64:     data.pdfBase64     ?? null,
+      pdfUrl:        data.pdfUrl        ?? null,
+      pdfNote:       data.pdfNote       ?? null,
     });
   } catch (err: any) {
     return NextResponse.json({ status: 'ERROR', error: err.message }, { status: 500 });
