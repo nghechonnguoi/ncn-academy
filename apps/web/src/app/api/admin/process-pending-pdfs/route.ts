@@ -95,6 +95,16 @@ async function handler(req: Request) {
         }
       }
 
+      // ✅ Bảo vệ quan trọng: chỉ xử lý đơn có bằng chứng thanh toán thực
+      // (sepayData = webhook từ SePay, paidAmount > 0)
+      const hasSepayData = !!(data.sepayData);
+      const paidAmount   = Number(data.paidAmount ?? 0);
+      if (!hasSepayData || paidAmount <= 0) {
+        console.warn(`[process-pending-pdfs] Order ${orderCode}: no SePay webhook or paidAmount=0, skipping (likely test order)`);
+        results.push({ orderCode, status: 'skipped', reason: 'no_real_payment' });
+        continue;
+      }
+
       console.warn(`[process-pending-pdfs] Processing order ${orderCode}...`);
       
       // Mark đang xử lý để tránh cron khác process cùng lúc
