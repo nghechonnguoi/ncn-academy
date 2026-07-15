@@ -100,6 +100,14 @@ async function handler(req: Request) {
       // Mark đang xử lý để tránh cron khác process cùng lúc
       await doc.ref.update({ pdfGenerating: true, cronTriggeredAt: new Date().toISOString() });
 
+      // Re-check Firestore ngay trước khi gọi generate-pdf (tránh race với frontend)
+      const freshSnap = await doc.ref.get();
+      if (freshSnap.exists && freshSnap.data()?.pdfDone === true) {
+        console.warn(`[process-pending-pdfs] Order ${orderCode}: pdfDone=true detected before generate call, skipping`);
+        results.push({ orderCode, status: 'skipped', reason: 'already_done' });
+        continue;
+      }
+
       try {
         const pdfRes = await fetch(`${origin}/api/generate-pdf`, {
           method: 'POST',
@@ -107,16 +115,25 @@ async function handler(req: Request) {
           body: JSON.stringify({ ...payload, orderCode: Number(orderCode) }),
         });
 
-        const pdfData = await pdfRes.json().catch(() => ({}));
+        let pdfData: any = {};
+        try { pdfData = await pdfRes.json(); } catch {}
+        
+        const isSuccess = pdfRes.ok || pdfData?.pdfDone === true || pdfData?.success === true;
+        
+        if (!pdfRes.ok) {
+          const bodyPreview = JSON.stringify(pdfData).substring(0, 200);
+          console.error(`[process-pending-pdfs] Order ${orderCode}: HTTP ${pdfRes.status} - ${bodyPreview}`);
+        }
         
         results.push({
           orderCode,
-          status: pdfRes.ok ? 'success' : 'failed',
+          status: isSuccess ? 'success' : 'failed',
           httpStatus: pdfRes.status,
           emailError: pdfData.emailError ?? null,
+          aiGenerationFailed: pdfData.aiGenerationFailed ?? null,
         });
 
-        console.warn(`[process-pending-pdfs] Order ${orderCode}: ${pdfRes.ok ? 'SUCCESS' : 'FAILED'}`);
+        console.warn(`[process-pending-pdfs] Order ${orderCode}: ${isSuccess ? 'SUCCESS' : 'FAILED'} (HTTP ${pdfRes.status})`);
       } catch (err: any) {
         console.error(`[process-pending-pdfs] Order ${orderCode} error:`, err.message);
         await doc.ref.update({ pdfGenerating: false, cronError: err.message });
