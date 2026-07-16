@@ -35,7 +35,27 @@ export default function AffiliatePage() {
   }, []);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(affiliateLink);
+    if (!affiliateLink) return;
+    // clipboard API cần HTTPS; dùng fallback execCommand nếu fail
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(affiliateLink).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => fallbackCopy());
+    } else {
+      fallbackCopy();
+    }
+  };
+
+  const fallbackCopy = () => {
+    const el = document.createElement('textarea');
+    el.value = affiliateLink;
+    el.style.position = 'fixed';
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -123,10 +143,39 @@ export default function AffiliatePage() {
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </Button>
+                    <a
+                      href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80 border"
+                      style={{ background: "rgba(0,120,200,0.08)", color: "#0078C8", borderColor: "rgba(0,120,200,0.25)", textDecoration: "none" }}
+                      title="Tham gia nhóm Zalo Affiliate NCN"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="10" fill="#0078C8"/>
+                        <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+                      </svg>
+                      Zalo
+                    </a>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
                     Mã: <strong className="text-gray-600">{affiliateCode ?? "—"}</strong> · Hoa hồng: <strong className="text-green-600">20%</strong> mỗi đơn
                   </p>
+                  {/* Zalo community */}
+                  <a
+                    href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 mt-3 text-sm font-semibold transition-opacity hover:opacity-80"
+                    style={{ color: "#0078C8", textDecoration: "none" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" rx="10" fill="#0078C8"/>
+                      <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+                    </svg>
+                    Tham gia nhóm Zalo Affiliate NCN Academy
+                  </a>
+
 
                   {chartData.length > 0 && (
                     <div className="mt-6">
