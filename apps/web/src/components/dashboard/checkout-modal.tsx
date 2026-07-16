@@ -28,6 +28,24 @@ const API_BASE = typeof window !== "undefined" && window.location.hostname.start
   ? `${window.location.protocol}//${window.location.hostname.replace(/^quiz\./, "")}`
   : "";
 
+// ── Đọc affiliate referral code ────────────────────────────────────────────
+// Ưu tiên 1: ?ref= trong URL hiện tại
+// Ưu tiên 2: localStorage['referralCode'] (lưu bởi ReferralCapture)
+// Ưu tiên 3: localStorage['ncn_referral_code'] (tương thích script.js cũ)
+function getReferralCode(): string | null {
+  try {
+    const urlRef = new URLSearchParams(window.location.search).get("ref");
+    if (urlRef) return urlRef.trim().toUpperCase();
+    return (
+      localStorage.getItem("referralCode") ||
+      localStorage.getItem("ncn_referral_code") ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 interface CheckoutModalProps {
   open: boolean;
@@ -223,7 +241,10 @@ export function CheckoutModal({
     // Dùng orderCode đã được generate 1 lần từ khi mở modal
     const oc = orderCodeRef.current || buildOrderCode();
     if (!orderCodeRef.current) orderCodeRef.current = oc;
-    const pdfPayload = buildPdfPayload(assessment, userName, userEmail, userPhone, avoidCareers, assessment?.id);
+    const pdfPayload = buildPdfPayload(
+      assessment, userName, userEmail, userPhone, avoidCareers, assessment?.id,
+      getReferralCode() ?? undefined,
+    );
     // Lưu payload vào ref để startPolling có thể dùng khi PAID
     pdfPayloadRef.current = { ...pdfPayload, orderCode: oc };
 
@@ -255,6 +276,7 @@ export function CheckoutModal({
             customerEmail: userEmail ?? "",
             customerPhone: userPhone ?? "",
             payload:       pdfPayload,
+            referralCode:  getReferralCode() ?? "",
           }),
         });
 
@@ -302,6 +324,7 @@ export function CheckoutModal({
           customerEmail: userEmail ?? "",
           customerPhone: userPhone ?? "",
           payload:       pdfPayload,
+          referralCode:  getReferralCode() ?? "",
         }),
       });
 
@@ -581,6 +604,7 @@ function buildPdfPayload(
   phone?: string,
   avoidCareers: { title: string; reason: string }[] = [],
   assessmentId?: string,
+  affiliateCode?: string,
 ) {
   const riasec = assessment?.riasecResult ?? {};
   const careerResultRaw = assessment?.careerResult;
@@ -613,6 +637,7 @@ function buildPdfPayload(
     NGAYTAO:  dateStr,
     NGAY_XUAT_BAN: dateStr,
     assessmentId: assessmentId || "",
+    AFFILIATE_CODE: affiliateCode || "",  // ← affiliate tracking
     R_PCT: String(riasec.R ?? 0), I_PCT: String(riasec.I ?? 0),
     A_PCT: String(riasec.A ?? 0), S_PCT: String(riasec.S ?? 0),
     E_PCT: String(riasec.E ?? 0), C_PCT: String(riasec.C ?? 0),
