@@ -182,6 +182,10 @@
         <div class="controls">
             <select id="month-select"></select>
             <select id="year-select"></select>
+            <select id="filter-select" style="min-width: 150px;">
+                <option value="all">Xem tất cả Affiliate</option>
+                <option value="active">Chỉ người có doanh số</option>
+            </select>
             <button onclick="loadReport()">🔄 Tải lại</button>
         </div>
         <div id="content">
@@ -236,11 +240,13 @@
         async function loadReport() {
             const month = document.getElementById('month-select').value;
             const year = document.getElementById('year-select').value;
+            const filter = document.getElementById('filter-select').value;
+            const showAll = filter === 'all' ? 'true' : 'false';
             const contentEl = document.getElementById('content');
             contentEl.innerHTML = '<p class="empty">Đang tải dữ liệu...</p>';
 
             try {
-                const res = await fetch(`https://ncn-academy-web.vercel.app/api/admin/affiliate-report?month=${month}&year=${year}`);
+                const res = await fetch(`https://ncn-academy-web.vercel.app/api/admin/affiliate-report?month=${month}&year=${year}&showAll=${showAll}`);
                 const data = await res.json();
 
                 if (!data.success) {

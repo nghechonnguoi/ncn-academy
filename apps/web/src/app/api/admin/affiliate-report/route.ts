@@ -16,6 +16,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const month = parseInt(searchParams.get('month') || String(new Date().getMonth() + 1));
         const year = parseInt(searchParams.get('year') || String(new Date().getFullYear()));
+        const showAll = searchParams.get('showAll') === 'true';
 
         const monthStart = new Date(year, month - 1, 1);
         const monthEnd = new Date(year, month, 1);
@@ -66,7 +67,13 @@ export async function GET(req: Request) {
                 commissionOwed,
                 payoutContent: `HH ${code} ${String(month).padStart(2, '0')}${year}`
             };
-        }).sort((a, b) => b.commissionOwed - a.commissionOwed || b.lifetimeOrders - a.lifetimeOrders);
+        });
+
+        if (!showAll) {
+            report = report.filter(r => r.monthOrderCount > 0 || r.lifetimeOrders > 0);
+        }
+
+        report.sort((a, b) => b.commissionOwed - a.commissionOwed || b.lifetimeOrders - a.lifetimeOrders);
 
         return NextResponse.json({ success: true, month, year, report });
     } catch (error: any) {
