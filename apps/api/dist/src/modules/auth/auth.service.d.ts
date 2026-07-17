@@ -12,25 +12,18 @@ export declare class AuthService {
         accessToken: string;
         refreshToken: string;
         expiresIn: number;
-        user: {
-            id: string;
-            name: string;
-            email: string;
-            affiliateCode: string;
-            role: import(".prisma/client").$Enums.Role;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
-        };
+        user: any;
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         refreshToken: string;
         expiresIn: number;
         user: {
-            id: string;
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            id: any;
+            email: any;
+            name: any;
+            role: any;
+            plan: any;
         };
     }>;
     googleAuth(idToken: string): Promise<void>;

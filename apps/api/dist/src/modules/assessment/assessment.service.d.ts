@@ -1,23 +1,15 @@
 import { PrismaService } from '../../prisma/prisma.service';
 import { SubmitAssessmentDto } from './dto/submit-assessment.dto';
+type RiasecKey = 'R' | 'I' | 'A' | 'S' | 'E' | 'C';
 export declare class AssessmentService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     submit(userId: string, dto: SubmitAssessmentDto): Promise<{
-        assessment: {
-            id: string;
-            answers: import("@prisma/client/runtime/library").JsonValue;
-            riasecResult: import("@prisma/client/runtime/library").JsonValue | null;
-            mbtiResult: import("@prisma/client/runtime/library").JsonValue | null;
-            careerResult: import("@prisma/client/runtime/library").JsonValue | null;
-            reportUrl: string | null;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-        };
+        assessment: any;
         riasecResult: {
+            mbtiCode: string;
             top3: string;
-            topCode: string;
+            topCode: RiasecKey;
             R: number;
             I: number;
             A: number;
@@ -25,32 +17,17 @@ export declare class AssessmentService {
             E: number;
             C: number;
         };
-        careerResult: {
-            pct: number;
-            name: string;
-            riasec: string;
-            salary: string;
-            niche: string;
-            rank: number;
-        }[];
+        careerResult: any[];
+        vocationalCareerResult: any[];
+        track: "university" | "vocational";
     }>;
-    getUserAssessments(userId: string): Promise<{
-        id: string;
-        riasecResult: import("@prisma/client/runtime/library").JsonValue;
-        careerResult: import("@prisma/client/runtime/library").JsonValue;
-        createdAt: Date;
-    }[]>;
-    getAssessmentById(id: string, userId: string): Promise<{
-        id: string;
-        answers: import("@prisma/client/runtime/library").JsonValue;
-        riasecResult: import("@prisma/client/runtime/library").JsonValue | null;
-        mbtiResult: import("@prisma/client/runtime/library").JsonValue | null;
-        careerResult: import("@prisma/client/runtime/library").JsonValue | null;
-        reportUrl: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-    }>;
-    private getCategoryForQuestion;
+    getUserAssessments(userId: string): Promise<any>;
+    getAssessmentById(id: string, userId: string): Promise<any>;
+    private calcNumerology;
+    private threeRoundMatch;
+    private riasecToMbtiHint;
+    private buildEngineInput;
     private matchCareers;
+    private matchVocationalCareers;
 }
+export {};

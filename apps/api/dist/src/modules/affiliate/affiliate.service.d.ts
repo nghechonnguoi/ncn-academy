@@ -3,34 +3,15 @@ export declare class AffiliateService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     getStats(userId: string): Promise<{
-        affiliateCode: string;
+        affiliateCode: any;
         referralLink: string;
-        totalPaid: number;
-        pendingAmount: number;
-        totalReferrals: number;
+        totalPaid: any;
+        pendingAmount: any;
+        totalReferrals: any;
     }>;
     getCommissions(userId: string, page?: number, limit?: number): Promise<{
-        data: ({
-            payment: {
-                plan: import(".prisma/client").$Enums.SubscriptionPlan;
-                amount: number;
-            };
-            referredUser: {
-                name: string;
-                email: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            amount: number;
-            status: import(".prisma/client").$Enums.CommissionStatus;
-            rate: number;
-            paidAt: Date | null;
-            affiliateId: string;
-            referredUserId: string;
-            paymentId: string;
-        })[];
-        total: number;
+        data: any;
+        total: any;
         page: number;
         limit: number;
     }>;

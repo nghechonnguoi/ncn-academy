@@ -14,6 +14,16 @@ const LETTER_NUM: Record<string, number> = {
   S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8,
 };
 const VOWELS = new Set(['A','E','I','O','U']);
+// Y là nguyên âm trừ khi đứng giữa 2 nguyên âm khác (thì là phụ âm)
+const isYVowel = (word: string, index: number): boolean => {
+  const prev = index > 0 ? word[index - 1] : null;
+  const next = index < word.length - 1 ? word[index + 1] : null;
+  const prevIsVowel = prev !== null && VOWELS.has(prev);
+  const nextIsVowel = next !== null && VOWELS.has(next);
+  // Y đứng giữa 2 nguyên âm → phụ âm
+  if (prevIsVowel && nextIsVowel) return false;
+  return true;
+};
 
 // Bảng map chuyển chữ có dấu → chữ Latin
 const VIET_MAP: Record<string, string> = {
@@ -188,12 +198,20 @@ export class AssessmentService {
     const latin = toLatinUpper(profile.fullName ?? '');
     let soulRaw=0, missionRaw=0;
     const freq: Record<number,number> = {};
-    for (const ch of latin.replace(/\s/g,'')) {
-      const v = LETTER_NUM[ch];
-      if (!v) continue;
-      missionRaw += v;
-      freq[v] = (freq[v]||0) + 1;
-      if (VOWELS.has(ch)) soulRaw += v;
+    for (const word of latin.split(' ')) {
+      for (let i = 0; i < word.length; i++) {
+        const ch = word[i];
+        const v = LETTER_NUM[ch];
+        if (!v) continue;
+        missionRaw += v;
+        freq[v] = (freq[v]||0) + 1;
+        // Y: kiểm tra ngữ cảnh — nguyên âm trừ khi đứng giữa 2 nguyên âm khác
+        if (ch === 'Y') {
+          if (isYVowel(word, i)) soulRaw += v;
+        } else if (VOWELS.has(ch)) {
+          soulRaw += v;
+        }
+      }
     }
     const soul    = reduceNum(soulRaw, true);
     const mission = reduceNum(missionRaw, true);
