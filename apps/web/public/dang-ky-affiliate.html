@@ -408,9 +408,11 @@
             msgEl.innerText = '';
 
             try {
-                // Query by phone
-                const snapshot = await db.collection('affiliates').where('phone', '==', phone).get();
-                if (snapshot.empty) {
+                // Call API instead of direct Firestore query to bypass Security Rules
+                const res = await fetch(`https://ncn-academy-web.vercel.app/api/affiliate-lookup?phone=${encodeURIComponent(phone)}`);
+                const data = await res.json();
+                
+                if (!data.success) {
                     msgEl.className = 'msg err';
                     msgEl.innerText = '❌ Không tìm thấy mã Affiliate nào đăng ký với số điện thoại này.';
                     lookupBtn.disabled = false;
@@ -418,9 +420,8 @@
                     return;
                 }
 
-                // Get first matched record
-                const docData = snapshot.docs[0].data();
-                const code = docData.referralCode;
+                // Get code from API response
+                const code = data.code;
 
                 const link = 'https://quiz.nghechonnguoi.com/?ref=' + code;
                 document.getElementById('ref-link').value = link;

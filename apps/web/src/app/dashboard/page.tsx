@@ -697,6 +697,20 @@ function DashboardContent() {
                     <><Copy className="w-3.5 h-3.5" /> Copy link</>
                   )}
                 </button>
+                <a
+                  href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
+                  style={{ background: "rgba(0,120,200,0.15)", color: "#4DA6FF", border: "1px solid rgba(0,120,200,0.3)" }}
+                  title="Tham gia nhóm Zalo Affiliate"
+                >
+                  <svg width="15" height="15" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="48" height="48" rx="10" fill="#0078C8"/>
+                    <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+                  </svg>
+                  Nhóm Zalo
+                </a>
                 <Link
                   href="/affiliate"
                   className="px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"

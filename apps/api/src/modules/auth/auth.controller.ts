@@ -37,8 +37,8 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   me(@Request() req: any) {
-    const { id, email, name, role, plan } = req.user;
-    return { id, email, name, role, plan };
+    const { id, email, name, role, plan, affiliateCode } = req.user;
+    return { id, email, name, role, plan, affiliateCode };
   }
 
   @Post('google')
