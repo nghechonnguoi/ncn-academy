@@ -66,8 +66,7 @@ export async function GET(req: Request) {
                 commissionOwed,
                 payoutContent: `HH ${code} ${String(month).padStart(2, '0')}${year}`
             };
-        }).filter(r => r.monthOrderCount > 0 || r.lifetimeOrders > 0)
-            .sort((a, b) => b.commissionOwed - a.commissionOwed);
+        }).sort((a, b) => b.commissionOwed - a.commissionOwed || b.lifetimeOrders - a.lifetimeOrders);
 
         return NextResponse.json({ success: true, month, year, report });
     } catch (error: any) {

@@ -219,6 +219,26 @@
                 <div id="code-msg" class="msg"></div>
 
                 <button type="submit" class="btn-submit" id="submit-btn">Đăng Ký & Lấy Link</button>
+                <div style="text-align: center; margin-top: 16px;">
+                    <a href="javascript:void(0)" onclick="toggleLookup()" style="color: #94a3b8; font-size: 13px; text-decoration: underline;">Quên link? Tra cứu tại đây</a>
+                </div>
+            </form>
+        </div>
+
+        <div id="lookup-section" class="hidden">
+            <h1>Tra cứu Link Affiliate</h1>
+            <p class="subtitle">Nhập số điện thoại bạn đã dùng để đăng ký.</p>
+
+            <form id="lookup-form">
+                <label>Số điện thoại *</label>
+                <input id="lookup-phone" required placeholder="09xxxxxxxx">
+                
+                <div id="lookup-msg" class="msg" style="margin-top:8px;"></div>
+
+                <button type="submit" class="btn-submit" id="lookup-btn" style="margin-top:16px;">Tra Cứu</button>
+                <div style="text-align: center; margin-top: 16px;">
+                    <a href="javascript:void(0)" onclick="toggleLookup()" style="color: #94a3b8; font-size: 13px; text-decoration: underline;">Quay lại trang Đăng ký</a>
+                </div>
             </form>
         </div>
 
@@ -233,6 +253,9 @@
                 <p class="note">Chia sẻ link này bất cứ đâu. Mọi đơn hàng qua link sẽ tự động ghi nhận vào mã <strong
                         id="code-display" style="color:#f59e0b;"></strong> của bạn. Đội ngũ NCN Academy sẽ đối soát và
                     chuyển hoa hồng định kỳ.</p>
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="javascript:void(0)" onclick="location.reload()" style="color: #94a3b8; font-size: 13px; text-decoration: underline;">Quay lại từ đầu</a>
+                </div>
             </div>
         </div>
     </div>
@@ -249,6 +272,34 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        function toggleLookup() {
+            const formSec = document.getElementById('form-section');
+            const lookupSec = document.getElementById('lookup-section');
+            const resultSec = document.getElementById('result-section');
+            resultSec.classList.add('hidden');
+            
+            if (formSec.classList.contains('hidden')) {
+                formSec.classList.remove('hidden');
+                lookupSec.classList.add('hidden');
+            } else {
+                formSec.classList.add('hidden');
+                lookupSec.classList.remove('hidden');
+            }
+        }
+
+        function copyLink() {
+            const linkInput = document.getElementById('ref-link');
+            linkInput.select();
+            document.execCommand('copy');
+            const btn = document.querySelector('.btn-copy');
+            btn.innerText = 'Đã Copy!';
+            btn.style.background = '#059669';
+            setTimeout(() => {
+                btn.innerText = 'Copy';
+                btn.style.background = '#10b981';
+            }, 2000);
+        }
 
         function removeVietnameseTones(str) {
             return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -336,6 +387,58 @@
                 alert('Có lỗi xảy ra: ' + err.message + '. Vui lòng thử lại hoặc liên hệ Admin.');
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Đăng Ký & Lấy Link';
+            }
+        });
+
+        document.getElementById('lookup-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const lookupBtn = document.getElementById('lookup-btn');
+            const phone = document.getElementById('lookup-phone').value.trim();
+            const msgEl = document.getElementById('lookup-msg');
+
+            if (!phone) {
+                msgEl.className = 'msg err';
+                msgEl.innerText = 'Vui lòng nhập số điện thoại.';
+                return;
+            }
+
+            lookupBtn.disabled = true;
+            lookupBtn.innerText = 'Đang tra cứu...';
+            msgEl.className = 'msg';
+            msgEl.innerText = '';
+
+            try {
+                // Query by phone
+                const snapshot = await db.collection('affiliates').where('phone', '==', phone).get();
+                if (snapshot.empty) {
+                    msgEl.className = 'msg err';
+                    msgEl.innerText = '❌ Không tìm thấy mã Affiliate nào đăng ký với số điện thoại này.';
+                    lookupBtn.disabled = false;
+                    lookupBtn.innerText = 'Tra Cứu';
+                    return;
+                }
+
+                // Get first matched record
+                const docData = snapshot.docs[0].data();
+                const code = docData.referralCode;
+
+                const link = 'https://quiz.nghechonnguoi.com/?ref=' + code;
+                document.getElementById('ref-link').value = link;
+                document.getElementById('code-display').innerText = code;
+                
+                // Show result
+                document.getElementById('lookup-section').classList.add('hidden');
+                document.getElementById('result-section').classList.remove('hidden');
+
+                // Reset button for next time
+                lookupBtn.disabled = false;
+                lookupBtn.innerText = 'Tra Cứu';
+            } catch (err) {
+                console.error(err);
+                msgEl.className = 'msg err';
+                msgEl.innerText = 'Lỗi tra cứu: ' + err.message;
+                lookupBtn.disabled = false;
+                lookupBtn.innerText = 'Tra Cứu';
             }
         });
     </script>
