@@ -48,6 +48,11 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
         // NCN Brand colors — accessed as bg-ncn-orange, text-ncn-orange, etc.
+        "ncn-purple": {
+          DEFAULT: "#635bff",
+          dark: "#5248e8",
+          light: "#a78bfa",
+        },
         "ncn-orange": {
           DEFAULT: "#f97316",
           dark: "#ea580c",

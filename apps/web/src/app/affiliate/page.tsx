@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { MobileSidebarTrigger } from "@/components/dashboard/sidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,8 +19,10 @@ export default function AffiliatePage() {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const affiliateCode = stats?.affiliateCode ?? user?.affiliateCode ?? "—";
-  const affiliateLink = `https://nghechonnguoi.com/ref/${affiliateCode}`;
+  const affiliateCode = stats?.affiliateCode ?? user?.affiliateCode ?? null;
+  const affiliateLink = affiliateCode
+    ? `https://nghechonnguoi.com/ref/${affiliateCode}`
+    : "";
 
   useEffect(() => {
     Promise.all([
@@ -32,7 +35,27 @@ export default function AffiliatePage() {
   }, []);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(affiliateLink);
+    if (!affiliateLink) return;
+    // clipboard API cần HTTPS; dùng fallback execCommand nếu fail
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(affiliateLink).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => fallbackCopy());
+    } else {
+      fallbackCopy();
+    }
+  };
+
+  const fallbackCopy = () => {
+    const el = document.createElement('textarea');
+    el.value = affiliateLink;
+    el.style.position = 'fixed';
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -58,7 +81,12 @@ export default function AffiliatePage() {
     <div className="flex h-screen bg-gray-50">
       <DashboardSidebar />
       <div className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-6xl mx-auto">
+        {/* Mobile top bar */}
+        <div className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 sticky top-0 z-30">
+          <MobileSidebarTrigger />
+          <span className="font-bold text-gray-900 text-sm">Affiliate</span>
+        </div>
+        <div className="p-6 lg:p-8 max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -104,21 +132,50 @@ export default function AffiliatePage() {
                   </h2>
                   <div className="flex gap-2">
                     <Input
-                      value={affiliateCode !== "—" ? affiliateLink : "Chưa có mã affiliate"}
+                      value={affiliateCode ? affiliateLink : (isLoading ? "Đang tải..." : "Chưa có mã affiliate")}
                       readOnly
                       className="rounded-xl bg-gray-50 text-sm font-mono border-gray-200"
                     />
                     <Button
                       onClick={handleCopy}
-                      disabled={affiliateCode === "—"}
-                      className={`rounded-xl px-4 flex-shrink-0 ${copied ? "bg-green-500 hover:bg-green-600" : "bg-ncn-purple hover:bg-ncn-purple-dark"}`}
+                      disabled={!affiliateCode}
+                      className={`rounded-xl px-4 flex-shrink-0 text-white ${copied ? "bg-green-500 hover:bg-green-600" : "bg-ncn-purple hover:bg-ncn-purple-dark"}`}
                     >
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     </Button>
+                    <a
+                      href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80 border"
+                      style={{ background: "rgba(0,120,200,0.08)", color: "#0078C8", borderColor: "rgba(0,120,200,0.25)", textDecoration: "none" }}
+                      title="Tham gia nhóm Zalo Affiliate NCN"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="10" fill="#0078C8"/>
+                        <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+                      </svg>
+                      Zalo
+                    </a>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">
-                    Mã: <strong className="text-gray-600">{affiliateCode}</strong> · Hoa hồng: <strong className="text-green-600">20%</strong> mỗi đơn
+                    Mã: <strong className="text-gray-600">{affiliateCode ?? "—"}</strong> · Hoa hồng: <strong className="text-green-600">20%</strong> mỗi đơn
                   </p>
+                  {/* Zalo community */}
+                  <a
+                    href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 mt-3 text-sm font-semibold transition-opacity hover:opacity-80"
+                    style={{ color: "#0078C8", textDecoration: "none" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" rx="10" fill="#0078C8"/>
+                      <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+                    </svg>
+                    Tham gia nhóm Zalo Affiliate NCN Academy
+                  </a>
+
 
                   {chartData.length > 0 && (
                     <div className="mt-6">

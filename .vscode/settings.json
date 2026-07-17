@@ -1,3 +1,26 @@
 {
-    "html.validate.styles": false
+  "html.validate.styles": false,
+
+  // TypeScript
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // ESLint — tự động fix khi save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+
+  // Format on save
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Tailwind class autocomplete
+  "tailwindCSS.experimental.classRegex": [
+    ["cn\\(([^)]*)\\)", "\"([^\"]*)\""]
+  ],
+
+  // Hiện lỗi TypeScript ngay trong editor
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.suggest.autoImports": true
 }

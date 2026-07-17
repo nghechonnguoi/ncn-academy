@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   ArrowLeft, ArrowRight, Loader2, CheckCircle,
-  GraduationCap, Wrench, User, ChevronRight,
+  GraduationCap, Wrench, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAssessment } from "@/hooks/useAssessment";

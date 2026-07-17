@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { assessmentApi } from "@/lib/api";
 import { CheckoutModal } from "@/components/dashboard/checkout-modal";
-import { Lock, Star, Users, TrendingUp, CheckCircle, Loader2, ArrowLeft } from "lucide-react";
+import { Lock, Star, Users, TrendingUp, CheckCircle, Loader2, ArrowLeft, Copy, Check, Link2 } from "lucide-react";
 import Link from "next/link";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -163,7 +163,18 @@ function DashboardContent() {
   const [aiData, setAiData] = useState<AiData | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [matchScore, setMatchScore] = useState(0);
+  const [matchScore, setMatchScore]     = useState(0);
+  const [affiliateCopied, setAffiliateCopied] = useState(false);
+
+  const affiliateCode = user?.affiliateCode ?? null;
+  const affiliateLink = affiliateCode ? `https://nghechonnguoi.com/ref/${affiliateCode}` : "";
+
+  const handleAffiliateCopy = () => {
+    if (!affiliateLink) return;
+    navigator.clipboard.writeText(affiliateLink);
+    setAffiliateCopied(true);
+    setTimeout(() => setAffiliateCopied(false), 2000);
+  };
 
   /** Lấy top 5 nghề từ assessment (cùng nguồn với báo cáo đầy đủ) */
   function getAssessmentCareers(a: any): Career[] {
@@ -582,21 +593,39 @@ function DashboardContent() {
           )}
 
           {/* Giá */}
-          <div className="mb-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-              style={{ background: "rgba(43,168,140,0.15)", border: "1px solid rgba(43,168,140,0.3)" }}>
-              <span className="text-xs font-bold" style={{ color: "#2BA88C" }}>Tiết kiệm 790.000đ</span>
-            </div>
-            <div className="flex items-baseline justify-center gap-3">
-              <span className="text-base line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
-                1.358.000đ
-              </span>
-              <span className="text-4xl font-black" style={{ color: "#E8A838" }}>568.000đ</span>
-            </div>
-            <p className="text-sm mt-3 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Chỉ hơn 500k để tránh quyết định sai có thể khiến bạn mất 4 năm đại học và hàng trăm triệu đồng.
-            </p>
-          </div>
+          {(() => {
+            const now = new Date();
+            const isCampaign = now >= new Date("2026-07-15T00:00:00+07:00") && now <= new Date("2026-07-28T23:59:59+07:00");
+            return (
+              <div className="mb-6">
+                {isCampaign ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                    style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }}>
+                    <span className="text-xs font-bold" style={{ color: "#f87171" }}>🔥 Ưu đãi chiến dịch · Kết thúc 28/7/2026</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
+                    style={{ background: "rgba(43,168,140,0.15)", border: "1px solid rgba(43,168,140,0.3)" }}>
+                    <span className="text-xs font-bold" style={{ color: "#2BA88C" }}>Tiết kiệm 790.000đ</span>
+                  </div>
+                )}
+                <div className="flex items-baseline justify-center gap-3">
+                  <span className="text-base line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    {isCampaign ? "568.000đ" : "1.358.000đ"}
+                  </span>
+                  <span className="text-4xl font-black" style={{ color: "#E8A838" }}>
+                    {isCampaign ? "399.000đ" : "568.000đ"}
+                  </span>
+                </div>
+                <p className="text-sm mt-3 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  {isCampaign
+                    ? "Giá ưu đãi chiến dịch — chỉ còn đến hết ngày 28/7/2026."
+                    : "Chỉ hơn 500k để tránh quyết định sai có thể khiến bạn mất 4 năm đại học và hàng trăm triệu đồng."}
+                </p>
+              </div>
+            );
+          })()}
+
 
           {/* CTA Button */}
           <button
@@ -623,6 +652,80 @@ function DashboardContent() {
           </p>
         </div>
       </section>
+
+      {/* AFFILIATE BANNER — chỉ hiện khi user có affiliate code */}
+      {affiliateCode && (
+        <section className="px-5 py-8" style={{ background: "#1a2540" }}>
+          <div className="max-w-2xl mx-auto">
+            <div
+              className="rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+              style={{
+                background: "linear-gradient(135deg, rgba(43,168,140,0.15) 0%, rgba(43,168,140,0.05) 100%)",
+                border: "1px solid rgba(43,168,140,0.3)",
+              }}
+            >
+              {/* Icon + text */}
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "rgba(43,168,140,0.2)" }}
+                >
+                  <Link2 className="w-5 h-5" style={{ color: "#2BA88C" }} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-white">Link affiliate của bạn</p>
+                  <p className="text-xs truncate font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
+                    nghechonnguoi.com/ref/<span style={{ color: "#2BA88C" }}>{affiliateCode}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={handleAffiliateCopy}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                  style={{
+                    background: affiliateCopied ? "#2BA88C" : "rgba(43,168,140,0.2)",
+                    color: affiliateCopied ? "#fff" : "#2BA88C",
+                    border: "1px solid rgba(43,168,140,0.4)",
+                  }}
+                >
+                  {affiliateCopied ? (
+                    <><Check className="w-3.5 h-3.5" /> Đã copy!</>
+                  ) : (
+                    <><Copy className="w-3.5 h-3.5" /> Copy link</>
+                  )}
+                </button>
+                <Link
+                  href="/affiliate"
+                  className="px-4 py-2 rounded-xl text-sm font-bold transition-all hover:opacity-80"
+                  style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.7)" }}
+                >
+                  Xem hoa hồng
+                </Link>
+              </div>
+            </div>
+
+            {/* Zalo community link */}
+            <div className="mt-3 text-center">
+              <a
+                href="https://zalo.me/g/lilbiycoxygz5arb5bj2"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ color: "#2BA88C" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" rx="10" fill="#2BA88C"/>
+                  <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold" fontFamily="Arial">Z</text>
+                </svg>
+                Tham gia Cộng đồng Affiliate Nghề Chọn Người
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FOOTER */}
       <footer className="py-6 text-center text-xs" style={{ background: "#1B2A4A", color: "rgba(255,255,255,0.3)" }}>

@@ -29,6 +29,7 @@ export async function POST(req: Request) {
     const {
       orderCode, orderId, amount, customerName,
       customerEmail, customerPhone, payload,
+      referralCode,
     } = body;
 
     if (!orderCode || !amount) {
@@ -46,6 +47,7 @@ export async function POST(req: Request) {
         customerEmail: customerEmail ?? '',
         customerPhone: customerPhone ?? '',
         payload:       payload       ?? {},
+        referralCode:  referralCode  || '',   // affiliate tracking
         createdAt:     FieldValue.serverTimestamp(),
       }, { merge: true });
     }

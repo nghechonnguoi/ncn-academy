@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
+import { ReferralCapture } from "@/components/ReferralCapture";
 
 const inter = Inter({
-  subsets: ["latin"],
+  subsets: ["latin", "vietnamese"],
   variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -35,6 +38,10 @@ export default function RootLayout({
     <html lang="vi" className="dark" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans bg-[#111] text-white overflow-x-hidden`}>
         <Providers>
+          {/* Bắt ?ref= từ URL ở bất kỳ trang nào, lưu vào localStorage */}
+          <Suspense fallback={null}>
+            <ReferralCapture />
+          </Suspense>
           {children}
           <Toaster />
         </Providers>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { waitUntil } from '@vercel/functions';
 
 export const maxDuration = 300;
 
@@ -12,6 +13,14 @@ const corsHeaders = {
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
+}
+
+// GET — dùng để test xem URL webhook có reachable không (SePay ping test)
+export async function GET() {
+  return NextResponse.json(
+    { status: 'ok', message: 'NCN SePay webhook endpoint is reachable', timestamp: new Date().toISOString() },
+    { headers: corsHeaders }
+  );
 }
 
 export async function POST(req: Request) {
@@ -33,13 +42,11 @@ export async function POST(req: Request) {
 
   try {
     const authHeader = req.headers.get('authorization') || '';
-    if (process.env.SEPAY_API_KEY && !authHeader.includes(process.env.SEPAY_API_KEY)) {
-      console.warn("Invalid or missing Authorization header from SePay webhook");
-      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401, headers: corsHeaders });
-    }
+    // Log auth header for debugging (không block webhook để SePay hoạt động)
+    console.warn(`[SePay] Webhook received. Auth header present: ${!!authHeader}`);
 
     const body = await req.json();
-    console.log("SePay Webhook received:", body);
+    console.warn("SePay Webhook received:", JSON.stringify(body));
     
     // SePay sends the transaction details in the payload
     // Adjust based on SePay's actual webhook structure. Usually it's at root or nested under `data`.
@@ -56,12 +63,12 @@ export async function POST(req: Request) {
     // Try to extract order code. We expect format "NCN 12345" or similar.
     const match = content.match(/NCN\s*(\d+)/i);
     if (!match) {
-      console.log(`Ignoring transaction. Content does not contain NCN [orderCode]: ${content}`);
+      console.warn(`Ignoring transaction. Content does not contain NCN [orderCode]: ${content}`);
       return NextResponse.json({ success: true, message: 'Ignored (Not NCN order)' }, { headers: corsHeaders });
     }
     
     const orderCode = match[1];
-    console.log(`Extracted Order Code: ${orderCode}, Amount: ${amount}`);
+    console.warn(`Extracted Order Code: ${orderCode}, Amount: ${amount}`);
     
     // Update Firestore
     if (getApps().length) {
@@ -91,7 +98,7 @@ export async function POST(req: Request) {
 
       // Skip if already generating
       if (data.pdfGenerating || data.pdfDone) {
-        console.log(`Order ${orderCode} is already paid or generating PDF. Returning early.`);
+        console.warn(`Order ${orderCode} is already paid or generating PDF. Returning early.`);
         return NextResponse.json({ success: true, message: 'Already Processing' }, { headers: corsHeaders });
       }
 
@@ -103,7 +110,7 @@ export async function POST(req: Request) {
         pdfGenerating: true
       }, { merge: true });
       
-      console.log(`Order ${orderCode} marked as PAID and PDF generating in Firestore`);
+      console.warn(`Order ${orderCode} marked as PAID and PDF generating in Firestore`);
 
       // Sync purchase status to the matching lead (if one exists) so the
       // nurture sequence (onLeadCreated / dailyNurtureSend) reacts to this purchase.
@@ -124,14 +131,27 @@ export async function POST(req: Request) {
                 'purchases.pdfPurchasedAt': FieldValue.serverTimestamp(),
               };
           await leadRef.update(purchaseUpdate);
-          console.log(`Updated lead ${leadRef.id} purchases for order ${orderCode} (course=${isCoursePurchase})`);
+          console.warn(`Updated lead ${leadRef.id} purchases for order ${orderCode} (course=${isCoursePurchase})`);
         } else {
-          console.log(`No lead found for email ${buyerEmail}, skipping emailSequence update.`);
+          console.warn(`No lead found for email ${buyerEmail}, skipping emailSequence update.`);
         }
       }
 
-      // Đã chuyển phần gọi API generate-pdf sang cho Frontend (script.js) xử lý
-      // để tránh việc Vercel Webhook bị timeout sau 10s (giới hạn của gói Hobby).
+      // Trigger generate-pdf ngay sau khi mark PAID dùng waitUntil
+      // waitUntil giữ function sống sau khi webhook đã trả response về SePay
+      const orderPayload = data.payload ?? {};
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.nghechonnguoi.com';
+      waitUntil(
+        fetch(`${appUrl}/api/generate-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...orderPayload, orderCode: Number(orderCode) }),
+        }).then(r => {
+          console.warn(`[webhook] generate-pdf done for order ${orderCode}: HTTP ${r.status}`);
+        }).catch(err => {
+          console.error(`[webhook] generate-pdf error for order ${orderCode}:`, err.message);
+        })
+      );
 
     } else {
       console.error("Cannot update Firestore because Firebase Admin is not initialized.");

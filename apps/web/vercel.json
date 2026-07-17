@@ -2,5 +2,19 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "crons": [
+    {
+      "path": "/api/admin/send-report?periodDays=1",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/admin/send-report?periodDays=7",
+      "schedule": "0 1 * * 1"
+    },
+    {
+      "path": "/api/admin/process-pending-pdfs",
+      "schedule": "* * * * *"
+    }
+  ]
 }

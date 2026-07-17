@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bot, Route, ArrowRight, ClipboardList } from "lucide-react";
+import { Bot, ArrowRight, ClipboardList } from "lucide-react";
 
 interface QuickActionsProps {
   hasAssessment?: boolean;

@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  LayoutDashboard, Brain, Bot, Settings,
-  Users, LogOut, TrendingUp, ClipboardList,
+  LayoutDashboard, Bot,
+  Users, LogOut, ClipboardList, Menu, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,16 +13,20 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
-  { label: "Tổng quan", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Tổng quan",   href: "/dashboard",  icon: LayoutDashboard },
   { label: "Làm bài test", href: "/assessment", icon: ClipboardList },
-  { label: "AI Advisor", href: "/ai-tools", icon: Bot },
-  { label: "Affiliate", href: "/affiliate", icon: Users },
-
+  { label: "AI Advisor",  href: "/ai-tools",   icon: Bot },
+  { label: "Affiliate",   href: "/affiliate",  icon: Users },
 ];
 
-export function DashboardSidebar() {
+// ─── Nội dung sidebar (dùng chung cho desktop + mobile) ───────────────────────
+function SidebarContent({
+  onNavigate,
+}: {
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
-  const router = useRouter();
+  const router   = useRouter();
   const { user, logout } = useAuth();
 
   const initials = user?.name
@@ -35,10 +40,10 @@ export function DashboardSidebar() {
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-100 h-screen">
+    <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="p-6 border-b border-gray-100">
-        <Link href="/" className="flex items-center gap-2 font-bold">
+        <Link href="/" className="flex items-center gap-2 font-bold" onClick={onNavigate}>
           <span className="w-8 h-8 rounded-lg bg-[#635bff] flex items-center justify-center text-white text-sm">
             🧭
           </span>
@@ -54,6 +59,7 @@ export function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                 isActive
@@ -90,6 +96,60 @@ export function DashboardSidebar() {
           Đăng xuất
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ─── Desktop sidebar ──────────────────────────────────────────────────────────
+export function DashboardSidebar() {
+  return (
+    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-100 h-screen flex-shrink-0">
+      <SidebarContent />
     </aside>
+  );
+}
+
+// ─── Mobile hamburger button + drawer (dùng trong DashboardHeader) ────────────
+export function MobileSidebarTrigger() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* Hamburger button */}
+      <button
+        className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+        onClick={() => setOpen(true)}
+        aria-label="Mở menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Backdrop */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Drawer */}
+      <div
+        className={cn(
+          "fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out lg:hidden",
+          open ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {/* Close button */}
+        <button
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+          onClick={() => setOpen(false)}
+          aria-label="Đóng menu"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <SidebarContent onNavigate={() => setOpen(false)} />
+      </div>
+    </>
   );
 }

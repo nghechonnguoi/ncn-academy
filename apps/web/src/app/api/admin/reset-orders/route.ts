@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     if (!getApps().length) {
       if (process.env.FIREBASE_SERVICE_ACCOUNT) {

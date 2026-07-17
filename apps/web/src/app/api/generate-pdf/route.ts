@@ -74,12 +74,12 @@ export async function POST(req: Request) {
           const orderData = orderSnap.data();
           if (orderData?.aiTextsCache) {
             const parsed = JSON.parse(orderData.aiTextsCache);
-            // Chỉ dùng cache nếu có CAREER fields thực sự (tránh cache cũ không đủ)
-            if (parsed?.CAREER_1_KIENTHUC && parsed?.CAREER_1_SCIENCE) {
+            // Chỉ dùng cache nếu có cả CAREER và AVOID fields (tránh cache cũ không đủ)
+            if (parsed?.CAREER_1_KIENTHUC && parsed?.CAREER_1_SCIENCE && parsed?.AVOID_1_TITLE) {
               cachedAiTexts = parsed;
               console.warn(`✅ Dùng lại nội dung AI đã lưu cho đơn ${data.orderCode}`);
             } else {
-              console.warn(`⚠️ Cache đơn ${data.orderCode} thiếu CAREER fields — regenerate`);
+              console.warn(`⚠️ Cache đơn ${data.orderCode} thiếu CAREER/AVOID fields — regenerate`);
             }
           }
         }
@@ -88,8 +88,8 @@ export async function POST(req: Request) {
       }
     }
 
-    // ── Tính avoid_careers deterministic từ RIASEC ──────────────────────────────
-    // Luôn ghi đè AVOID fields bằng thuật toán RIASEC — không dùng cache cũ từ Firestore
+    // ── Tính avoid_careers deterministic từ RIASEC ──────────────────────────────────────────────────
+    // Fallback: chạy trước để set data.AVOID_X_* — AI sẽ ghi đè lận sau nếu thành công
     (() => {
       const hollandStr = String(data.HOLLAND || '');
       const top3 = hollandStr.replace(/[^RIASCE]/g, '').substring(0, 3);
@@ -163,7 +163,7 @@ export async function POST(req: Request) {
   4. ${data.TOP4_TITLE || "Chưa có"}
   5. ${data.TOP5_TITLE || "Chưa có"}`;
 
-    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp xuất sắc. Dựa trên thông tin ứng viên, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU QUAN TRỌNG TỐI THƯỢNG: 1. Viết thật dài, sâu sắc, ngôn từ đắc nhân tâm, truyền cảm hứng mạnh mẽ. 2. TRONG TOÀN BỘ CÁC MỤC (TỪ TÍNH CÁCH, NGHỀ NGHIỆP, RÀO CẢN ĐẾN MÔI TRƯỜNG), PHẢI LUÔN LỒNG GHÉP VÀ TỔNG HÒA sâu sắc ý nghĩa của 5 khía cạnh cốt lõi (Tiềm năng bẩm sinh, Khao khát nội tâm, Sứ mệnh, Tài năng, Đam mê) cùng với MBTI và Holland. 3. KHÔNG BAO GIỜ được gọi đích danh tên các công cụ/chỉ số (như MBTI, Holland, Số chủ đạo, Số sứ mệnh, v.v...). Phải biến các chỉ số này thành những mô tả phẩm chất con người thật tự nhiên và thấu cảm. 4. DANH XƯNG GIAO TIẾP: Xuyên suốt báo cáo, chỉ được phép xưng hô với khách hàng bằng Tên thật của họ, hoặc Họ Tên, hoặc dùng đại từ 'bạn'.";
+    const instruction = "Bạn là chuyên gia tư vấn hướng nghiệp cho học sinh THPT Việt Nam (15-18 tuổi). Dựa trên thông tin học sinh, hãy sinh ra BẮT BUỘC một JSON hợp lệ có các trường sau. YÊU CẦU BẮT BUỘC: 1. NGÔN TỪ: Viết đơn giản, gần gũi, dễ hiểu — như một người anh/chị đi trước nói chuyện trực tiếp với học sinh. TUYỆT ĐỐI KHÔNG dùng những cụm từ trừu tượng, hoa mỹ, hoặc ngôn ngữ sách giáo khoa khó hiểu. Không dùng các từ: 'kiến tạo', 'khai phóng', 'thăng hoa', 'cộng hưởng', 'vận mệnh', 'thiên khải', 'chất xúc tác', 'bản thể', 'hiện hữu', 'viễn kiến' hoặc các từ tương tự. 2. DANH XƯNG: Chỉ được xưng hô với học sinh bằng Tên thật của họ hoặc đại từ 'bạn'. TUYỆT ĐỐI KHÔNG dùng 'con', 'em', 'cậu', 'mình'. 3. NỘI DUNG: Lồng ghép ý nghĩa của các chỉ số phân tích thành mô tả tự nhiên về đặc điểm con người. KHÔNG BAO GIỜ gọi tên công cụ/chỉ số (MBTI, Holland, Số chủ đạo, Số sứ mệnh, v.v...) trong nội dung."; 
 
     const prompt1 = `${instruction}
 Thông tin ứng viên:
@@ -275,7 +275,9 @@ ${userInfo}
       ];
 
 
-      async function fetchClaudeJson(promptText: string) {
+      async function fetchClaudeJson(promptText: string, opts?: { systemPrompt?: string; temperature?: number }) {
+        const sysPrompt = opts?.systemPrompt ??
+          "You are a JSON generator. Return ONLY a valid JSON object with no markdown, no code blocks, no explanation. All string values must use proper JSON escaping (backslash-n for newlines, backslash-quote for quotes). Do not truncate the output.";
         let message;
         let errors = [];
         for (const modelName of anthropicModelsToTry) {
@@ -283,7 +285,8 @@ ${userInfo}
             message = await anthropic.messages.create({
               model: modelName,
               max_tokens: 8192,
-              system: "You are a JSON generator. Return ONLY a valid JSON object with no markdown, no code blocks, no explanation. All string values must use proper JSON escaping (backslash-n for newlines, backslash-quote for quotes). Do not truncate the output.",
+              ...(opts?.temperature !== undefined ? { temperature: opts.temperature } : {}),
+              system: sysPrompt,
               messages: [
                 { role: "user", content: promptText }
               ]
@@ -308,7 +311,7 @@ ${userInfo}
               try {
                 const model = genAI.getGenerativeModel({ model: m });
                 result = await model.generateContent(
-                  "Return ONLY a valid JSON object with no markdown, no code blocks, no explanation.\n\n" + promptText
+                  sysPrompt + "\n\n" + promptText
                 );
                 break; // success
               } catch (e: any) {
@@ -358,11 +361,59 @@ ${userInfo}
         }
       }
 
-      // Chạy 3 prompt song song (prompt1=personality, prompt1b=career 1-3, prompt2=career 4-5+rest)
-      const [settled1, settled1b, settled2] = await Promise.allSettled([
+      // ── Prompt: 3 nghề KHÔNG phù hợp — AI phân tích 3 góc chuyên sâu ──────────────────
+      const instructionAvoid = [
+        "Bạn là chuyên gia tư vấn hướng nghiệp cho học sinh THPT Việt Nam (15–17 tuổi).",
+        "Giọng văn: thẳng thắn, gần gũi — như một người anh/chị đi trước chia sẻ thực tế. Không dọa, không lên lớp, không hoa mỹ.",
+        "NGÔN TỪ: Dùng từ đơn giản, dễ hiểu. KHÔNG dùng: 'kiến tạo', 'khai phóng', 'thăng hoa', 'bản thể', 'vận mệnh', 'thiên khải', hay các từ sách vở trừu tượng khác.",
+        "DANH XƯNG: Chỉ xưng 'bạn' hoặc tên thật của học sinh. KHÔNG dùng 'con', 'em', 'cậu'.",
+        "Trả về ONLY JSON hợp lệ, không có markdown wrapper, không giải thích thêm."
+      ].join(" ");
+
+      const promptAvoid = `Viết phần "3 nghề KHÔNG phù hợp" cho học sinh có profile sau:
+${userInfo}
+
+YÊu CẦU:
+1. Chọn 3 nghề CỤ THỂ (tên nghề rõ ràng như "Kiểm toán viên", "Lập trình viên Backend", "Nhân viên QC nhà máy" — không dùng nhóm ngành chung). Ưu tiên nghề mà học sinh Việt Nam hay bị áp lực chọn sai (ba mẹ muốn, xã hội coi là ổn định, điểm chuẩn vừa tầm).
+
+2. Mỗi nghề phân tích từ một GÓC HOÀN TOÀN KHÁC:
+   Nghề tránh #1 → GÓC MÔI TRƯỜNG LÀM VIỆC hàng ngày: mô tả cụ thể một ngày làm việc điển hình (giờ giấc, không gian, nhịp độ, tương tác), chỉ ra điểm nào xung đột trực tiếp với cách học sinh này vận hành tốt nhất.
+   Nghề tránh #2 → GÓC KỸ NĂNG CỐT LÕI mà nghề đòi hỏi: nêu 2–3 kỹ năng then chốt, giải thích vì sao đây là điểm yếu tự nhiên của profile — không phải không học được, mà là luôn phải gắng sức ngược bản năng.
+   Nghề tránh #3 → GÓC GIÁ TRỊ & ĐỘNG LỰC: chỉ ra nghề này thưởng cho điều gì (độ chính xác, tuân thủ quy trình, cạnh tranh doanh số) và vì sao điều đó ngược với nguồn năng lượng chính của học sinh.
+
+3. Mỗi nghề kết bằng 1 câu ngắn gợi ý hướng thay thế gần nhất phù hợp hơn với profile.
+4. Độ dài: BẮT BUỘC ít nhất 120 từ mỗi nghề (không được dưới 100 từ).
+
+CẤM:
+- Không dùng cùng mẫu câu mở đầu cho 2 nghề bất kỳ.
+- Không lặp cụm "dễ dẫn đến kiệt sức" hay "gây mệt mỏi kéo dài" — diễn đạt hệ quả bằng cách khác mỗi lần.
+- Không dùng từ ngữ hoa mỹ, trừu tượng như: 'kiến tạo', 'khai phóng', 'thăng hoa', 'bản thể', 'cộng hưởng', 'vận mệnh'. Dùng từ đơn giản, cụ thể.
+- Mỗi đoạn phải có ít nhất 1 chi tiết cụ thể của nghề đó (ví dụ: "ngồi debug code 8 tiếng liên tục", "đứng dây chuyền kiểm hàng ca đêm", "báo cáo KPI doanh số hàng tuần cho trưởng phòng").
+- Xưng 'bạn' với học sinh. KHÔNG dùng 'con', 'em', 'cậu'.
+- Không nhắc Holland Code, MBTI, RIASEC hay bất kỳ phương pháp luận nào — chỉ nói về đặc điểm của học sinh.
+
+FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
+{
+  "AVOID_1_TITLE": "Tên nghề cụ thể 1",
+  "AVOID_1_ANGLE": "Môi trường làm việc",
+  "AVOID_1_REASON": "Nội dung phân tích 120–180 từ (plain text, không dùng markdown heading)",
+  "AVOID_1_TIP": "1 câu gợi ý hướng thay thế",
+  "AVOID_2_TITLE": "Tên nghề cụ thể 2",
+  "AVOID_2_ANGLE": "Kỹ năng cốt lõi",
+  "AVOID_2_REASON": "Nội dung phân tích 120–180 từ",
+  "AVOID_2_TIP": "1 câu gợi ý hướng thay thế",
+  "AVOID_3_TITLE": "Tên nghề cụ thể 3",
+  "AVOID_3_ANGLE": "Giá trị & Động lực",
+  "AVOID_3_REASON": "Nội dung phân tích 120–180 từ",
+  "AVOID_3_TIP": "1 câu gợi ý hướng thay thế"
+}`;
+
+      // Chạy 4 prompt song song (personality, career 1-3, career 4-5+rest, avoid careers AI)
+      const [settled1, settled1b, settled2, settledAvoid] = await Promise.allSettled([
         fetchClaudeJson(prompt1),
         fetchClaudeJson(prompt1b),
-        fetchClaudeJson(prompt2)
+        fetchClaudeJson(prompt2),
+        fetchClaudeJson(promptAvoid, { systemPrompt: instructionAvoid, temperature: 0.7 })
       ]);
       if (settled1.status === 'fulfilled') {
         aiTexts = { ...aiTexts, ...settled1.value };
@@ -380,6 +431,12 @@ ${userInfo}
       } else {
         console.error("⚠️ Prompt2 (career 4-5+rest) AI thất bại:", settled2.reason);
         if (!aiTexts.DEBUG_ERROR) aiTexts.DEBUG_ERROR = String(settled2.reason?.message || settled2.reason);
+      }
+      if (settledAvoid.status === 'fulfilled') {
+        aiTexts = { ...aiTexts, ...settledAvoid.value };
+        console.warn(`✅ Avoid careers AI thành công: [${aiTexts.AVOID_1_TITLE}] [${aiTexts.AVOID_2_TITLE}] [${aiTexts.AVOID_3_TITLE}]`);
+      } else {
+        console.warn("⚠️ PromptAvoid (3 nghề tránh) AI thất bại — dùng fallback RIASEC:", settledAvoid.reason);
       }
     }
 
@@ -519,13 +576,19 @@ ${userInfo}
       PILLAR_2_DESC:  aiTexts.PILLAR_2_DESC  || fallback,
       PILLAR_3_TITLE: aiTexts.PILLAR_3_TITLE || "Kỹ năng Tư duy",
       PILLAR_3_DESC:  aiTexts.PILLAR_3_DESC  || fallback,
-      // ── 3 nghề nên tránh (deterministic từ RIASEC, ghi đè ở trên) ──────────────
-      AVOID_1_TITLE:  data.AVOID_1_TITLE  || "Nghề không phù hợp",
-      AVOID_1_REASON: data.AVOID_1_REASON || "Nghề này có môi trường làm việc và yêu cầu năng lực không phù hợp với hồ sơ của bạn.",
-      AVOID_2_TITLE:  data.AVOID_2_TITLE  || "Nghề không phù hợp",
-      AVOID_2_REASON: data.AVOID_2_REASON || "Nghề này có môi trường làm việc và yêu cầu năng lực không phù hợp với hồ sơ của bạn.",
-      AVOID_3_TITLE:  data.AVOID_3_TITLE  || "Nghề không phù hợp",
-      AVOID_3_REASON: data.AVOID_3_REASON || "Nghề này có môi trường làm việc và yêu cầu năng lực không phù hợp với hồ sơ của bạn.",
+      // ── 3 nghề nên tránh — AI (ưu tiên) với fallback RIASEC deterministic ──────────────
+      AVOID_1_TITLE:  aiTexts.AVOID_1_TITLE  || data.AVOID_1_TITLE  || "Nghề không phù hợp",
+      AVOID_1_ANGLE:  aiTexts.AVOID_1_ANGLE  || "Môi trường làm việc",
+      AVOID_1_REASON: aiTexts.AVOID_1_REASON || data.AVOID_1_REASON || "Nghề này có môi trường làm việc và yêu cầu năng lực không phù hợp với hồ sơ của bạn.",
+      AVOID_1_TIP:    aiTexts.AVOID_1_TIP    || "",
+      AVOID_2_TITLE:  aiTexts.AVOID_2_TITLE  || data.AVOID_2_TITLE  || "Nghề không phù hợp",
+      AVOID_2_ANGLE:  aiTexts.AVOID_2_ANGLE  || "Kỹ năng cốt lõi",
+      AVOID_2_REASON: aiTexts.AVOID_2_REASON || data.AVOID_2_REASON || "Nghề này có môi trường làm việc và yêu cầu năng lực không phù hợp với hồ sơ của bạn.",
+      AVOID_2_TIP:    aiTexts.AVOID_2_TIP    || "",
+      AVOID_3_TITLE:  aiTexts.AVOID_3_TITLE  || data.AVOID_3_TITLE  || "Nghề không phù hợp",
+      AVOID_3_ANGLE:  aiTexts.AVOID_3_ANGLE  || "Giá trị & Động lực",
+      AVOID_3_REASON: aiTexts.AVOID_3_REASON || data.AVOID_3_REASON || "Nghề này có môi trường làm việc và yêu cầu năng lực không phù hợp với hồ sơ của bạn.",
+      AVOID_3_TIP:    aiTexts.AVOID_3_TIP    || "",
     };
 
     const templatePath = path.join(process.cwd(), 'public', 'bao-cao-pdf-template.html');

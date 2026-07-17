@@ -173,14 +173,35 @@ function computeAvoidCareers(hollandStr: string): { title: string; reason: strin
   );
   const partial = candidates.filter(c => !fullyOpposite.includes(c));
 
-  // Chọn 3 nghề từ 3 ngành KHÁC NHAU
+  // Chọn 3 nghề từ 3 ngành KHÁC NHAU và 3 primary RIASEC code KHÁC NHAU
+  // → đảm bảo mỗi reason có nội dung khác nhau (không bị lặp)
   const picked: typeof candidates = [];
   const usedIndustries = new Set<string>();
+  const usedPrimaryCode = new Set<string>();
   for (const career of [...fullyOpposite, ...partial]) {
     if (picked.length >= 3) break;
-    if (!usedIndustries.has(career.industry)) {
+    const primaryCode = career.riasec[0];
+    if (!usedIndustries.has(career.industry) && !usedPrimaryCode.has(primaryCode)) {
       picked.push(career);
       usedIndustries.add(career.industry);
+      usedPrimaryCode.add(primaryCode);
+    }
+  }
+  // Fallback: nếu strict constraint không đủ 3 → thả lỏng constraint industry
+  if (picked.length < 3) {
+    for (const career of [...fullyOpposite, ...partial]) {
+      if (picked.length >= 3) break;
+      if (!picked.includes(career) && !usedPrimaryCode.has(career.riasec[0])) {
+        picked.push(career);
+        usedPrimaryCode.add(career.riasec[0]);
+      }
+    }
+  }
+  // Final fallback: nếu vẫn chưa đủ → lấy bất kỳ miễn không trùng
+  if (picked.length < 3) {
+    for (const career of [...fullyOpposite, ...partial]) {
+      if (picked.length >= 3) break;
+      if (!picked.includes(career)) picked.push(career);
     }
   }
 
@@ -284,12 +305,19 @@ Trả lời ĐÚNG định dạng JSON:
 {"risk_percent": 73, "risk_description": "..."}`;
 
     // ── Prompt C: Top 5 Careers only — avoid_careers đã có từ deterministic ──
-    const promptC = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Dựa trên tổ hợp tính cách ${mbti} kết hợp với nhóm nghề nghiệp Holland ${hollandStr} và số chủ đạo ${lifePath || 'không xác định'}, hãy gợi ý nghề nghiệp phù hợp.
+    const promptC = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Dựa trên tổ hợp tính cách ${mbti} kết hợp với nhóm nghề nghiệp Holland ${hollandStr} và số chủ đạo ${lifePath || 'không xác định'}, hãy gợi ý NGHỀ NGHIỆP phù hợp.
+
+ĐỊNH NGHĨA: "Nghề nghiệp" = lĩnh vực hoạt động chuyên môn mà người ta theo đuổi lâu dài (vd: Nhà thiết kế đồ họa, Kỹ sư phần mềm, Giáo viên, Nhà tâm lý học, Kiến trúc sư, Nhà báo, Bác sĩ, Chuyên viên marketing, Lập trình viên, Nhiếp ảnh gia...).
+
+TUYỆT ĐỐI KHÔNG đặt tên theo chức danh quản lý / cấp bậc như: Giám đốc, Trưởng phòng, Phó giám đốc, CEO, Quản lý, Manager, Head of..., VP...
+
+VÍ DỤ ĐÚNG: "Nhà thiết kế UX/UI", "Chuyên viên tư vấn tâm lý", "Kỹ sư phần mềm", "Nhà báo / Biên tập viên", "Chuyên viên marketing số"
+VÍ DỤ SAI: "Giám đốc marketing", "Trưởng nhóm thiết kế", "Giám đốc phát triển kinh doanh"
 
 YÊU CẦU BẮT BUỘC:
-- Đưa ra chính xác 5 nghề phù hợp nhất, xếp theo % phù hợp giảm dần
-- Mỗi nghề có: tên tiếng Việt, % phù hợp (70-96%), lý do ngắn gọn (1 câu, dưới 20 từ)
-- Nghề thực tế trên thị trường lao động Việt Nam
+- Đưa ra chính xác 5 NGHỀ phù hợp nhất (không phải vị trí/chức danh), xếp theo % phù hợp giảm dần
+- Mỗi nghề có: tên nghề tiếng Việt (ngắn gọn, rõ ràng), % phù hợp (70-96%), lý do ngắn gọn (1 câu, dưới 20 từ)
+- Nghề thực tế tại Việt Nam, có thể học và theo đuổi được
 - KHÔNG dùng thuật ngữ MBTI, Holland trong lý do
 - % giảm dần từ #1 đến #5, nghề #1 cao hơn #3 ít nhất 5%
 
