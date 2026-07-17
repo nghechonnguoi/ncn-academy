@@ -45,7 +45,7 @@ export async function GET(req: Request) {
             }
         });
 
-        const report = affiliatesSnap.docs.map(doc => {
+        let report = affiliatesSnap.docs.map(doc => {
             const aff = doc.data();
             const code = aff.referralCode;
             const lifetimeOrders = lifetimeCountByCode[code] || 0;
