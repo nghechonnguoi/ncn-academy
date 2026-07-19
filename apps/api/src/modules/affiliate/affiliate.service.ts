@@ -54,4 +54,62 @@ export class AffiliateService {
     // Create payout request — in production, integrate with bank transfer API
     return { success: true, message: 'Yêu cầu rút tiền đã được ghi nhận. Xử lý trong 1-3 ngày làm việc.' };
   }
+
+  async syncSePayCommission(dto: { referralCode: string; amount: number; customerEmail: string; customerName: string; orderCode: string }) {
+    if (!dto.referralCode) return { success: true, message: 'No referral code' };
+
+    const affiliate = await this.prisma.user.findUnique({
+      where: { affiliateCode: dto.referralCode }
+    });
+    if (!affiliate) {
+      return { success: true, message: 'Affiliate not found' };
+    }
+
+    const sessionId = `sepay-${dto.orderCode}`;
+    const existingPayment = await this.prisma.payment.findUnique({
+      where: { stripeSessionId: sessionId }
+    });
+    if (existingPayment) {
+      return { success: true, message: 'Already synced' };
+    }
+
+    const email = dto.customerEmail || `guest-${dto.orderCode}@nghechonnguoi.com`;
+    let user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name: dto.customerName || 'Khách hàng',
+          plan: 'PRO',
+        }
+      });
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.create({
+        data: {
+          userId: user.id,
+          amount: dto.amount,
+          plan: 'PRO',
+          status: 'COMPLETED',
+          affiliateCode: dto.referralCode,
+          stripeSessionId: sessionId,
+          stripePaymentId: sessionId,
+        }
+      });
+
+      await tx.affiliateCommission.create({
+        data: {
+          affiliateId: affiliate.id,
+          referredUserId: user.id,
+          paymentId: payment.id,
+          amount: Math.round(dto.amount * 0.2),
+          rate: 0.2,
+          status: 'PENDING',
+        }
+      });
+    });
+
+    return { success: true, message: 'Commission synced successfully' };
+  }
 }

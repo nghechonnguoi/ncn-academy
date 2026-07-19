@@ -112,6 +112,34 @@ export async function POST(req: Request) {
       
       console.warn(`Order ${orderCode} marked as PAID and PDF generating in Firestore`);
 
+      // ── Sync to Postgres Affiliate System ──
+      if (data.referralCode) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const internalSecret = process.env.INTERNAL_API_SECRET || 'ncn-internal-secret-2026';
+        waitUntil(
+          fetch(`${apiUrl}/api/v1/affiliate/internal/sepay-sync`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-internal-secret': internalSecret,
+            },
+            body: JSON.stringify({
+              referralCode: data.referralCode,
+              amount: amount,
+              customerEmail: data.customerEmail || data.payload?.EMAIL || '',
+              customerName: data.customerName || data.payload?.HOTEN || '',
+              orderCode: String(orderCode),
+            }),
+          }).then(async r => {
+             const resJson = await r.json().catch(() => ({}));
+             console.warn(`[webhook] sepay-sync for order ${orderCode}: HTTP ${r.status}`, resJson);
+          }).catch(err => {
+             console.error(`[webhook] sepay-sync error for order ${orderCode}:`, err.message);
+          })
+        );
+      }
+      // ────────────────────────────────────────
+
       // Sync purchase status to the matching lead (if one exists) so the
       // nurture sequence (onLeadCreated / dailyNurtureSend) reacts to this purchase.
       const buyerEmail = data.payload?.EMAIL;
