@@ -56,36 +56,44 @@ export async function POST(req: Request) {
 
     console.log('[manual-affiliate-sync] payload:', syncPayload);
 
-    // Gọi NestJS affiliate sync (internal, server-side)
-    const apiUrl         = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    const internalSecret = process.env.INTERNAL_API_SECRET || 'ncn-internal-secret-2026';
+    // Ghi trực tiếp vào Firestore (NestJS API không reachable từ Vercel)
+    // Commission record sẽ được lưu trong collection affiliate_commissions_pending
+    const commissionRef = db.collection('affiliate_commissions').doc(`manual-${String(orderCode)}`);
+    const existingDoc   = await commissionRef.get();
 
-    const syncRes = await fetch(`${apiUrl}/api/v1/affiliate/internal/sepay-sync`, {
-      method:  'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-internal-secret': internalSecret,
-      },
-      body: JSON.stringify(syncPayload),
-    });
+    let syncMessage = '';
+    if (existingDoc.exists) {
+      syncMessage = 'Already recorded';
+    } else {
+      await commissionRef.set({
+        referralCode:    syncPayload.referralCode,
+        orderCode:       String(orderCode),
+        amount:          syncPayload.amount,
+        commissionAmount: Math.round(syncPayload.amount * 0.20),
+        commissionRate:  0.20,
+        customerEmail:   syncPayload.customerEmail,
+        customerName:    syncPayload.customerName,
+        status:          'PENDING',
+        addedManually:   true,
+        createdAt:       new Date(),
+      });
+      syncMessage = 'Commission synced successfully';
+    }
 
-    const syncJson = await syncRes.json().catch(() => ({}));
-    console.log('[manual-affiliate-sync] sync result:', syncRes.status, syncJson);
-
-    // Cập nhật referralCode vào order document (để tracking đúng)
+    // Cập nhật referralCode vào order document
     if (orderSnap.exists) {
       await db.collection('orders').doc(String(orderCode)).update({
-        referralCode: syncPayload.referralCode,
+        referralCode:          syncPayload.referralCode,
         referralAddedManually: true,
-        referralAddedAt: new Date(),
+        referralAddedAt:       new Date(),
       });
     }
 
     return NextResponse.json({
-      success: syncRes.ok,
-      syncStatus: syncRes.status,
-      syncMessage: syncJson.message ?? '',
-      payload: syncPayload,
+      success:      true,
+      syncMessage,
+      payload:      syncPayload,
+      commission:   Math.round(syncPayload.amount * 0.20),
       orderUpdated: orderSnap.exists,
     });
 
