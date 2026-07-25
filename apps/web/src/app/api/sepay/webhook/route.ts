@@ -112,33 +112,37 @@ export async function POST(req: Request) {
       
       console.warn(`Order ${orderCode} marked as PAID and PDF generating in Firestore`);
 
-      // ── Sync to Postgres Affiliate System ──
+      // ── Ghi affiliate commission thẳng vào Firestore ──────────────────────
+      // (NestJS API không reachable từ Vercel — dùng Firestore làm nguồn duy nhất)
       if (data.referralCode) {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-        const internalSecret = process.env.INTERNAL_API_SECRET || 'ncn-internal-secret-2026';
+        const commissionId  = `sepay-${String(orderCode)}`;
+        const commissionRef = db.collection('affiliate_commissions').doc(commissionId);
         waitUntil(
-          fetch(`${apiUrl}/api/v1/affiliate/internal/sepay-sync`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-internal-secret': internalSecret,
-            },
-            body: JSON.stringify({
-              referralCode: data.referralCode,
-              amount: amount,
-              customerEmail: data.customerEmail || data.payload?.EMAIL || '',
-              customerName: data.customerName || data.payload?.HOTEN || '',
-              orderCode: String(orderCode),
-            }),
-          }).then(async r => {
-             const resJson = await r.json().catch(() => ({}));
-             console.warn(`[webhook] sepay-sync for order ${orderCode}: HTTP ${r.status}`, resJson);
+          commissionRef.get().then(async (existing) => {
+            if (existing.exists) {
+              console.warn(`[webhook] commission ${commissionId} already exists, skipping`);
+              return;
+            }
+            await commissionRef.set({
+              referralCode:     data.referralCode,
+              orderCode:        String(orderCode),
+              amount:           amount,
+              commissionAmount: Math.round(amount * 0.20),
+              commissionRate:   0.20,
+              customerEmail:    data.customerEmail || data.payload?.EMAIL || '',
+              customerName:     data.customerName  || data.payload?.HOTEN || '',
+              status:           'PENDING',
+              source:           'sepay_webhook',
+              createdAt:        FieldValue.serverTimestamp(),
+            });
+            console.warn(`[webhook] commission ghi nhận order ${orderCode} ref=${data.referralCode} amount=${amount} commission=${Math.round(amount * 0.20)}`);
           }).catch(err => {
-             console.error(`[webhook] sepay-sync error for order ${orderCode}:`, err.message);
+            console.error(`[webhook] commission write error for order ${orderCode}:`, err.message);
           })
         );
       }
-      // ────────────────────────────────────────
+      // ───────────────────────────────────────────────────────────────────────
+
 
       // Sync purchase status to the matching lead (if one exists) so the
       // nurture sequence (onLeadCreated / dailyNurtureSend) reacts to this purchase.
