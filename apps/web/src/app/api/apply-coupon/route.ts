@@ -143,38 +143,37 @@ export async function POST(req: Request) {
     });
 
     // ── Sync affiliate commission cho đơn MIỄN PHÍ ──────────────────────────
-    // Đơn trả tiền được sync bởi SePay webhook. Đơn mã miễn phí cần sync ở đây.
+    // Đơn trả tiền: SePay webhook xử lý. Đơn mã miễn phí: ghi thẳng vào Firestore.
     if (discountAmount === 0) {
       try {
         const orderSnap = await db.collection('orders').doc(String(orderCode)).get();
         const orderData = orderSnap.exists ? orderSnap.data() : null;
         if (orderData?.referralCode) {
-          const apiUrl         = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-          const internalSecret = process.env.INTERNAL_API_SECRET || 'ncn-internal-secret-2026';
-          // Fire-and-forget — không block response trả về client
-          fetch(`${apiUrl}/api/v1/affiliate/internal/sepay-sync`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json', 'x-internal-secret': internalSecret },
-            body: JSON.stringify({
-              referralCode:  orderData.referralCode,
-              amount:        0,                             // miễn phí hoàn toàn
-              customerEmail: orderData.customerEmail || '',
-              customerName:  orderData.customerName  || '',
-              orderCode:     String(orderCode),
-            }),
-          }).then(async r => {
-            const j = await r.json().catch(() => ({}));
-            console.log(`[apply-coupon] affiliate sync order ${orderCode}: HTTP ${r.status}`, j);
-          }).catch(err => {
-            console.error(`[apply-coupon] affiliate sync error order ${orderCode}:`, err.message);
-          });
+          const commissionRef = db.collection('affiliate_commissions').doc(`coupon-${String(orderCode)}`);
+          const existing      = await commissionRef.get();
+          if (!existing.exists) {
+            await commissionRef.set({
+              referralCode:     orderData.referralCode,
+              orderCode:        String(orderCode),
+              amount:           0,              // miễn phí — 0đ doanh thu
+              commissionAmount: 0,
+              commissionRate:   0.20,
+              customerEmail:    orderData.customerEmail || '',
+              customerName:     orderData.customerName  || '',
+              status:           'PENDING',
+              source:           'free_coupon',
+              couponApplied:    couponCode,
+              createdAt:        FieldValue.serverTimestamp(),
+            });
+            console.log(`[apply-coupon] affiliate commission ghi nhận order ${orderCode} ref=${orderData.referralCode}`);
+          }
         }
       } catch (syncErr: any) {
-        // Không block response nếu sync lỗi
-        console.error('[apply-coupon] affiliate sync read error:', syncErr.message);
+        console.error('[apply-coupon] affiliate sync error:', syncErr.message);
       }
     }
     // ────────────────────────────────────────────────────────────────────────
+
 
     return NextResponse.json({ success: true, message: 'Áp dụng mã thành công!' }, { headers: corsHeaders });
 
