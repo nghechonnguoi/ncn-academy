@@ -39,8 +39,12 @@ export function Footer() {
           <div>
             <h4 className="text-[12px] font-extrabold tracking-[2px] uppercase text-ncn-orange mb-[20px]">Liên hệ</h4>
             <div className="flex items-start gap-[10px] mb-[12px]">
+              <span className="text-ncn-orange text-[14px] shrink-0 mt-[2px]">📞</span>
+              <span className="text-[13.5px] text-ncn-gray leading-[1.5]">0986 864 591</span>
+            </div>
+            <div className="flex items-start gap-[10px] mb-[12px]">
               <span className="text-ncn-orange text-[14px] shrink-0 mt-[2px]">📧</span>
-              <span className="text-[13.5px] text-ncn-gray leading-[1.5]">info@nghechonnguoi.com</span>
+              <span className="text-[13.5px] text-ncn-gray leading-[1.5]">nghechonnguoi1@gmail.com</span>
             </div>
             <div className="flex items-start gap-[10px] mb-[12px]">
               <span className="text-ncn-orange text-[14px] shrink-0 mt-[2px]">🌐</span>
@@ -51,6 +55,7 @@ export function Footer() {
               <span className="text-[13.5px] text-ncn-gray leading-[1.5]">Thứ 2 – Thứ 7<br />8:00 – 18:00</span>
             </div>
           </div>
+
         </div>
 
         <div className="border-t border-white/5 pt-[24px] flex justify-between items-center flex-wrap gap-[16px]">
