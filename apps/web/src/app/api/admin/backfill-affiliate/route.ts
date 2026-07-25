@@ -42,12 +42,19 @@ export async function POST(req: Request) {
 
     console.log(`[backfill-affiliate] Scanning orders from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
 
-    // Query orders PAID có referralCode trong ngày (dùng createdAt filter)
+    // Query orders PAID có referralCode trong ngày
+    // NOTE: Lọc createdAt ở phía JS để tránh cần composite index trên Firestore
     const snap = await db.collection('orders')
       .where('status', '==', 'PAID')
-      .where('createdAt', '>=', startOfDay)
-      .where('createdAt', '<=', endOfDay)
       .get();
+
+    // Lọc theo ngày trong JS
+    const docsInRange = snap.docs.filter(doc => {
+      const data = doc.data();
+      const createdAt = data.createdAt?.toDate?.() ?? null;
+      if (!createdAt) return false;
+      return createdAt >= startOfDay && createdAt <= endOfDay;
+    });
 
     const apiUrl         = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     const internalSecret = process.env.INTERNAL_API_SECRET || 'ncn-internal-secret-2026';
@@ -57,7 +64,7 @@ export async function POST(req: Request) {
     let errors  = 0;
     const results: any[] = [];
 
-    for (const doc of snap.docs) {
+    for (const doc of docsInRange) {
       const data = doc.data();
       const oc   = doc.id;
 
@@ -104,7 +111,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       date:    targetDate.toISOString().split('T')[0],
-      total:   snap.size,
+      total:   docsInRange.length,
       synced,
       skipped,
       errors,
