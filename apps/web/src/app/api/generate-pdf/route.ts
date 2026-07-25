@@ -72,7 +72,7 @@ export async function POST(req: Request) {
         const orderSnap = await dbCheck.collection('orders').doc(String(data.orderCode)).get();
         if (orderSnap.exists) {
           const orderData = orderSnap.data();
-          if (orderData?.aiTextsCache) {
+          if (orderData?.aiTextsCache && String(data.orderCode) !== '7516') {
             const parsed = JSON.parse(orderData.aiTextsCache);
             // Chỉ dùng cache nếu có cả CAREER và AVOID fields (tránh cache cũ không đủ)
             if (parsed?.CAREER_1_KIENTHUC && parsed?.CAREER_1_SCIENCE && parsed?.AVOID_1_TITLE) {
@@ -235,7 +235,14 @@ ${userInfo}
   "CAREER_5_ADVICE": "1 câu lời khuyên ngắn gọn cho nghề 5.",
   "CAREER_5_SCIENCE": "Nền tảng khoa học và yếu tố con người của nghề 5 phù hợp với ứng viên (~80 chữ, không dùng dấu gạch nắng).",
   "CAREER_5_TREND": "Xu hướng phát triển tương lai của nghề 5 (~80 chữ, không dùng dấu gạch nắng).",
-  "CAREER_5_SKILLS": "Kỹ năng cốt lõi cần phát triển cho nghề 5 (~80 chữ, không dùng dấu gạch nắng).",
+  "CAREER_5_SKILLS": "Kỹ năng cốt lõi cần phát triển cho nghề 5 (~80 chữ, không dùng dấu gạch nắng)."
+}`;
+
+    const prompt3 = `${instruction}
+Thông tin ứng viên:
+${userInfo}
+
+{
   "WEAKNESS_1_TITLE": "Tên điểm mù / rào cản tâm lý số 1 (ngắn gọn).",
   "WEAKNESS_1_DESC": "Mô tả chi tiết và cách vượt qua rào cản tâm lý số 1 (dài ~80 chữ).",
   "WEAKNESS_2_TITLE": "Tên điểm mù / rào cản tâm lý số 2 (ngắn gọn).",
@@ -408,11 +415,12 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
   "AVOID_3_TIP": "1 câu gợi ý hướng thay thế"
 }`;
 
-      // Chạy 4 prompt song song (personality, career 1-3, career 4-5+rest, avoid careers AI)
-      const [settled1, settled1b, settled2, settledAvoid] = await Promise.allSettled([
+      // Chạy 5 prompt song song
+      const [settled1, settled1b, settled2, settled3, settledAvoid] = await Promise.allSettled([
         fetchClaudeJson(prompt1),
         fetchClaudeJson(prompt1b),
         fetchClaudeJson(prompt2),
+        fetchClaudeJson(prompt3),
         fetchClaudeJson(promptAvoid, { systemPrompt: instructionAvoid, temperature: 0.7 })
       ]);
       if (settled1.status === 'fulfilled') {
@@ -429,8 +437,14 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
       if (settled2.status === 'fulfilled') {
         aiTexts = { ...aiTexts, ...settled2.value };
       } else {
-        console.error("⚠️ Prompt2 (career 4-5+rest) AI thất bại:", settled2.reason);
+        console.error("⚠️ Prompt2 (career 4-5) AI thất bại:", settled2.reason);
         if (!aiTexts.DEBUG_ERROR) aiTexts.DEBUG_ERROR = String(settled2.reason?.message || settled2.reason);
+      }
+      if (settled3.status === 'fulfilled') {
+        aiTexts = { ...aiTexts, ...settled3.value };
+      } else {
+        console.error("⚠️ Prompt3 (chapter 3-4) AI thất bại:", settled3.reason);
+        if (!aiTexts.DEBUG_ERROR) aiTexts.DEBUG_ERROR = String(settled3.reason?.message || settled3.reason);
       }
       if (settledAvoid.status === 'fulfilled') {
         aiTexts = { ...aiTexts, ...settledAvoid.value };
@@ -448,6 +462,10 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
     const fallbackRisk = "Hành động quan trọng nhất ngay bây giờ là nghiên cứu kỹ lưỡng về những nghề nghiệp phù hợp và lên kế hoạch học tập cụ thể, rõ ràng. Đừng để sự chần chừ lấy mất cơ hội của bạn.";
     const fallbackWeakness = "Điểm cần cải thiện";
     const fallbackEnv = "Môi trường làm việc lý tưởng là nơi phát huy tối đa năng lực và đam mê của bạn, nơi bạn được tự do sáng tạo và phát triển.";
+    const fallbackToxic = "Môi trường làm việc độc hại là nơi kìm hãm sự sáng tạo, gò bó trong các quy tắc cứng nhắc và thiếu sự tôn trọng đối với cá nhân bạn.";
+    const fallbackPillar1 = "Khả năng phân tích sâu sắc và giải quyết vấn đề linh hoạt sẽ là chìa khóa đầu tiên giúp bạn làm chủ mọi tình huống khó khăn.";
+    const fallbackPillar2 = "Sự thấu cảm và trí tuệ cảm xúc (EQ) giúp bạn xây dựng những mối quan hệ bền chặt và mạng lưới hỗ trợ đắc lực trong sự nghiệp.";
+    const fallbackPillar3 = "Tư duy học tập không ngừng (Lifelong learning) giúp bạn duy trì lợi thế cạnh tranh và không bao giờ bị tụt hậu trong kỷ nguyên số.";
     const fallbackFit = "Phù hợp";
     if (data.orderCode && getApps().length && !cachedAiTexts && !aiGenerationFailed) {
       try {
@@ -561,7 +579,7 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
       RISK_SHORT_TERM:  aiTexts.RISK_SHORT_TERM  || fallbackRisk,
       RISK_LONG_TERM:   aiTexts.RISK_LONG_TERM   || fallbackRisk,
       IDEAL_ENVIRONMENT:  aiTexts.IDEAL_ENVIRONMENT  || fallbackEnv,
-      TOXIC_ENVIRONMENT:  aiTexts.TOXIC_ENVIRONMENT  || fallbackEnv,
+      TOXIC_ENVIRONMENT:  aiTexts.TOXIC_ENVIRONMENT  || fallbackToxic,
       MNC_FIT:     aiTexts.MNC_FIT     || fallbackFit,
       MNC_DESC:    aiTexts.MNC_DESC    || fallback,
       SOLO_FIT:    aiTexts.SOLO_FIT    || fallbackFit,
@@ -571,11 +589,11 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
       PUBLIC_FIT:  aiTexts.PUBLIC_FIT  || fallbackFit,
       PUBLIC_DESC: aiTexts.PUBLIC_DESC || fallback,
       PILLAR_1_TITLE: aiTexts.PILLAR_1_TITLE || "Kỹ năng Chuyên môn",
-      PILLAR_1_DESC:  aiTexts.PILLAR_1_DESC  || fallback,
+      PILLAR_1_DESC:  aiTexts.PILLAR_1_DESC  || fallbackPillar1,
       PILLAR_2_TITLE: aiTexts.PILLAR_2_TITLE || "Kỹ năng Mềm",
-      PILLAR_2_DESC:  aiTexts.PILLAR_2_DESC  || fallback,
+      PILLAR_2_DESC:  aiTexts.PILLAR_2_DESC  || fallbackPillar2,
       PILLAR_3_TITLE: aiTexts.PILLAR_3_TITLE || "Kỹ năng Tư duy",
-      PILLAR_3_DESC:  aiTexts.PILLAR_3_DESC  || fallback,
+      PILLAR_3_DESC:  aiTexts.PILLAR_3_DESC  || fallbackPillar3,
       // ── 3 nghề nên tránh — AI (ưu tiên) với fallback RIASEC deterministic ──────────────
       AVOID_1_TITLE:  aiTexts.AVOID_1_TITLE  || data.AVOID_1_TITLE  || "Nghề không phù hợp",
       AVOID_1_ANGLE:  aiTexts.AVOID_1_ANGLE  || "Môi trường làm việc",
@@ -645,39 +663,117 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
     await browser.close();
 
     let emailErrorResponse = null;
+
+    // ── THÊM MỚI: Check mã tư vấn viên — đọc order từ Firestore ──────────────
+    // Không ảnh hưởng PDF, chỉ quyết định gửi email cho ai.
+    let advisorInfo: { name: string; email: string; phone?: string } | null = null;
+    if (data.orderCode && getApps().length) {
+      try {
+        const db = getFirestore();
+        const orderSnap = await db.collection('orders').doc(String(data.orderCode)).get();
+        if (orderSnap.exists) {
+          const od = orderSnap.data()!;
+          if (od.advisorName && od.advisorEmail) {
+            advisorInfo = { name: od.advisorName, email: od.advisorEmail, phone: od.advisorPhone || '' };
+          }
+        }
+      } catch (advLookupErr: any) {
+        console.warn('[generate-pdf] advisor lookup error (non-blocking):', advLookupErr.message);
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // 🚀 Send email if email address is provided
     if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
-      try {
-        const resendResponse = await resend.emails.send({
-          from: 'NCN Academy <no-reply@nghechonnguoi.com>',
-          to: [data.EMAIL],
-          subject: `[NCN Academy] Báo Cáo Định Vị Ikigai Chiến Lược - ${data.HOTEN}`,
-          html: `
-            <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-              <h2 style="color: #4f46e5;">Chào ${data.HOTEN},</h2>
-              <p>Cảm ơn bạn đã thực hiện bài kiểm tra Khảo sát Định vị Ikigai Chiến lược.</p>
-              <p>Đính kèm trong email này là <strong>Báo Cáo PDF Cá Nhân Hóa</strong> chi tiết của riêng bạn.</p>
-              <p>Chúc bạn sớm tìm được định hướng sự nghiệp phù hợp và tỏa sáng đúng nơi mình thuộc về!</p>
-              <br/>
-              <p>Trân trọng,<br/><strong>Đội ngũ NCN Academy</strong></p>
-            </div>
-          `,
-          attachments: [
-            {
-              filename: 'Bao-Cao-Dinh-Vi-Tuong-Lai.pdf',
-              content: Buffer.from(pdfBuffer),
-            },
-          ],
-        });
-        if (resendResponse.error) {
-          console.error("❌ Resend API returned an error:", resendResponse.error);
-          emailErrorResponse = resendResponse.error;
-        } else {
-          console.warn("✅ Email sent successfully to", data.EMAIL);
+
+      if (advisorInfo) {
+        // ====== FLOW MỚI: Gửi PDF về email TƯ VẤN VIÊN ======
+        try {
+          const resendResponse = await resend.emails.send({
+            from: 'NCN Academy <no-reply@nghechonnguoi.com>',
+            to: [advisorInfo.email],
+            subject: `[NCN Academy] Báo cáo nghề nghiệp - ${data.HOTEN}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; color: #333;">
+                <h2 style="color: #4f46e5;">Báo cáo nghề nghiệp mới từ khách hàng</h2>
+                <table style="border-collapse: collapse; width: 100%; margin-top: 12px;">
+                  <tr>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold; width: 140px;">Khách hàng</td>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb;">${data.HOTEN}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">Email khách</td>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb;">${data.EMAIL}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">SĐT khách</td>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb;">${data.PHONE || data.DIEN_THOAI || 'Không có'}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">Mã báo cáo</td>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb;">NCN-${data.orderCode || '—'}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">Ngày làm</td>
+                    <td style="padding: 10px 12px; border: 1px solid #e5e7eb;">${new Date().toLocaleDateString('vi-VN')}</td>
+                  </tr>
+                </table>
+                <p style="margin-top: 16px; color: #555;">Báo cáo chi tiết được đính kèm bên dưới.</p>
+                <p style="margin-top: 8px; color: #888; font-size: 13px;">— Đội ngũ NCN Academy</p>
+              </div>
+            `,
+            attachments: [
+              {
+                filename: `Bao-Cao-NCN-${data.HOTEN || 'khach'}.pdf`,
+                content: Buffer.from(pdfBuffer),
+              },
+            ],
+          });
+          if (resendResponse.error) {
+            console.error("❌ Resend (advisor) error:", resendResponse.error);
+            emailErrorResponse = resendResponse.error;
+          } else {
+            console.warn(`✅ PDF đã gửi cho tư vấn viên ${advisorInfo.name} (${advisorInfo.email})`);
+          }
+        } catch (emailError: any) {
+          console.error("❌ Failed to send advisor email:", emailError);
+          emailErrorResponse = emailError.message;
         }
-      } catch (emailError: any) {
-        console.error("❌ Failed to send email:", emailError);
-        emailErrorResponse = emailError.message;
+
+      } else {
+        // ====== FLOW CŨ: Gửi cho KHÁCH HÀNG — GIỮ NGUYÊN 100% ======
+        try {
+          const resendResponse = await resend.emails.send({
+            from: 'NCN Academy <no-reply@nghechonnguoi.com>',
+            to: [data.EMAIL],
+            subject: `[NCN Academy] Báo Cáo Định Vị Ikigai Chiến Lược - ${data.HOTEN}`,
+            html: `
+              <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+                <h2 style="color: #4f46e5;">Chào ${data.HOTEN},</h2>
+                <p>Cảm ơn bạn đã thực hiện bài kiểm tra Khảo sát Định vị Ikigai Chiến lược.</p>
+                <p>Đính kèm trong email này là <strong>Báo Cáo PDF Cá Nhân Hóa</strong> chi tiết của riêng bạn.</p>
+                <p>Chúc bạn sớm tìm được định hướng sự nghiệp phù hợp và tỏa sáng đúng nơi mình thuộc về!</p>
+                <br/>
+                <p>Trân trọng,<br/><strong>Đội ngũ NCN Academy</strong></p>
+              </div>
+            `,
+            attachments: [
+              {
+                filename: 'Bao-Cao-Dinh-Vi-Tuong-Lai.pdf',
+                content: Buffer.from(pdfBuffer),
+              },
+            ],
+          });
+          if (resendResponse.error) {
+            console.error("❌ Resend API returned an error:", resendResponse.error);
+            emailErrorResponse = resendResponse.error;
+          } else {
+            console.warn("✅ Email sent successfully to", data.EMAIL);
+          }
+        } catch (emailError: any) {
+          console.error("❌ Failed to send email:", emailError);
+          emailErrorResponse = emailError.message;
+        }
       }
     }
 

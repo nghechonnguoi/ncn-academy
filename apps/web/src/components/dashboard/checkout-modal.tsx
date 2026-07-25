@@ -80,6 +80,8 @@ export function CheckoutModal({
   const [qrDesc, setQrDesc]             = useState("");
   const [pdfUrl, setPdfUrl]             = useState("");
   const [errorMsg, setErrorMsg]         = useState("");
+  // ── THÊM MỚI: Thông tin tư vấn viên (nếu mã là mã tư vấn viên) ──
+  const [advisorInfo, setAdvisorInfo]   = useState<{ name: string; email: string; phone?: string } | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // orderCode được tạo 1 lần duy nhất khi modal mở, dùng chung cho mọi bước
   const orderCodeRef = useRef<number>(0);
@@ -225,6 +227,15 @@ export function CheckoutModal({
           const finalStr  = newFinal.toLocaleString("vi-VN");
           setCouponMsg(`✅ Mã hợp lệ! Giảm ${savedStr}đ — còn lại ${finalStr}đ`);
         }
+        // ── THÊM MỚI: Check nếu mã là mã tư vấn viên ──
+        try {
+          const advRes = await fetch(`${API_BASE}/api/check-advisor?code=${encodeURIComponent(code)}`);
+          if (advRes.ok) {
+            const advData = await advRes.json();
+            if (advData.advisor) setAdvisorInfo(advData.advisor);
+          }
+        } catch { /* non-blocking */ }
+        // ─────────────────────────────────────────────────────────────────
       } else {
         setCouponMsg(`❌ ${data.message || "Mã không hợp lệ"}`);
       }
@@ -556,20 +567,46 @@ export function CheckoutModal({
                 style={{ background: "rgba(43,168,140,0.15)", border: "2px solid #2BA88C" }}>
                 <CheckCircle className="w-8 h-8" style={{ color: "#2BA88C" }} />
               </div>
-              <p className="font-bold text-xl text-white">Báo cáo đã sẵn sàng! 🎉</p>
-              <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-                Báo cáo đã được tạo và gửi về email của bạn.
-              </p>
-              {pdfUrl && (
-                <a
-                  href={pdfUrl}
-                  download={`Bao-Cao-NCN-${safeName}.pdf`}
-                  className="inline-block py-4 px-8 rounded-xl font-black text-base transition-all hover:scale-105"
-                  style={{ background: "linear-gradient(135deg, #2BA88C 0%, #1e8a72 100%)", color: "#fff" }}
-                >
-                  📥 LƯU BÁO CÁO VỀ MÁY
-                </a>
+
+              {/* ── THÊM MỚI: Màn hình tư vấn viên ── */}
+              {advisorInfo ? (
+                <>
+                  <p className="font-bold text-xl text-white">Bạn đã hoàn thành bài đánh giá! ✅</p>
+                  <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
+                    Kết quả đã được gửi đến chuyên gia{" "}
+                    <strong style={{ color: "#E8A838" }}>{advisorInfo.name}</strong>.<br />
+                    {advisorInfo.name} sẽ liên hệ bạn sớm nhất để tư vấn chi tiết về định hướng nghề nghiệp.
+                  </p>
+                  <div className="rounded-xl p-4 text-left space-y-2" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#94a3b8" }}>📞 Thông tin tư vấn viên</p>
+                    <p className="text-sm text-white">{advisorInfo.name}</p>
+                    {advisorInfo.phone && (
+                      <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>📱 {advisorInfo.phone}</p>
+                    )}
+                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>✉️ {advisorInfo.email}</p>
+                  </div>
+                  <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Cảm ơn bạn đã tin tưởng Nghề Chọn Người!</p>
+                </>
+              ) : (
+                /* ── FLOW CŨ: Màn hình tải PDF cho khách — GIỮ NGUYÊN 100% ── */
+                <>
+                  <p className="font-bold text-xl text-white">Báo cáo đã sẵn sàng! 🎉</p>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                    Báo cáo đã được tạo và gửi về email của bạn.
+                  </p>
+                  {pdfUrl && (
+                    <a
+                      href={pdfUrl}
+                      download={`Bao-Cao-NCN-${safeName}.pdf`}
+                      className="inline-block py-4 px-8 rounded-xl font-black text-base transition-all hover:scale-105"
+                      style={{ background: "linear-gradient(135deg, #2BA88C 0%, #1e8a72 100%)", color: "#fff" }}
+                    >
+                      📥 LƯU BÁO CÁO VỀ MÁY
+                    </a>
+                  )}
+                </>
               )}
+
               <button onClick={onClose} className="block w-full text-sm mt-2 hover:opacity-70 transition-opacity"
                 style={{ color: "rgba(255,255,255,0.4)" }}>
                 Đóng

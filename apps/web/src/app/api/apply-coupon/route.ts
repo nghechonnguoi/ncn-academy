@@ -142,7 +142,36 @@ export async function POST(req: Request) {
       return true;
     });
 
+    // ── THÊM MỚI: Lưu thông tin tư vấn viên vào order nếu mã có prefix tư vấn viên ──
+    // KHÔNG SỬA code cũ bên dưới — chỉ THÊM block này
+    try {
+      const prefixDoc = await db.doc('config/advisorPrefixes').get();
+      if (prefixDoc.exists) {
+        const prefixes = prefixDoc.data() as Record<string, { name: string; email: string; phone?: string }>;
+        let matchedAdvisor: { name: string; email: string; phone?: string } | null = null;
+        for (const prefix in prefixes) {
+          if (couponCode.startsWith(prefix)) {
+            matchedAdvisor = prefixes[prefix];
+            break;
+          }
+        }
+        if (matchedAdvisor) {
+          await db.collection('orders').doc(String(orderCode)).set({
+            advisorName:  matchedAdvisor.name,
+            advisorEmail: matchedAdvisor.email,
+            advisorPhone: matchedAdvisor.phone || '',
+          }, { merge: true });
+          console.log(`[apply-coupon] advisor ${matchedAdvisor.name} ghi nhận vào order ${orderCode}`);
+        }
+      }
+    } catch (advErr: any) {
+      // Không block response nếu lookup lỗi
+      console.error('[apply-coupon] advisor lookup error:', advErr.message);
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     // ── Sync affiliate commission cho đơn MIỄN PHÍ ──────────────────────────
+
     // Đơn trả tiền: SePay webhook xử lý. Đơn mã miễn phí: ghi thẳng vào Firestore.
     if (discountAmount === 0) {
       try {
