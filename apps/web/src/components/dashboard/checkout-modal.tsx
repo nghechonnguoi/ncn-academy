@@ -307,16 +307,21 @@ export function CheckoutModal({
         // Response có thể là JSON (có orderCode) hoặc blob PDF (không có orderCode)
         const contentType = pdfRes.headers.get("content-type") ?? "";
         if (contentType.includes("application/pdf")) {
-          const blob = await pdfRes.blob();
-          setPdfUrl(URL.createObjectURL(blob));
+          // Mã tư vấn viên: không set pdfUrl (báo cáo gửi về email advisor)
+          if (!advisorInfo) {
+            const blob = await pdfRes.blob();
+            setPdfUrl(URL.createObjectURL(blob));
+          }
         } else {
           const pdfJson = await pdfRes.json();
-          if (pdfJson.success && pdfJson.pdfBase64) {
+          if (!pdfJson.success) {
+            throw new Error(pdfJson.error || "Lỗi tạo PDF");
+          }
+          // Chỉ set pdfUrl khi KHÔNG phải mã tư vấn viên
+          if (!advisorInfo && pdfJson.pdfBase64) {
             const bytes = Uint8Array.from(atob(pdfJson.pdfBase64), (c) => c.charCodeAt(0));
             const blob = new Blob([bytes], { type: "application/pdf" });
             setPdfUrl(URL.createObjectURL(blob));
-          } else if (!pdfJson.success) {
-            throw new Error(pdfJson.error || "Lỗi tạo PDF");
           }
         }
         setPayStep("done");
@@ -470,6 +475,22 @@ export function CheckoutModal({
                   </p>
                 )}
               </div>
+
+              {/* ── Banner tư vấn viên: hiện ngay sau khi nhập mã thành công ── */}
+              {couponOk && advisorInfo && (
+                <div className="rounded-xl p-4 space-y-1.5" style={{ background: "rgba(232,168,56,0.08)", border: "1px solid rgba(232,168,56,0.3)" }}>
+                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#E8A838" }}>📞 Tư vấn viên phụ trách</p>
+                  <p className="text-sm font-semibold text-white">{advisorInfo.name}</p>
+                  {advisorInfo.phone && (
+                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>📱 {advisorInfo.phone}</p>
+                  )}
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>✉️ {advisorInfo.email}</p>
+                  <p className="text-xs pt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    Báo cáo sẽ được gửi trực tiếp đến tư vấn viên.<br />
+                    {advisorInfo.name} sẽ liên hệ bạn để tư vấn chi tiết về định hướng nghề nghiệp.
+                  </p>
+                </div>
+              )}
 
               {/* Error */}
               {errorMsg && (

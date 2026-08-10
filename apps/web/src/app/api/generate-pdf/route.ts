@@ -724,7 +724,7 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
             `,
             attachments: [
               {
-                filename: `Bao-Cao-NCN-${data.HOTEN || 'khach'}.pdf`,
+                filename: `Bao-Cao-NCN-${(data.HOTEN || 'khach').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-')}.pdf`,
                 content: Buffer.from(pdfBuffer),
               },
             ],
@@ -759,7 +759,7 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
             `,
             attachments: [
               {
-                filename: 'Bao-Cao-Dinh-Vi-Tuong-Lai.pdf',
+                filename: `Bao-Cao-NCN-${(data.HOTEN || 'khach').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-')}.pdf`,
                 content: Buffer.from(pdfBuffer),
               },
             ],
@@ -806,7 +806,16 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
         });
         console.warn(`✅ Marked order ${data.orderCode} as done in Firestore`);
 
-        // Return pdfBase64 directly in API response
+        // ── Mã tư vấn viên: KHÔNG trả pdfBase64 về client ──────────────────
+        // Báo cáo đã gửi email cho advisor, khách không tải về được.
+        if (advisorInfo) {
+          return NextResponse.json({
+            success: true,
+            emailError: emailErrorResponse,
+          });
+        }
+
+        // Return pdfBase64 directly in API response (flow thường)
         const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
         return NextResponse.json({
           success: true,
@@ -823,6 +832,7 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
           emailError: emailErrorResponse,
         });
       }
+
     }
 
     // If orderCode is not present, it's free tier, MUST return buffer!
@@ -830,7 +840,7 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
       return new NextResponse(Buffer.from(pdfBuffer), {
         headers: {
           'Content-Type': 'application/pdf',
-          'Content-Disposition': 'attachment; filename="Bao-Cao-Dinh-Vi-Tuong-Lai.pdf"',
+          'Content-Disposition': `attachment; filename="Bao-Cao-NCN-${(data.HOTEN || 'khach').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-')}.pdf"`,
         },
       });
     }
