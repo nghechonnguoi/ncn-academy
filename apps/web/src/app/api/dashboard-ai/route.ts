@@ -20,7 +20,7 @@ const FALLBACK_DATA = {
     top_careers: [
       { rank: 1, title: "???", match: 96, reason: "Phù hợp cao nhất với tổ hợp tính cách của bạn", locked: true },
       { rank: 2, title: "???", match: 94, reason: "Phù hợp cao, khai thác tối đa điểm mạnh tự nhiên", locked: true },
-      { rank: 3, title: "Nhà sáng tạo nội dung", match: 88, reason: "Sáng tạo kết hợp khả năng kết nối cảm xúc với khán giả", locked: false },
+      { rank: 3, title: "Nhà sáng tạo nội dung", match: 88, reason: "Sáng tạo kết hợp khả năng kết nối cảm xúc với khán giả", locked: true },
       { rank: 4, title: "Chuyên viên Truyền thông", match: 85, reason: "Kết nối con người, xử lý tình huống linh hoạt và năng động", locked: false },
       { rank: 5, title: "Điều phối viên Dự án", match: 82, reason: "Tổ chức, dẫn dắt đội nhóm đạt mục tiêu chung có tác động", locked: false },
     ],
@@ -31,6 +31,12 @@ const FALLBACK_DATA = {
     ],
   },
 };
+
+// Version cache — tăng số này để invalidate tất cả cache cũ
+// v1: prompt gốc (bị anchor bias marketing/truyền thông/IT)
+// v2: prompt mới với blacklist và diversity rules
+// v4: growth priority được đưa vào cả thuật toán lấn AI prompt
+const CACHE_VERSION = 4;
 
 function initFirebase() {
   if (!getApps().length && process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -219,13 +225,17 @@ function computeAvoidCareers(hollandStr: string): { title: string; reason: strin
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { mbti, holland, lifePath, assessmentId } = body;
+    const { mbti, holland, lifePath, riasecScores, numerology, assessmentId } = body;
 
     if (!mbti || !holland) {
       return NextResponse.json({ error: 'Missing mbti or holland' }, { status: 400 });
     }
 
     const hollandStr = Array.isArray(holland) ? holland.join('/') : String(holland);
+
+    // Build RIASEC data string for prompts
+    const rs = riasecScores || {};
+    const riasecDetail = `R=${rs.R ?? '?'}% (kỹ thuật/thực hành), I=${rs.I ?? '?'}% (nghiên cứu/phân tích), A=${rs.A ?? '?'}% (sáng tạo/nghệ thuật), S=${rs.S ?? '?'}% (xã hội/chăm sóc), E=${rs.E ?? '?'}% (lãnh đạo/kinh doanh), C=${rs.C ?? '?'}% (quy trình/kỷ luật)`;
 
     // ── Tính avoid_careers ngay từ đầu (deterministic, không cần AI) ─────────
     const avoidCareers = computeAvoidCareers(hollandStr);
@@ -245,16 +255,23 @@ export async function POST(req: Request) {
               parsed.careers.top_careers.length > 0;
 
             if (hasTopCareers) {
-              // Cache đầy đủ — patch avoid_careers với phiên bản deterministic mới
-              const patchedResult = {
-                ...parsed,
-                careers: {
-                  ...parsed.careers,
-                  avoid_careers: avoidCareers.length >= 3 ? avoidCareers : (parsed.careers.avoid_careers || FALLBACK_DATA.careers.avoid_careers),
-                },
-              };
-              console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId}`);
-              return NextResponse.json({ ...patchedResult, cached: true });
+              // Kiểm tra version — invalidate cache cũ nếu version thấp hơn
+              const cachedVersion = parsed?.cacheVersion ?? 1;
+              if (cachedVersion < CACHE_VERSION) {
+                console.warn(`🔄 dashboard-ai cache OUTDATED (v${cachedVersion} < v${CACHE_VERSION}) — regenerating`);
+                // Không return, tiếp tục generate mới
+              } else {
+                // Cache đầy đủ và đúng version — patch avoid_careers với phiên bản deterministic mới
+                const patchedResult = {
+                  ...parsed,
+                  careers: {
+                    ...parsed.careers,
+                    avoid_careers: avoidCareers.length >= 3 ? avoidCareers : (parsed.careers.avoid_careers || FALLBACK_DATA.careers.avoid_careers),
+                  },
+                };
+                console.warn(`✅ dashboard-ai cache hit for assessment ${assessmentId} (v${cachedVersion})`);
+                return NextResponse.json({ ...patchedResult, cached: true });
+              }
             }
           }
         }
@@ -304,31 +321,55 @@ YÊU CẦU BẮT BUỘC:
 Trả lời ĐÚNG định dạng JSON:
 {"risk_percent": 73, "risk_description": "..."}`;
 
-    // ── Prompt C: Top 5 Careers only — avoid_careers đã có từ deterministic ──
-    const promptC = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Dựa trên tổ hợp tính cách ${mbti} kết hợp với nhóm nghề nghiệp Holland ${hollandStr} và số chủ đạo ${lifePath || 'không xác định'}, hãy gợi ý NGHỀ NGHIỆP phù hợp.
+    // ── Prompt C: Top 5 Careers — data-driven, personalized by actual scores ──
+    // Build dynamic blacklist based on actual RIASEC scores (not generic ban)
+    const isTechDominant = (rs.R ?? 0) >= 65 && (rs.I ?? 0) >= 65;
+    const isArtsDominant = (rs.A ?? 0) >= 65;
+    const isMediaFit = (rs.A ?? 0) >= 65 && (rs.E ?? 0) >= 55;
+    const isMarketingFit = (rs.E ?? 0) >= 60 && (rs.A ?? 0) >= 50;
+    const blacklist: string[] = [];
+    if (!isTechDominant) blacklist.push('Kỹ sư phần mềm / Lập trình viên (vì R=' + (rs.R ?? 0) + '% và I=' + (rs.I ?? 0) + '%, cả hai cần ≥65%)');
+    if (!isMarketingFit) blacklist.push('Chuyên viên marketing / Digital Marketing (vì E=' + (rs.E ?? 0) + '% và A=' + (rs.A ?? 0) + '%, cả hai chưa đủ)');
+    if (!isMediaFit) blacklist.push('Truyền thông / Content Creator / Social Media (vì A=' + (rs.A ?? 0) + '% chưa dominant)');
+    if (!isArtsDominant) blacklist.push('Nhà thiết kế UX/UI (vì A=' + (rs.A ?? 0) + '%, cần ≥65%)');
+    const blacklistStr = blacklist.length > 0
+      ? '\n\nNGHỀ KHÔNG PHÙ HỢP với hồ sơ này (KHÔNG đưa ra):\n' + blacklist.map(x => '- ' + x).join('\n')
+      : '';
 
-ĐỊNH NGHĨA: "Nghề nghiệp" = lĩnh vực hoạt động chuyên môn mà người ta theo đuổi lâu dài (vd: Nhà thiết kế đồ họa, Kỹ sư phần mềm, Giáo viên, Nhà tâm lý học, Kiến trúc sư, Nhà báo, Bác sĩ, Chuyên viên marketing, Lập trình viên, Nhiếp ảnh gia...).
+    const promptC = `Bạn là chuyên gia tư vấn nghề nghiệp tại Việt Nam. Hãy phân tích dữ liệu thực tế dưới đây và gợi ý 5 nghề phù hợp NHẤT với người này.
 
-TUYỆT ĐỐI KHÔNG đặt tên theo chức danh quản lý / cấp bậc như: Giám đốc, Trưởng phòng, Phó giám đốc, CEO, Quản lý, Manager, Head of..., VP...
+DỮ LIỆU NGƯỜI DÙNG:
+- MBTI: ${mbti}
+- Điểm RIASEC đầy đủ: ${riasecDetail}
+- Nhóm nổi bật nhất (top 3): ${hollandStr}
+- Số chủ đạo Nhân số học: ${lifePath || 'chưa xác định'}
 
-VÍ DỤ ĐÚNG: "Nhà thiết kế UX/UI", "Chuyên viên tư vấn tâm lý", "Kỹ sư phần mềm", "Nhà báo / Biên tập viên", "Chuyên viên marketing số"
-VÍ DỤ SAI: "Giám đốc marketing", "Trưởng nhóm thiết kế", "Giám đốc phát triển kinh doanh"
+CÁCH SUY LUẬN:
+1. Nhóm RIASEC có điểm cao nhất = môi trường làm việc tự nhiên nhất của người này
+2. Sự GIAO THOA giữa top 2-3 nhóm cao = điểm độc đáo cần khai thác khi chọn nghề
+3. MBTI xác định cách họ làm việc: hướng ngoại/nội, trực giác/giác quan, v.v.
+4. Mỗi lý do phải giải thích TẠI SAO nghề này khớp với ĐIỂM SỐ CỤ THỂ, không phải mô tả chung${blacklistStr}
 
-YÊU CẦU BẮT BUỘC:
-- Đưa ra chính xác 5 NGHỀ phù hợp nhất (không phải vị trí/chức danh), xếp theo % phù hợp giảm dần
-- Mỗi nghề có: tên nghề tiếng Việt (ngắn gọn, rõ ràng), % phù hợp (70-96%), lý do ngắn gọn (1 câu, dưới 20 từ)
-- Nghề thực tế tại Việt Nam, có thể học và theo đuổi được
-- KHÔNG dùng thuật ngữ MBTI, Holland trong lý do
-- % giảm dần từ #1 đến #5, nghề #1 cao hơn #3 ít nhất 5%
+XU HƯỚNG TƯƠNG LAI — YỂU TỐ BẮT BUỘC KHI CHỌ NGHỀ:
+Bên cạnh độ phù hợp tính cách, HÃY Ưu tiên những nghề thuộc các lĩnh vực có xu hướng tăng trưởng mạnh tại Việt Nam 2025-2035 (trong số những nghề phù hợp với hồ sơ người dùng):
+- Ưu tiên CAO NHẤT: AI & Dữ liệu (AI/ML engineer, Data Scientist), An ninh mạng, Khởi nghiệp công nghệ, Y tế số & Biotech
+- Ưu tiên CAO: Năng lượng xanh, Fintech, Chăm sóc sức khỏe tâm thần, Logistics thông minh
+- Ưu tiên KHÁ: Giáo dục & EdTech, Tài chính đầu tư, Kỹ thuật công nghiệp, Tư vấn phát triển bản thân
+Quy tắc: Với hai nghề cùng khớp tính cách, đưa nghề thuộc xu hướng tăng trưởng cao hơn lên trước.
+
+QUY TẮC FORMAT:
+- Không dùng: Giám đốc, CEO, Manager, Trưởng phòng
+- Không đề cập tên MBTI hay Holland trong phần "reason"
+- % phù hợp giảm dần từ rank 1→5
 
 Trả lời ĐÚNG định dạng JSON:
 {
   "top_careers": [
     {"rank": 1, "title": "...", "match": 96, "reason": "..."},
-    {"rank": 2, "title": "...", "match": 94, "reason": "..."},
-    {"rank": 3, "title": "...", "match": 88, "reason": "..."},
+    {"rank": 2, "title": "...", "match": 93, "reason": "..."},
+    {"rank": 3, "title": "...", "match": 89, "reason": "..."},
     {"rank": 4, "title": "...", "match": 85, "reason": "..."},
-    {"rank": 5, "title": "...", "match": 82, "reason": "..."}
+    {"rank": 5, "title": "...", "match": 81, "reason": "..."}
   ]
 }`;
 
@@ -347,7 +388,7 @@ Trả lời ĐÚNG định dạng JSON:
     const careers = {
       top_careers: ((careersData as any).top_careers || FALLBACK_DATA.careers.top_careers).map((c: any) => ({
         ...c,
-        locked: c.rank <= 2,
+        locked: c.rank <= 3,
       })),
       avoid_careers: avoidCareers.length >= 3 ? avoidCareers : FALLBACK_DATA.careers.avoid_careers,
     };
@@ -359,9 +400,9 @@ Trả lời ĐÚNG định dạng JSON:
       try {
         const db = getFirestore();
         await db.collection('assessments').doc(assessmentId).update({
-          dashboardAiCache: JSON.stringify(result),
+          dashboardAiCache: JSON.stringify({ ...result, cacheVersion: CACHE_VERSION }),
         });
-        console.warn(`💾 dashboard-ai saved to Firestore for assessment ${assessmentId}`);
+        console.warn(`💾 dashboard-ai saved to Firestore for assessment ${assessmentId} (v${CACHE_VERSION})`);
       } catch (e) {
         console.warn('Firestore cache write error:', e);
       }

@@ -2331,6 +2331,5 @@ async function generateReportUI() {
 
   } catch (err) {
     console.error('Lỗi thực thi Universal Layered Algorithm v5.0:', err);
-    alert('Đã xảy ra sự cố trong quá trình phân tích ma trận. Vui lòng thử lại!');
   }
 }

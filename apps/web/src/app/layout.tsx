@@ -5,6 +5,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import { ReferralCapture } from "@/components/ReferralCapture";
+import { ContactFollower } from "@/components/ContactFollower";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -43,6 +44,7 @@ export default function RootLayout({
             <ReferralCapture />
           </Suspense>
           {children}
+          <ContactFollower />
           <Toaster />
         </Providers>
       </body>

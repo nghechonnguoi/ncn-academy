@@ -126,16 +126,37 @@ const TESTIMONIALS = [
     name: "Phụ huynh em Thanh Hà",
     location: "Hà Nội",
     text: "Con đọc xong bỏ ngay ý định thi Kinh tế vì biết mình thuộc nhóm sáng tạo. Giờ con đang học Truyền thông và rất hạnh phúc.",
-  },
-  {
-    name: "Em Đức Minh",
-    location: "Lớp 11, TP.HCM",
-    text: "Em cứ nghĩ mình phải thi Y vì ba mẹ muốn. Báo cáo chỉ ra em thuộc nhóm Nghiên cứu-Nghệ thuật. Em đã nói chuyện lại với ba mẹ.",
+    role: "Phụ huynh",
   },
   {
     name: "Phụ huynh em Khánh Linh",
     location: "Hà Giang",
     text: "Chỉ hơn 500k mà tránh được 4 năm học sai ngành. Đáng lắm. Chúng tôi đã mua cho cả 2 con.",
+    role: "Phụ huynh",
+  },
+  {
+    name: "Phụ huynh em Minh Khôi",
+    location: "Đà Nẵng",
+    text: "Con trai tôi cứ phân vân giữa Bách Khoa và Kinh tế suốt 2 năm. Sau khi có báo cáo, con tự tin chọn ngay Công nghệ thông tin. Kết quả thi đầu vào rất tốt.",
+    role: "Phụ huynh",
+  },
+  {
+    name: "Phụ huynh em Bảo Ngọc",
+    location: "TP. Hồ Chí Minh",
+    text: "Tôi vốn muốn con học Y. Nhưng đọc báo cáo thấy con phù hợp với ngành Nghệ thuật-Thiết kế hơn nhiều. Ban đầu tôi phản đối, nhưng nhìn con vẽ từng ngày thấy con đúng. Cảm ơn NCN!",
+    role: "Phụ huynh",
+  },
+  {
+    name: "Phụ huynh em Thu Trang",
+    location: "Cần Thơ",
+    text: "Báo cáo phân tích rất sâu, không phải mấy cái trắc nghiệm thông thường. Con gái đọc xong tự lên kế hoạch học tập luôn. Mẹ yên tâm hơn rất nhiều.",
+    role: "Phụ huynh",
+  },
+  {
+    name: "Phụ huynh em Gia Huy",
+    location: "Bình Dương",
+    text: "Con hay nói 'con không biết mình muốn gì'. Sau bài test và báo cáo, con nói 'Con muốn làm về dữ liệu'. Lần đầu tiên tôi thấy con có định hướng rõ ràng như vậy.",
+    role: "Phụ huynh",
   },
 ];
 
@@ -185,7 +206,7 @@ function DashboardContent() {
       title: c.name ?? c.title ?? "",
       match: Math.round(c.pct ?? c.match ?? 0),
       reason: c.niche ?? c.reason ?? "",
-      locked: i < 2,
+      locked: i < 3,
     }));
   }
 
@@ -214,12 +235,14 @@ function DashboardContent() {
     const mbti = riasec.mbtiCode ?? "ENFP";
     const holland = riasec.top3 ?? "AIE";
     const lifePath = riasec.numerology?.LP ?? null;
+    const riasecScores = { R: riasec.R ?? 0, I: riasec.I ?? 0, A: riasec.A ?? 0, S: riasec.S ?? 0, E: riasec.E ?? 0, C: riasec.C ?? 0 };
+    const numerology = { LP: riasec.numerology?.LP ?? null, soul: riasec.numerology?.soul ?? null, mission: riasec.numerology?.mission ?? null };
 
     setAiLoading(true);
     fetch("/api/dashboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mbti, holland, lifePath, assessmentId: assessment.id }),
+      body: JSON.stringify({ mbti, holland, lifePath, riasecScores, numerology, assessmentId: assessment.id }),
     })
       .then((r) => r.json())
       .then((data: AiData) => setAiData(data))
@@ -281,6 +304,24 @@ function DashboardContent() {
               {user.email}
             </span>
           )}
+        </div>
+
+        {/* ── ZALO CONTACT #1 — ĐẦU TRANG ── */}
+        <div className="flex justify-center px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.15)" }}>
+          <a
+            href="https://zalo.me/0986864591"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:opacity-90 active:scale-95"
+            style={{ background: "rgba(0,120,200,0.2)", border: "1px solid rgba(0,120,200,0.4)", color: "#6ec6f5" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+              <rect width="48" height="48" rx="10" fill="#0078C8"/>
+              <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+            </svg>
+            Liên hệ Admin để được tư vấn miễn phí
+            <span style={{ color: "rgba(110,198,245,0.6)", fontSize: 10 }}>· 0986.864.591</span>
+          </a>
         </div>
 
         <div className="max-w-2xl mx-auto px-5 pt-10 text-center">
@@ -493,6 +534,36 @@ function DashboardContent() {
         </div>
       </section>
 
+      {/* ── ZALO CONTACT #2 — GIỮA TRANG ── */}
+      <section className="py-6 px-5" style={{ background: "#eef6ff" }}>
+        <div className="max-w-2xl mx-auto">
+          <a
+            href="https://zalo.me/0986864591"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-4 rounded-2xl px-5 py-4 transition-all hover:opacity-95 active:scale-[0.99]"
+            style={{ background: "linear-gradient(135deg, #0078C8 0%, #1a94e0 100%)", boxShadow: "0 4px 20px rgba(0,120,200,0.25)" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "rgba(255,255,255,0.2)" }}>
+                <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="48" height="48" rx="10" fill="rgba(255,255,255,0.3)"/>
+                  <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">💬 Còn thắc mắc? Hỏi Admin ngay!</p>
+                <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.75)" }}>Tư vấn miễn phí · Phản hồi trong vòng 5 phút · Zalo: 0986.864.591</p>
+              </div>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+              Nhắn Zalo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+          </a>
+        </div>
+      </section>
+
       {/* ══════════════════════════════════════════════════════════════════════
           SECTION 6 — BẰNG CHỨNG XÃ HỘI (TĨNH)
       ══════════════════════════════════════════════════════════════════════ */}
@@ -510,28 +581,49 @@ function DashboardContent() {
             {[
               { num: "2.840+", label: "bài test đã hoàn thành" },
               { num: "94%",    label: "tự tin hơn khi chọn ngành" },
-              { num: "4.8/5 ⭐", label: "đánh giá từ phụ huynh" },
+              { num: "★★★★★", label: "đánh giá từ phụ huynh" },
             ].map((s, i) => (
               <div key={i} className="text-center">
-                <div className="text-xl sm:text-2xl font-black text-gray-900">{s.num}</div>
+                <div
+                  className="text-xl sm:text-2xl font-black"
+                  style={{ color: i === 2 ? "#E8A838" : "#111827" }}
+                >
+                  {s.num}
+                </div>
                 <div className="text-xs text-gray-500 mt-1">{s.label}</div>
               </div>
             ))}
           </div>
 
           {/* Testimonials */}
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="rounded-2xl p-5 bg-white" style={{ border: "1px solid #e2e8f0" }}>
-                <div className="flex items-center gap-1 mb-2">
-                  {[0,1,2,3,4].map((s) => (
-                    <Star key={s} className="w-3 h-3 fill-current" style={{ color: "#E8A838" }} />
-                  ))}
+              <div key={i} className="rounded-2xl p-5 bg-white flex flex-col gap-3" style={{ border: "1px solid #e2e8f0", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                {/* Stars + badge */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-0.5">
+                    {[0,1,2,3,4].map((s) => (
+                      <Star key={s} className="w-3.5 h-3.5 fill-current" style={{ color: "#E8A838" }} />
+                    ))}
+                  </div>
+                  {t.role && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(43,168,140,0.1)", color: "#2BA88C" }}>
+                      ✓ {t.role}
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm text-gray-700 leading-relaxed mb-3">"{t.text}"</p>
-                <div>
-                  <p className="text-xs font-bold text-gray-900">{t.name}</p>
-                  <p className="text-xs text-gray-400">{t.location}</p>
+                {/* Quote */}
+                <p className="text-sm text-gray-700 leading-relaxed flex-1">"{t.text}"</p>
+                {/* Author */}
+                <div className="flex items-center gap-2.5 pt-1" style={{ borderTop: "1px solid #f1f5f9" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #2BA88C, #1B2A4A)" }}>
+                    {t.name.split(" ").slice(-1)[0][0]}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">{t.name}</p>
+                    <p className="text-xs text-gray-400">{t.location}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -577,54 +669,7 @@ function DashboardContent() {
         style={{ background: "linear-gradient(135deg, #1B2A4A 0%, #2d4a7a 100%)" }}>
         <div className="max-w-xl mx-auto text-center">
 
-          {/* Countdown */}
-          {!countdown.expired && (
-            <div className="inline-flex items-center gap-3 rounded-xl px-5 py-3 mb-6"
-              style={{ background: "rgba(232,168,56,0.12)", border: "1px solid rgba(232,168,56,0.3)" }}>
-              <span className="text-xs font-bold" style={{ color: "#E8A838" }}>⚡ ƯU ĐÃI HẾT HẠN TRONG</span>
-              <div className="flex items-center gap-1 font-mono font-black text-white text-base">
-                <span>{String(countdown.h).padStart(2,"0")}</span>
-                <span style={{ color: "#E8A838" }}>:</span>
-                <span>{String(countdown.m).padStart(2,"0")}</span>
-                <span style={{ color: "#E8A838" }}>:</span>
-                <span>{String(countdown.s).padStart(2,"0")}</span>
-              </div>
-            </div>
-          )}
 
-          {/* Giá */}
-          {(() => {
-            const now = new Date();
-            const isCampaign = now >= new Date("2026-07-15T00:00:00+07:00") && now <= new Date("2026-07-28T23:59:59+07:00");
-            return (
-              <div className="mb-6">
-                {isCampaign ? (
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                    style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)" }}>
-                    <span className="text-xs font-bold" style={{ color: "#f87171" }}>🔥 Ưu đãi chiến dịch · Kết thúc 28/7/2026</span>
-                  </div>
-                ) : (
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4"
-                    style={{ background: "rgba(43,168,140,0.15)", border: "1px solid rgba(43,168,140,0.3)" }}>
-                    <span className="text-xs font-bold" style={{ color: "#2BA88C" }}>Tiết kiệm 790.000đ</span>
-                  </div>
-                )}
-                <div className="flex items-baseline justify-center gap-3">
-                  <span className="text-base line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    {isCampaign ? "568.000đ" : "1.358.000đ"}
-                  </span>
-                  <span className="text-4xl font-black" style={{ color: "#E8A838" }}>
-                    {isCampaign ? "399.000đ" : "568.000đ"}
-                  </span>
-                </div>
-                <p className="text-sm mt-3 max-w-sm mx-auto" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  {isCampaign
-                    ? "Giá ưu đãi chiến dịch — chỉ còn đến hết ngày 28/7/2026."
-                    : "Chỉ hơn 500k để tránh quyết định sai có thể khiến bạn mất 4 năm đại học và hàng trăm triệu đồng."}
-                </p>
-              </div>
-            );
-          })()}
 
 
           {/* CTA Button */}
@@ -643,13 +688,29 @@ function DashboardContent() {
             <span className="text-xs font-semibold opacity-80">& ĐỊNH HƯỚNG PHÁT TRIỂN TRONG TƯƠNG LAI</span>
           </button>
 
-          <p className="text-xs mt-3" style={{ color: "rgba(255,255,255,0.4)" }}>
-            Nhận file PDF trong 30 giây · Thanh toán bảo mật
-          </p>
+          {/* ── ZALO CONTACT ── */}
+          <div className="mt-5 rounded-2xl px-5 py-4" style={{ background: "rgba(0,120,200,0.12)", border: "1px solid rgba(0,120,200,0.3)" }}>
+            <p className="text-xs font-semibold mb-3" style={{ color: "rgba(255,255,255,0.55)" }}>🔒 Thanh toán an toàn · Có câu hỏi về đơn hàng?</p>
+            <a
+              href="https://zalo.me/0986864591"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-95"
+              style={{ background: "rgba(0,120,200,0.25)", border: "1px solid rgba(0,120,200,0.5)", color: "#7dd3fc" }}
+            >
+              <svg width="18" height="18" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                <rect width="48" height="48" rx="10" fill="#0078C8"/>
+                <text x="50%" y="55%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" fontFamily="Arial">Z</text>
+              </svg>
+              Liên hệ Admin qua Zalo — 0986.864.591
+            </a>
+            <p className="text-xs text-center mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>Admin sẵn sàng hỗ trợ thanh toán và giải đáp mọi thắc mắc</p>
+          </div>
 
           <p className="text-sm font-bold mt-5" style={{ color: "#E8A838" }}>
             ⚡ Đừng bỏ lỡ tương lai chỉ vì sự chần chừ của hôm nay.
           </p>
+
         </div>
       </section>
 
@@ -741,6 +802,26 @@ function DashboardContent() {
         </section>
       )}
 
+      {/* RETAKE SURVEY */}
+      <section className="py-10 px-5 text-center" style={{ background: "#f8fafc" }}>
+        <p className="text-xs text-gray-400 mb-3">Muốn làm lại để có kết quả chính xác hơn?</p>
+        <a
+          href="/assessment"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all hover:opacity-80 active:scale-95"
+          style={{
+            background: "transparent",
+            border: "1.5px solid #cbd5e1",
+            color: "#64748b",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 4v6h6" />
+            <path d="M3.51 15a9 9 0 1 0 .49-3.29" />
+          </svg>
+          Làm lại bài khảo sát
+        </a>
+      </section>
+
       {/* FOOTER */}
       <footer className="py-6 text-center text-xs" style={{ background: "#1B2A4A", color: "rgba(255,255,255,0.3)" }}>
         © NCN Academy — Nghề Chọn Người
@@ -756,6 +837,77 @@ function DashboardContent() {
         userPhone={userPhone}
         avoidCareers={aiData?.careers?.avoid_careers ?? []}
       />
+
+      {/* ── ZALO FLOATING BUTTON — luôn nổi, click vào tin nhắn ngay ── */}
+      <a
+        href="https://zalo.me/0986864591"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Nhắn tin Zalo Admin — 0986.864.591"
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 20,
+          zIndex: 9999,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+          textDecoration: "none",
+          filter: "drop-shadow(0 4px 16px rgba(0,120,200,0.5))",
+        }}
+      >
+        {/* Vòng pulse animation */}
+        <span style={{
+          position: "absolute",
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          background: "rgba(0,120,200,0.25)",
+          animation: "zalo-pulse 1.8s ease-out infinite",
+          top: 0,
+          left: 0,
+        }} />
+        {/* Icon Zalo chính thức */}
+        <span style={{
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          background: "#0078C8",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 20px rgba(0,120,200,0.6)",
+          position: "relative",
+        }}>
+          <svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="50%" y="58%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="Arial, sans-serif">Z</text>
+          </svg>
+        </span>
+        {/* Label nhỏ bên dưới */}
+        <span style={{
+          background: "#0078C8",
+          color: "#fff",
+          fontSize: 10,
+          fontWeight: 700,
+          padding: "2px 8px",
+          borderRadius: 20,
+          whiteSpace: "nowrap",
+          letterSpacing: 0.3,
+          boxShadow: "0 2px 8px rgba(0,120,200,0.4)",
+        }}>
+          Nhắn Zalo
+        </span>
+      </a>
+
+      {/* CSS animation cho Zalo pulse */}
+      <style>{`
+        @keyframes zalo-pulse {
+          0%   { transform: scale(1);   opacity: 0.8; }
+          70%  { transform: scale(1.9); opacity: 0;   }
+          100% { transform: scale(1.9); opacity: 0;   }
+        }
+      `}</style>
     </div>
   );
 }
@@ -849,7 +1001,7 @@ function CareerCard({ career, onUnlock }: { career: Career; onUnlock: () => void
           <div className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#94a3b8" }} />
             <span className="text-sm font-bold text-gray-400">
-              Nghề phù hợp #{career.rank} — phù hợp hơn cả 3 nghề bên dưới
+              Nghề phù hợp #{career.rank} — phù hợp hơn cả 2 nghề bên dưới
             </span>
           </div>
           <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>Mở khóa trong báo cáo đầy đủ</p>
