@@ -152,17 +152,25 @@ export async function POST(req: Request) {
         if (!leadsSnap.empty) {
           const leadRef = leadsSnap.docs[0].ref;
           const isCoursePurchase = String(data.productType || data.payload?.PRODUCT_TYPE || 'pdf').toLowerCase() === 'course';
-          const purchaseUpdate = isCoursePurchase
-            ? {
-                'purchases.coursePurchased': true,
-                'purchases.coursePurchasedAt': FieldValue.serverTimestamp(),
-                'emailSequence.unsubscribed': true,
-              }
-            : {
-                'purchases.pdfPurchased': true,
-                'purchases.pdfPurchasedAt': FieldValue.serverTimestamp(),
-              };
-          await leadRef.update(purchaseUpdate);
+
+          if (isCoursePurchase) {
+            await leadRef.update({
+              'purchases.coursePurchased': true,
+              'purchases.coursePurchasedAt': FieldValue.serverTimestamp(),
+              'emailSequence.unsubscribed': true,
+            });
+          } else {
+            // PDF purchase → chuyển sang post-purchase email sequence
+            await leadRef.update({
+              'purchases.pdfPurchased': true,
+              'purchases.pdfPurchasedAt': FieldValue.serverTimestamp(),
+              // Dừng nurture cũ, chuyển sang post-purchase sequence
+              'emailSequence.currentStep': 0,
+              'emailSequence.sequenceType': 'post_purchase',
+              'emailSequence.nextSendAt': FieldValue.serverTimestamp(), // gửi email P0 ngay lần chạy scheduled tiếp theo
+              'emailSequence.unsubscribed': false,
+            });
+          }
           console.warn(`Updated lead ${leadRef.id} purchases for order ${orderCode} (course=${isCoursePurchase})`);
         } else {
           console.warn(`No lead found for email ${buyerEmail}, skipping emailSequence update.`);

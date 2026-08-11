@@ -45,7 +45,6 @@ export const dailyNurtureSend = onRequest(
       .collection("leads")
       .where("emailSequence.nextSendAt", "<=", now)
       .where("emailSequence.unsubscribed", "==", false)
-      .where("purchases.coursePurchased", "==", false)
       .get();
 
     let sent = 0;
@@ -57,14 +56,23 @@ export const dailyNurtureSend = onRequest(
       const email: string | undefined = lead?.email;
       const branch: string = lead?.emailSequence?.branch || DEFAULT_BRANCH;
       const currentStep: number = lead?.emailSequence?.currentStep ?? 0;
+      const sequenceType: string = lead?.emailSequence?.sequenceType || "nurture";
+
+      // Nếu là nurture sequence và đã mua PDF → skip (đã chuyển sang post_purchase rồi)
+      if (sequenceType === "nurture" && lead?.purchases?.pdfPurchased === true) {
+        await doc.ref.update({ "emailSequence.nextSendAt": null });
+        skipped++;
+        continue;
+      }
 
       if (!email) {
         skipped++;
         continue;
       }
 
-      let templateSnap = await db.collection("email_templates").doc(`${branch}_${currentStep}`).get();
-      if (!templateSnap.exists && branch !== DEFAULT_BRANCH) {
+      const templatePrefix = sequenceType === "post_purchase" ? "post_purchase" : branch;
+      let templateSnap = await db.collection("email_templates").doc(`${templatePrefix}_${currentStep}`).get();
+      if (!templateSnap.exists && templatePrefix !== DEFAULT_BRANCH) {
         templateSnap = await db.collection("email_templates").doc(`${DEFAULT_BRANCH}_${currentStep}`).get();
       }
 
