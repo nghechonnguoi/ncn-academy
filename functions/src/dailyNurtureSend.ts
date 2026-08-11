@@ -42,7 +42,7 @@ export const dailyNurtureSend = onRequest(
     const now = Timestamp.now();
 
     const snapshot = await db
-      .collection("leads")
+      .collection("customers")
       .where("emailSequence.nextSendAt", "<=", now)
       .where("emailSequence.unsubscribed", "==", false)
       .get();
@@ -90,7 +90,7 @@ export const dailyNurtureSend = onRequest(
         bodyHtml?: string;
         delayDays?: number;
       };
-      const vars = { name: lead?.name || "", email };
+      const vars = { name: lead?.fullName || "", email };
 
       try {
         await sendTemplateEmail({

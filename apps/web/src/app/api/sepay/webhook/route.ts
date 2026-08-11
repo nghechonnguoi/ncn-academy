@@ -148,7 +148,7 @@ export async function POST(req: Request) {
       // nurture sequence (onLeadCreated / dailyNurtureSend) reacts to this purchase.
       const buyerEmail = data.payload?.EMAIL;
       if (buyerEmail && buyerEmail !== 'Không cung cấp') {
-        const leadsSnap = await db.collection('leads').where('email', '==', buyerEmail).limit(1).get();
+        const leadsSnap = await db.collection('customers').where('email', '==', buyerEmail).limit(1).get();
         if (!leadsSnap.empty) {
           const leadRef = leadsSnap.docs[0].ref;
           const isCoursePurchase = String(data.productType || data.payload?.PRODUCT_TYPE || 'pdf').toLowerCase() === 'course';

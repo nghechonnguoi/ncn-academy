@@ -1,3 +1,3 @@
-export { onLeadCreated } from "./onLeadCreated";
+export { onCustomerCreated } from "./onCustomerCreated";
+export { onCustomerCreatedAdminNotify } from "./onCustomerCreatedAdminNotify";
 export { dailyNurtureSend } from "./dailyNurtureSend";
-export { onLeadCreatedAdminNotify } from "./onLeadCreatedAdminNotify";
