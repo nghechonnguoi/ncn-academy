@@ -5,7 +5,7 @@ import { X, Loader2, CheckCircle, Copy, Tag, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Giá chiến dịch theo thời gian ────────────────────────────────────────────
-const PRICE_ORIGINAL   = 568000;   // Giá gốc (luôn hiển thị gạch ngang)
+const PRICE_ORIGINAL   = 799000;   // Giá gốc (luôn hiển thị gạch ngang)
 const PRICE_CAMPAIGN   = 399000;   // Giá ưu đãi chiến dịch
 const CAMPAIGN_START   = new Date("2026-07-15T00:00:00+07:00");
 const CAMPAIGN_END     = new Date("2026-07-28T23:59:59+07:00");
@@ -15,7 +15,7 @@ function getCampaignPrice(): { price: number; display: string; isCampaign: boole
   const isCampaign = now >= CAMPAIGN_START && now <= CAMPAIGN_END;
   return isCampaign
     ? { price: PRICE_CAMPAIGN, display: "399.000đ", isCampaign: true  }
-    : { price: PRICE_ORIGINAL, display: "568.000đ", isCampaign: false };
+    : { price: PRICE_ORIGINAL, display: "799.000đ", isCampaign: false };
 }
 
 const { price: PRICE, display: PRICE_DISPLAY, isCampaign: IS_CAMPAIGN } = getCampaignPrice();
@@ -425,7 +425,7 @@ export function CheckoutModal({
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3">
                   <span className="text-sm line-through" style={{ color: "rgba(255,255,255,0.4)" }}>
-                    {IS_CAMPAIGN ? "568.000đ" : "1.358.000đ"}
+                    {IS_CAMPAIGN ? "799.000đ" : "1.358.000đ"}
                   </span>
                   <span className="text-3xl font-black" style={{ color: "#E8A838" }}>
                     {finalAmount === 0 ? "MIỄN PHÍ" : PRICE_DISPLAY}
