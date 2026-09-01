@@ -188,7 +188,7 @@ function DashboardContent() {
   const [affiliateCopied, setAffiliateCopied] = useState(false);
 
   const affiliateCode = user?.affiliateCode ?? null;
-  const affiliateLink = affiliateCode ? `https://nghechonnguoi.com/ref/${affiliateCode}` : "";
+  const affiliateLink = affiliateCode ? `https://quiz.nghechonnguoi.com/ref/${affiliateCode}` : "";
 
   const handleAffiliateCopy = () => {
     if (!affiliateLink) return;
@@ -818,7 +818,7 @@ function DashboardContent() {
             <path d="M1 4v6h6" />
             <path d="M3.51 15a9 9 0 1 0 .49-3.29" />
           </svg>
-          Làm lại bài khảo sát
+          Làm lại bài phân tích
         </a>
       </section>
 
