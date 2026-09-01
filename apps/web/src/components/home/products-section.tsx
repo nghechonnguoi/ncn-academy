@@ -16,7 +16,7 @@ const PRODUCTS = [
       "Gợi ý 5 nghề, ngách nghề, tổ hợp môn học phù hợp",
       "Báo cáo cá nhân hóa chi tiết",
     ],
-    btnText: "Làm bài khảo sát →",
+    btnText: "Làm bài phân tích →",
     btnLink: "https://quiz.nghechonnguoi.com",
     btnClass: "bg-ncn-orange text-white hover:bg-ncn-orange-dark",
     featured: true,
