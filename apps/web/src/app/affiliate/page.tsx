@@ -21,7 +21,7 @@ export default function AffiliatePage() {
 
   const affiliateCode = stats?.affiliateCode ?? user?.affiliateCode ?? null;
   const affiliateLink = affiliateCode
-    ? `https://nghechonnguoi.com/ref/${affiliateCode}`
+    ? `https://quiz.nghechonnguoi.com/?ref=${affiliateCode}`
     : "";
 
   useEffect(() => {
@@ -60,22 +60,26 @@ export default function AffiliatePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // API returns { data, total, page, limit } — unwrap
-  const commissionList = Array.isArray(commissions) ? commissions : (commissions as any)?.data ?? [];
+  // API trả về { data, total, page, limit } — unwrap
+  const commissionList: any[] = Array.isArray(commissions)
+    ? commissions
+    : (commissions as any)?.data ?? [];
 
-  // Build chart data from commissions grouped by month
+  // Build chart data — grouped by month, dùng c.amount (= commission amount)
   const chartData = commissionList.reduce((acc: any[], c: any) => {
     const month = new Date(c.createdAt).toLocaleDateString("vi-VN", { month: "short" });
     const existing = acc.find((d) => d.month === month);
-    if (existing) existing.amount += c.amount;
-    else acc.push({ month, amount: c.amount });
+    if (existing) existing.amount += (c.amount ?? 0);
+    else acc.push({ month, amount: c.amount ?? 0 });
     return acc;
   }, []).slice(-6);
 
-  const totalEarned = stats?.totalPaid ?? 0;
-  const pendingAmount = stats?.pendingAmount ?? 0;
+  const totalEarned   = stats?.totalPaid     ?? 0;
+  const pendingAmount = stats?.pendingAmount  ?? 0;
   const referralCount = stats?.totalReferrals ?? 0;
-  const conversionRate = referralCount > 0 ? Math.min((commissions.filter((c: any) => c.status === 'PAID').length / referralCount) * 100, 100) : 0;
+  const conversionRate = referralCount > 0
+    ? Math.min((commissionList.filter((c: any) => c.status === 'PAID').length / referralCount) * 100, 100)
+    : 0;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -241,9 +245,13 @@ export default function AffiliatePage() {
                       <tbody>
                         {commissionList.map((c: any) => (
                           <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                            <td className="px-5 py-3.5 font-medium text-gray-900">{c.referredUserId?.slice(0, 8)}...</td>
+                            <td className="px-5 py-3.5 font-medium text-gray-900">
+                              {c.customerName || `Đơn #${c.orderCode}` || '—'}
+                            </td>
                             <td className="px-5 py-3.5 font-semibold text-green-600">{formatVND(c.amount)}</td>
-                            <td className="px-5 py-3.5 text-gray-400">{new Date(c.createdAt).toLocaleDateString("vi-VN")}</td>
+                            <td className="px-5 py-3.5 text-gray-400">
+                              {c.createdAt ? new Date(c.createdAt).toLocaleDateString("vi-VN") : '—'}
+                            </td>
                             <td className="px-5 py-3.5">
                               <Badge className={c.status === "PAID" ? "bg-green-100 text-green-700 border-0" : "bg-amber-100 text-amber-700 border-0"}>
                                 {c.status === "PAID" ? "Đã thanh toán" : "Đang xử lý"}
