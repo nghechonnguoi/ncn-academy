@@ -53,7 +53,7 @@ export function CtaSection() {
               <span className="text-ncn-orange">📍</span> Việt Nam — Hoạt động toàn quốc
             </div>
             <div className="flex items-center gap-2 text-[13.5px] text-ncn-gray">
-              <span className="text-ncn-orange">📧</span> info@nghechonnguoi.com
+              <span className="text-ncn-orange">📧</span> nghechonnguoi1@gmail.com
             </div>
           </div>
         </div>

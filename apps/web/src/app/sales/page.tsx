@@ -55,7 +55,7 @@ const plans = [
     period: "theo đơn vị",
     desc: "Cho trường học & tổ chức",
     cta: "Liên hệ ngay",
-    href: "mailto:info@nghechonnguoi.com",
+    href: "mailto:nghechonnguoi1@gmail.com",
     highlight: false,
     features: [
       { text: "Tất cả tính năng Pro", included: true },
