@@ -214,7 +214,8 @@ function DashboardContent() {
   const countdown = useCountdown(countdownKey);
 
   // ── Tải assessment ──────────────────────────────────────────────────────
-  useEffect(() => {
+  function loadAssessment() {
+    setIsLoading(true);
     assessmentApi.list()
       .then((list: any[]) => {
         const resetDate = new Date("2026-07-05T00:00:00.000Z");
@@ -226,7 +227,9 @@ function DashboardContent() {
       })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, []);
+  }
+
+  useEffect(() => { loadAssessment(); }, []);
 
   // ── Gọi AI khi có assessment ────────────────────────────────────────────
   useEffect(() => {
@@ -831,6 +834,11 @@ function DashboardContent() {
       <CheckoutModal
         open={checkoutOpen}
         onClose={() => setCheckoutOpen(false)}
+        onPurchaseSuccess={() => {
+          // Sau khi xuất báo cáo xong: reload data để dashboard cập nhật trạng thái đã mua
+          setCheckoutOpen(false);
+          loadAssessment();
+        }}
         assessment={assessment}
         userName={userName}
         userEmail={userEmail}

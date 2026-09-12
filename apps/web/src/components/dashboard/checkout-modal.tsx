@@ -51,6 +51,7 @@ function getReferralCode(): string | null {
 interface CheckoutModalProps {
   open: boolean;
   onClose: () => void;
+  onPurchaseSuccess?: () => void;
   assessment: any;
   userName: string;
   userEmail?: string;
@@ -63,6 +64,7 @@ type PayStep = "form" | "qr" | "processing" | "done" | "error";
 export function CheckoutModal({
   open,
   onClose,
+  onPurchaseSuccess,
   assessment,
   userName,
   userEmail,
@@ -159,6 +161,7 @@ export function CheckoutModal({
             setPdfUrl(URL.createObjectURL(blob));
           } catch {}
           setPayStep("done");
+          onPurchaseSuccess?.();
           return;
         }
 
@@ -167,6 +170,7 @@ export function CheckoutModal({
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
           setPayStep("done");
+          onPurchaseSuccess?.();
           return;
         }
 
@@ -196,6 +200,7 @@ export function CheckoutModal({
                 setPdfUrl(URL.createObjectURL(blob));
               }
               setPayStep("done");
+              onPurchaseSuccess?.();
             } catch {
               // Fallback cũng thất bại → resume polling thêm 4 phút nữa
               pdfCalledRef.current = false;
