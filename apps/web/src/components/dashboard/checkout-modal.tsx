@@ -177,16 +177,18 @@ export function CheckoutModal({
               setPdfUrl(URL.createObjectURL(blob));
               setPayStep("done");
             } else if (pdfJson.success) {
-              // PDF đã được gửi qua email, không có base64
+              // PDF đã được gửi qua email, hoặc webhook đã xử lý (skipped=true) — done
               setPayStep("done");
             } else {
               throw new Error(pdfJson.error || "Hệ thống đang quá tải, vui lòng thử lại");
             }
           } catch (pdfErr: any) {
-            // Nếu generate-pdf thất bại, cho phép thử lại
+            // generate-pdf client-side thất bại (timeout/503) →
+            // Resume polling để webhook server-side có cơ hội xử lý xong
+            // Khách không thấy lỗi — chỉ tiếp tục chờ
             pdfCalledRef.current = false;
-            setErrorMsg(pdfErr.message || "Lỗi tạo báo cáo, vui lòng liên hệ hỗ trợ");
-            setPayStep("error");
+            setPayStep("qr"); // quay về màn hình QR, tiếp tục polling
+            startPolling(oc);
           }
           return;
         }

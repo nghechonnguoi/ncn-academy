@@ -72,6 +72,13 @@ export async function POST(req: Request) {
         const orderSnap = await dbCheck.collection('orders').doc(String(data.orderCode)).get();
         if (orderSnap.exists) {
           const orderData = orderSnap.data();
+
+          // ── Guard: nếu PDF đã xong rồi thì không chạy lại (tránh double-call webhook + client) ──
+          if (orderData?.pdfDone === true) {
+            console.warn(`[generate-pdf] Order ${data.orderCode} đã pdfDone=true — skip, trả về success ngay`);
+            return NextResponse.json({ success: true, skipped: true });
+          }
+
           if (orderData?.aiTextsCache && String(data.orderCode) !== '7516') {
             const parsed = JSON.parse(orderData.aiTextsCache);
             // Chỉ dùng cache nếu có cả CAREER và AVOID fields (tránh cache cũ không đủ)
@@ -664,9 +671,10 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
 
     let emailErrorResponse = null;
 
-    // ── THÊM MỚI: Check mã tư vấn viên — đọc order từ Firestore ──────────────
+    // ── Check mã tư vấn viên + guard emailSent — đọc order từ Firestore ──────
     // Không ảnh hưởng PDF, chỉ quyết định gửi email cho ai.
     let advisorInfo: { name: string; email: string; phone?: string } | null = null;
+    let emailAlreadySent = false;
     if (data.orderCode && getApps().length) {
       try {
         const db = getFirestore();
@@ -676,6 +684,11 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
           if (od.advisorName && od.advisorEmail) {
             advisorInfo = { name: od.advisorName, email: od.advisorEmail, phone: od.advisorPhone || '' };
           }
+          // ✅ Guard: nếu email đã gửi thành công trước đó → skip gửi lại
+          if (od.emailSent === true) {
+            emailAlreadySent = true;
+            console.warn(`[generate-pdf] Order ${data.orderCode}: emailSent=true → SKIP gửi email (tránh gửi trùng)`);
+          }
         }
       } catch (advLookupErr: any) {
         console.warn('[generate-pdf] advisor lookup error (non-blocking):', advLookupErr.message);
@@ -683,8 +696,8 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
     }
     // ─────────────────────────────────────────────────────────────────────────
 
-    // 🚀 Send email if email address is provided
-    if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY) {
+    // 🚀 Send email if email address is provided (và chưa gửi lần nào)
+    if (data.EMAIL && data.EMAIL !== "Không cung cấp" && process.env.RESEND_API_KEY && !emailAlreadySent) {
 
       if (advisorInfo) {
         // ====== FLOW MỚI: Gửi PDF về email TƯ VẤN VIÊN ======
@@ -733,7 +746,13 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
             console.error("❌ Resend (advisor) error:", resendResponse.error);
             emailErrorResponse = resendResponse.error;
           } else {
-            console.warn(`✅ PDF đã gửi cho tư vấn viên ${advisorInfo.name} (${advisorInfo.email})`);
+            console.warn(`✅ PDF đã gửi cho tư vấn viên ${advisorInfo!.name} (${advisorInfo!.email})`);
+            // ✅ Mark emailSent để tránh gửi lại lần sau
+            if (data.orderCode && getApps().length) {
+              try {
+                await getFirestore().collection('orders').doc(String(data.orderCode)).update({ emailSent: true, emailSentAt: new Date().toISOString() });
+              } catch (e) { console.warn('[generate-pdf] Không cập nhật được emailSent:', e); }
+            }
           }
         } catch (emailError: any) {
           console.error("❌ Failed to send advisor email:", emailError);
@@ -769,6 +788,12 @@ FORMAT OUTPUT — Trả về JSON (không có markdown wrapper):
             emailErrorResponse = resendResponse.error;
           } else {
             console.warn("✅ Email sent successfully to", data.EMAIL);
+            // ✅ Mark emailSent để tránh gửi lại lần sau
+            if (data.orderCode && getApps().length) {
+              try {
+                await getFirestore().collection('orders').doc(String(data.orderCode)).update({ emailSent: true, emailSentAt: new Date().toISOString() });
+              } catch (e) { console.warn('[generate-pdf] Không cập nhật được emailSent:', e); }
+            }
           }
         } catch (emailError: any) {
           console.error("❌ Failed to send email:", emailError);
