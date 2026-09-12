@@ -632,10 +632,15 @@ export function CheckoutModal({
               ) : (
                 /* ── FLOW CŨ: Màn hình tải PDF cho khách — GIỮ NGUYÊN 100% ── */
                 <>
-                  <p className="font-bold text-xl text-white">Báo cáo đã sẵn sàng! 🎉</p>
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-                    Báo cáo đã được tạo và gửi về email của bạn.
-                  </p>
+                  <p className="font-black text-2xl text-white">✅ ĐÃ HOÀN THÀNH!</p>
+                  <div className="rounded-xl p-4 space-y-2" style={{ background: "rgba(43,168,140,0.12)", border: "1px solid rgba(43,168,140,0.4)" }}>
+                    <p className="text-sm font-bold" style={{ color: "#2BA88C" }}>📧 Mời bạn kiểm tra hộp thư:</p>
+                    <p className="text-base font-black text-white break-all">{userEmail || "email của bạn"}</p>
+                    <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
+                      Báo cáo đã được gửi về email trên.<br />
+                      Nếu không thấy, vui lòng kiểm tra thư mục <strong>Spam / Quảng cáo</strong>.
+                    </p>
+                  </div>
                   {pdfUrl && (
                     <a
                       href={pdfUrl}
