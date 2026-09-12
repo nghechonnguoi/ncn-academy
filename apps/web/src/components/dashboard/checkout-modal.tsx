@@ -134,66 +134,22 @@ export function CheckoutModal({
   }, [open]);
 
   // ── Polling order status ──────────────────────────────────────────────────
+  // Kiến trúc: Webhook server là người DUY NHẤT tạo PDF.
+  // Client chỉ poll chờ pdfDone=true. Chỉ sau FALLBACK_WAIT_MS (4 phút)
+  // mà pdfDone vẫn false, client mới tự gọi generate-pdf như fallback.
   function startPolling(oc: number) {
     if (pollRef.current) clearInterval(pollRef.current);
+
+    const POLL_INTERVAL_MS   = 3000;
+    const FALLBACK_WAIT_MS   = 4 * 60 * 1000; // 4 phút
+    const fallbackAt         = Date.now() + FALLBACK_WAIT_MS;
 
     pollRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/order-status?orderCode=${oc}`);
         const orderData = await res.json();
 
-        // Đã PAID nhưng PDF chưa xong → gọi generate-pdf (chỉ 1 lần)
-        if (
-          orderData.status === "PAID" &&
-          !orderData.pdfDone &&
-          !pdfCalledRef.current &&
-          pdfPayloadRef.current
-        ) {
-          pdfCalledRef.current = true;
-          setPayStep("processing");
-
-          // Stop polling trước khi gọi generate-pdf (có thể mất vài phút)
-          if (pollRef.current) clearInterval(pollRef.current);
-          pollRef.current = null;
-
-          try {
-            const pdfRes = await fetch("/api/generate-pdf", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(pdfPayloadRef.current),
-            });
-
-            if (!pdfRes.ok) {
-              const errJson = await pdfRes.json().catch(() => ({}));
-              throw new Error(errJson?.error || `Lỗi tạo báo cáo (HTTP ${pdfRes.status})`);
-            }
-
-            const pdfJson = await pdfRes.json();
-
-            if (pdfJson.success && pdfJson.pdfBase64) {
-              // Decode base64 → blob URL để download
-              const bytes = Uint8Array.from(atob(pdfJson.pdfBase64), (c) => c.charCodeAt(0));
-              const blob = new Blob([bytes], { type: "application/pdf" });
-              setPdfUrl(URL.createObjectURL(blob));
-              setPayStep("done");
-            } else if (pdfJson.success) {
-              // PDF đã được gửi qua email, hoặc webhook đã xử lý (skipped=true) — done
-              setPayStep("done");
-            } else {
-              throw new Error(pdfJson.error || "Hệ thống đang quá tải, vui lòng thử lại");
-            }
-          } catch (pdfErr: any) {
-            // generate-pdf client-side thất bại (timeout/503) →
-            // Resume polling để webhook server-side có cơ hội xử lý xong
-            // Khách không thấy lỗi — chỉ tiếp tục chờ
-            pdfCalledRef.current = false;
-            setPayStep("qr"); // quay về màn hình QR, tiếp tục polling
-            startPolling(oc);
-          }
-          return;
-        }
-
-        // pdfDone=true và có pdfBase64 lưu sẵn trong Firestore (trường hợp dự phòng)
+        // ── pdfDone=true và có base64 trong Firestore ──
         if (orderData.pdfDone && orderData.pdfBase64) {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
@@ -206,14 +162,50 @@ export function CheckoutModal({
           return;
         }
 
-        // pdfDone=true nhưng không có base64 (email đã gửi)
-        if (orderData.pdfDone && !orderData.pdfBase64) {
+        // ── pdfDone=true, không có base64 (email đã gửi / webhook xử lý) ──
+        if (orderData.pdfDone) {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
           setPayStep("done");
+          return;
         }
+
+        // ── PAID nhưng webhook chưa xong → chuyển sang màn hình "đang xử lý" ──
+        if (orderData.status === "PAID") {
+          // Hiển thị processing để khách biết đang xử lý (webhook đang tạo PDF)
+          if (payStep !== "processing") setPayStep("processing");
+
+          // ── Fallback: sau 4 phút pdfDone vẫn false → client tự tạo PDF ──
+          // (Webhook có thể đã fail do Vercel cold start hoặc lỗi mạng)
+          if (Date.now() > fallbackAt && !pdfCalledRef.current && pdfPayloadRef.current) {
+            pdfCalledRef.current = true;
+            if (pollRef.current) clearInterval(pollRef.current);
+            pollRef.current = null;
+
+            try {
+              const pdfRes = await fetch("/api/generate-pdf", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(pdfPayloadRef.current),
+              });
+              if (!pdfRes.ok) throw new Error(`HTTP ${pdfRes.status}`);
+              const pdfJson = await pdfRes.json();
+              if (pdfJson.success && pdfJson.pdfBase64) {
+                const bytes = Uint8Array.from(atob(pdfJson.pdfBase64), (c) => c.charCodeAt(0));
+                const blob = new Blob([bytes], { type: "application/pdf" });
+                setPdfUrl(URL.createObjectURL(blob));
+              }
+              setPayStep("done");
+            } catch {
+              // Fallback cũng thất bại → resume polling thêm 4 phút nữa
+              pdfCalledRef.current = false;
+              startPolling(oc);
+            }
+          }
+        }
+        // Nếu status vẫn PENDING → tiếp tục poll (chờ webhook cập nhật PAID)
       } catch {}
-    }, 3000);
+    }, POLL_INTERVAL_MS);
   }
 
   // ── Áp dụng mã giảm giá (chỉ validate, KHÔNG mark USED) ─────────────────
