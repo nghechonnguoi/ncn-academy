@@ -19,6 +19,8 @@ import { useSearchParams } from "next/navigation";
 export const REFERRAL_LS_KEY = "referralCode";
 // Key cũ của script.js bên quiz-site — giữ để tương thích ngược
 const LEGACY_LS_KEY = "ncn_referral_code";
+// sessionStorage key — dùng bởi useReferral & checkout-modal
+const SESSION_KEY = "ncn_ref";
 
 export function ReferralCapture() {
   const searchParams = useSearchParams();
@@ -31,6 +33,7 @@ export function ReferralCapture() {
     try {
       localStorage.setItem(REFERRAL_LS_KEY, code);
       localStorage.setItem(LEGACY_LS_KEY, code); // tương thích ngược
+      sessionStorage.setItem(SESSION_KEY, code);  // fix race condition với checkout-modal
     } catch {
       // Private browsing có thể throw — bỏ qua
     }

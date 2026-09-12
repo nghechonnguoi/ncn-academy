@@ -37,6 +37,7 @@ function getReferralCode(): string | null {
     const urlRef = new URLSearchParams(window.location.search).get("ref");
     if (urlRef) return urlRef.trim().toUpperCase();
     return (
+      sessionStorage.getItem("ncn_ref") ||        // fix race condition: ReferralCapture lưu vào đây trước
       localStorage.getItem("referralCode") ||
       localStorage.getItem("ncn_referral_code") ||
       null
@@ -74,6 +75,9 @@ export function CheckoutModal({
   const [couponOk, setCouponOk]         = useState(false);
   const [couponCode, setCouponCode]     = useState(""); // mã đã validate thành công
   const [finalAmount, setFinalAmount]   = useState(PRICE);
+  // ── Affiliate auto-discount ──
+  const [affiliateRef, setAffiliateRef]         = useState<string | null>(null);
+  const [affiliateDiscount, setAffiliateDiscount] = useState(0); // VNĐ giảm 5%
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder]   = useState(false);
   const [qrUrl, setQrUrl]               = useState("");
@@ -107,6 +111,7 @@ export function CheckoutModal({
       setCoupon(""); setCouponMsg(""); setCouponOk(false); setCouponCode("");
       setFinalAmount(PRICE); setQrUrl(""); setQrDesc("");
       setErrorMsg(""); setPdfUrl("");
+      setAffiliateRef(null); setAffiliateDiscount(0);
       orderCodeRef.current = 0;
       pdfCalledRef.current = false;
       pdfPayloadRef.current = null;
@@ -114,6 +119,16 @@ export function CheckoutModal({
       // Generate orderCode 1 lần duy nhất khi modal mở
       if (!orderCodeRef.current) {
         orderCodeRef.current = buildOrderCode();
+      }
+      // ── Tự động áp dụng giảm giá 5% nếu đến từ link affiliate ──
+      const ref = getReferralCode();
+      if (ref) {
+        // Làm tròn xuống 1.000đ để khách chuyển khoản dễ hơn (759.050 → 759.000)
+        const discounted = Math.floor((PRICE * 0.95) / 1000) * 1000;
+        const disc       = PRICE - discounted;
+        setAffiliateRef(ref);
+        setAffiliateDiscount(disc);
+        setFinalAmount(discounted);
       }
     }
   }, [open]);
@@ -216,7 +231,9 @@ export function CheckoutModal({
       const data = await res.json();
       if (data.success) {
         const discount = Number(data.discountAmount ?? 0);
-        const newFinal = discount === 0 ? 0 : Math.max(0, PRICE - discount);
+        // Stack: coupon discount áp dụng lên giá sau khi đã giảm affiliate 5%
+        const baseAfterAffiliate = PRICE - affiliateDiscount;
+        const newFinal = discount === 0 ? 0 : Math.max(0, baseAfterAffiliate - discount);
         setCouponOk(true);
         setCouponCode(code);
         setFinalAmount(newFinal);
@@ -225,7 +242,7 @@ export function CheckoutModal({
         } else {
           const savedStr  = discount.toLocaleString("vi-VN");
           const finalStr  = newFinal.toLocaleString("vi-VN");
-          setCouponMsg(`✅ Mã hợp lệ! Giảm ${savedStr}đ — còn lại ${finalStr}đ`);
+          setCouponMsg(`✅ Mã hợp lệ! Giảm thêm ${savedStr}đ — còn lại ${finalStr}đ`);
         }
         // ── THÊM MỚI: Check nếu mã là mã tư vấn viên ──
         try {
@@ -428,9 +445,16 @@ export function CheckoutModal({
                     {IS_CAMPAIGN ? "799.000đ" : "1.358.000đ"}
                   </span>
                   <span className="text-3xl font-black" style={{ color: "#E8A838" }}>
-                    {finalAmount === 0 ? "MIỄN PHÍ" : PRICE_DISPLAY}
+                    {finalAmount === 0 ? "MIỄN PHÍ" : `${finalAmount.toLocaleString("vi-VN")}đ`}
                   </span>
                 </div>
+                {/* Badge affiliate discount — hiện ngay khi có ref code */}
+                {affiliateRef && finalAmount !== 0 && (
+                  <span className="text-xs font-bold px-3 py-1 rounded-full mt-2 inline-block"
+                    style={{ background: "rgba(99,102,241,0.15)", color: "#a5b4fc", border: "1px solid rgba(99,102,241,0.35)" }}>
+                    🔗 Ưu đãi affiliate · Giảm 5% ({affiliateDiscount.toLocaleString("vi-VN")}đ)
+                  </span>
+                )}
                 {IS_CAMPAIGN && finalAmount !== 0 && (
                   <span className="text-xs font-bold px-3 py-1 rounded-full mt-2 inline-block"
                     style={{ background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>
