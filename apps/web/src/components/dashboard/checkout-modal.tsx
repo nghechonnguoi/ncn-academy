@@ -585,6 +585,9 @@ export function CheckoutModal({
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Đang chờ thanh toán...
               </div>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.45)" }}>
+                ⏱ Quý khách vui lòng chờ hệ thống xuất báo cáo khoảng 1 phút
+              </p>
             </div>
           )}
 
