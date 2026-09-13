@@ -139,22 +139,25 @@ export async function POST(req: Request) {
 
     console.log(`Querying leads created after: ${todayStart.toISOString()}`);
 
+    // Chỉ query theo createdAt (single-field index) để tránh cần composite index
+    // Lọc pdfPurchased trong JavaScript
     const leadsSnap = await db.collection('leads')
       .where('createdAt', '>=', todayStartTs)
-      .where('purchases.pdfPurchased', '==', false)
       .orderBy('createdAt', 'desc')
-      .limit(200)
+      .limit(500)
       .get();
 
     if (leadsSnap.empty) {
       return NextResponse.json({ 
         success: true, 
         sent: 0, 
-        message: 'Không có lead nào phù hợp' 
+        message: 'Không có lead nào đăng ký hôm nay' 
       });
     }
 
-    const leads = leadsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+    // Lọc chưa mua PDF trong JS
+    const allLeads = leadsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+    const leads = allLeads.filter(l => !l.purchases?.pdfPurchased);
     console.log(`Found ${leads.length} leads to notify`);
 
     const results: { email: string; status: 'sent' | 'skipped' | 'error'; reason?: string }[] = [];
