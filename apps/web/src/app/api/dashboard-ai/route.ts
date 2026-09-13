@@ -51,9 +51,8 @@ function initFirebase() {
 
 async function callClaudeJson(anthropic: Anthropic, promptText: string): Promise<any> {
   const modelsToTry = [
-    "claude-sonnet-5",
-    "claude-sonnet-4-6",
-    "claude-haiku-4-5-20251001",
+    "claude-haiku-4-5-20251001",    // model chính — rẻ, đủ nhanh cho insights trước thanh toán
+    "claude-sonnet-4-6",            // fallback nếu haiku lỗi
   ];
 
   let lastError = '';
