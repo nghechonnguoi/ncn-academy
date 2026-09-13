@@ -48,11 +48,20 @@ export async function GET(req: Request) {
     const aff = affDoc.data()!;
 
     // Query tất cả orders của affiliate này (đã thanh toán)
+    // Không dùng orderBy để tránh cần composite index — sort trong JS
     const ordersSnap = await db.collection('orders')
       .where('referralCode', '==', code)
-      .orderBy('createdAt', 'desc')
       .limit(200)
       .get();
+
+    // Sort theo createdAt desc trong JS
+    const orderDocs = ordersSnap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a: any, b: any) => {
+        const ta = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+        const tb = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+        return tb - ta;
+      });
 
     const now = new Date();
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -68,13 +77,13 @@ export async function GET(req: Request) {
 
     const recentOrders: any[] = [];
 
-    ordersSnap.docs.forEach(doc => {
-      const d = doc.data();
+    orderDocs.forEach((d: any) => {
       const isPaid = (d.paidAmount && d.paidAmount > 0) || d.status === 'PAID';
       if (!isPaid) return;
 
       const amt = d.paidAmount || d.amount || 0;
       const createdAt: Date = d.createdAt?.toDate ? d.createdAt.toDate() : new Date(0);
+
 
       lifetimeOrders++;
       lifetimeRevenue += amt;
