@@ -86,10 +86,17 @@ export async function POST(req: Request) {
       // PRICE_FULL      = 799.000đ — giá gốc, không có affiliate
       // PRICE_AFFILIATE = 759.000đ — giá sau giảm 5% affiliate (floor *0.95/1k*1k)
       // Coupon miễn phí (VIP/FREE/NCN/PRO/GIFT) → không qua webhook, xử lý tại apply-coupon
+      // Coupon giảm 1 phần (GIAM50...) → user chuyển khoản giá sau giảm
       const PRICE_FULL      = 799_000;
       const PRICE_AFFILIATE = 759_000;
 
-      const expectedAmount = Number(data.amount || 0);
+      const orderAmount    = Number(data.amount || 0);
+      const discountApplied = Number(data.discountAmount || 0); // từ apply-coupon
+      // expectedAmount = số tiền user thực tế phải chuyển (đã trừ coupon nếu có)
+      const expectedAmount = discountApplied > 0
+        ? Math.max(0, orderAmount - discountApplied)
+        : orderAmount;
+
       // Chấp nhận trong biên độ 1.000đ để xử lý làm tròn của ngân hàng
       const ROUNDING_BUFFER = 1_000;
       const minimumAccept   = expectedAmount - ROUNDING_BUFFER;
@@ -97,7 +104,9 @@ export async function POST(req: Request) {
 
       console.warn(
         `[webhook] order ${orderCode}` +
-        ` | mốc: ${expectedAmount === PRICE_AFFILIATE ? 'AFFILIATE (759k)' : expectedAmount === PRICE_FULL ? 'FULL (799k)' : `CUSTOM (${expectedAmount}đ)`}` +
+        ` | order.amount: ${orderAmount.toLocaleString('vi-VN')}đ` +
+        (discountApplied > 0 ? ` | discount: -${discountApplied.toLocaleString('vi-VN')}đ (${data.couponApplied || 'coupon'})` : '') +
+        ` | expected: ${expectedAmount.toLocaleString('vi-VN')}đ` +
         ` | received: ${amount.toLocaleString('vi-VN')}đ` +
         ` | min acceptable: ${minimumAccept.toLocaleString('vi-VN')}đ` +
         (hasAffiliate ? ` | ref: ${data.referralCode}` : '')
@@ -108,7 +117,7 @@ export async function POST(req: Request) {
           `[webhook] ❌ PARTIAL_PAID order ${orderCode}:` +
           ` received ${amount.toLocaleString('vi-VN')}đ` +
           ` < min ${minimumAccept.toLocaleString('vi-VN')}đ` +
-          ` (expected ${expectedAmount.toLocaleString('vi-VN')}đ)`
+          ` (expected after discount: ${expectedAmount.toLocaleString('vi-VN')}đ)`
         );
         await docRef.set({
           status:     'PARTIAL_PAID',
@@ -118,6 +127,7 @@ export async function POST(req: Request) {
         }, { merge: true });
         return NextResponse.json({ success: true, message: 'Insufficient amount' }, { headers: corsHeaders });
       }
+
 
       // Skip if already generating
       if (data.pdfGenerating || data.pdfDone) {
