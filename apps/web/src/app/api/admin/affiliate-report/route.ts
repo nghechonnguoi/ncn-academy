@@ -24,7 +24,7 @@ export async function GET(req: Request) {
         const affiliatesSnap = await db.collection('affiliates').get();
 
         const allPaidOrdersSnap = await db.collection('orders')
-            .where('status', '==', 'PAID')
+            .where('referralCode', '>', '')   // chỉ lấy đơn có referralCode
             .get();
 
         const lifetimeCountByCode: Record<string, number> = {};
@@ -35,15 +35,22 @@ export async function GET(req: Request) {
             const code = d.referralCode;
             if (!code) return;
 
+            // Coi là đã thanh toán nếu paidAmount > 0 HOẶC status === 'PAID'
+            // (đề phòng race condition làm status bị reset về PENDING)
+            const isPaid = (d.paidAmount && d.paidAmount > 0) || d.status === 'PAID';
+            if (!isPaid) return;
+
             lifetimeCountByCode[code] = (lifetimeCountByCode[code] || 0) + 1;
 
             const createdAt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
             if (createdAt && createdAt >= monthStart && createdAt < monthEnd) {
                 if (!monthlyOrdersByCode[code]) monthlyOrdersByCode[code] = { count: 0, totalAmount: 0 };
                 monthlyOrdersByCode[code].count += 1;
-                monthlyOrdersByCode[code].totalAmount += (d.amount || 0);
+                // Dùng paidAmount thực tế, fallback về amount
+                monthlyOrdersByCode[code].totalAmount += (d.paidAmount || d.amount || 0);
             }
         });
+
 
         let report = affiliatesSnap.docs.map(doc => {
             const aff = doc.data();
