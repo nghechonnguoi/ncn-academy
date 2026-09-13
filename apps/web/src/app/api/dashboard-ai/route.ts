@@ -241,6 +241,8 @@ export async function POST(req: Request) {
 
     // ── Check Firestore cache ────────────────────────────────────────────────
     initFirebase();
+
+    // Cache 1: theo assessmentId (web app có tài khoản)
     if (assessmentId && getApps().length) {
       try {
         const db = getFirestore();
@@ -254,13 +256,10 @@ export async function POST(req: Request) {
               parsed.careers.top_careers.length > 0;
 
             if (hasTopCareers) {
-              // Kiểm tra version — invalidate cache cũ nếu version thấp hơn
               const cachedVersion = parsed?.cacheVersion ?? 1;
               if (cachedVersion < CACHE_VERSION) {
                 console.warn(`🔄 dashboard-ai cache OUTDATED (v${cachedVersion} < v${CACHE_VERSION}) — regenerating`);
-                // Không return, tiếp tục generate mới
               } else {
-                // Cache đầy đủ và đúng version — patch avoid_careers với phiên bản deterministic mới
                 const patchedResult = {
                   ...parsed,
                   careers: {
@@ -275,7 +274,41 @@ export async function POST(req: Request) {
           }
         }
       } catch (e) {
-        console.warn('Firestore cache read error:', e);
+        console.warn('Firestore cache read error (assessmentId):', e);
+      }
+    }
+
+    // Cache 2: theo MBTI+Holland (quiz site — assessmentId = null) — TTL 30 ngày
+    const mbtiKey    = String(mbti).toUpperCase().trim();
+    const hollandKey = String(hollandStr).toUpperCase().replace(/[^RIASCE]/g, '').substring(0, 3);
+    const profileCacheKey = `${mbtiKey}_${hollandKey}`;
+    const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+    if (!assessmentId && getApps().length) {
+      try {
+        const db = getFirestore();
+        const snap = await db.collection('dashboard_ai_cache').doc(profileCacheKey).get();
+        if (snap.exists) {
+          const cached = snap.data()!;
+          const age = Date.now() - (cached.generatedAt as any).toMillis();
+          if (age < CACHE_TTL_MS) {
+            const parsed = JSON.parse(cached.payload);
+            console.warn(`✅ dashboard-ai cache hit (profile): ${profileCacheKey} (${Math.round(age / 86400000)}d old)`);
+            return NextResponse.json({
+              ...parsed,
+              careers: {
+                ...parsed.careers,
+                avoid_careers: avoidCareers.length >= 3 ? avoidCareers : (parsed.careers?.avoid_careers || FALLBACK_DATA.careers.avoid_careers),
+              },
+              cached: true,
+            });
+          }
+          console.warn(`🔄 dashboard-ai profile cache expired: ${profileCacheKey}`);
+        } else {
+          console.warn(`⬇️  dashboard-ai profile cache miss: ${profileCacheKey}`);
+        }
+      } catch (e) {
+        console.warn('Firestore cache read error (profile):', e);
       }
     }
 
@@ -395,13 +428,27 @@ Trả lời ĐÚNG định dạng JSON:
     const result = { insights, risk, careers };
 
     // ── Save to Firestore cache ──────────────────────────────────────────────
-    if (assessmentId && getApps().length) {
+    if (getApps().length) {
       try {
         const db = getFirestore();
-        await db.collection('assessments').doc(assessmentId).update({
-          dashboardAiCache: JSON.stringify({ ...result, cacheVersion: CACHE_VERSION }),
-        });
-        console.warn(`💾 dashboard-ai saved to Firestore for assessment ${assessmentId} (v${CACHE_VERSION})`);
+        if (assessmentId) {
+          // Cache 1: theo assessmentId (web app)
+          await db.collection('assessments').doc(assessmentId).update({
+            dashboardAiCache: JSON.stringify({ ...result, cacheVersion: CACHE_VERSION }),
+          });
+          console.warn(`💾 dashboard-ai saved (assessmentId): ${assessmentId} (v${CACHE_VERSION})`);
+        } else {
+          // Cache 2: theo MBTI+Holland (quiz site) — TTL 30 ngày
+          const { Timestamp } = await import('firebase-admin/firestore');
+          await db.collection('dashboard_ai_cache').doc(profileCacheKey).set({
+            payload: JSON.stringify({ ...result, cacheVersion: CACHE_VERSION }),
+            mbti: mbtiKey,
+            holland: hollandKey,
+            model: 'claude-haiku-4-5-20251001',
+            generatedAt: Timestamp.now(),
+          });
+          console.warn(`💾 dashboard-ai saved (profile cache): ${profileCacheKey}`);
+        }
       } catch (e) {
         console.warn('Firestore cache write error:', e);
       }
