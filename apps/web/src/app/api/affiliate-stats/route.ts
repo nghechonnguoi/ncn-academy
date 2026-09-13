@@ -7,7 +7,16 @@
 import { NextResponse } from 'next/server';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getTierByOrderCount } from '@/lib/affiliateTiers';
+
+const TIERS = [
+  { name: 'Kim Cương', minOrders: 80, commissionRate: 0.30 },
+  { name: 'Vàng',      minOrders: 30, commissionRate: 0.25 },
+  { name: 'Bạc',       minOrders: 10, commissionRate: 0.22 },
+  { name: 'Thành viên', minOrders: 0, commissionRate: 0.20 },
+];
+function getTier(orders: number) {
+  return TIERS.find(t => orders >= t.minOrders) || TIERS[TIERS.length - 1];
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -108,19 +117,13 @@ export async function GET(req: Request) {
       }
     });
 
-    const tier = getTierByOrderCount(lifetimeOrders);
+    const tier = getTier(lifetimeOrders);
     const thisMonthCommission = Math.round(thisMonthRevenue * tier.commissionRate);
     const lastMonthCommission = Math.round(lastMonthRevenue * tier.commissionRate);
 
-    // Cấp bậc tiếp theo
-    const tiers = [
-      { name: 'Thành viên', minOrders: 0,  commissionRate: 0.20 },
-      { name: 'Bạc',        minOrders: 10, commissionRate: 0.22 },
-      { name: 'Vàng',       minOrders: 30, commissionRate: 0.25 },
-      { name: 'Kim Cương',  minOrders: 80, commissionRate: 0.30 },
-    ];
-    const currentTierIdx = tiers.findIndex(t => t.name === tier.name);
-    const nextTier = tiers[currentTierIdx + 1] || null;
+    // Cấp bậc tiếp theo (TIERS sorted desc, so next tier = previous in array)
+    const currentTierIdx = TIERS.findIndex(t => t.name === tier.name);
+    const nextTier = currentTierIdx > 0 ? TIERS[currentTierIdx - 1] : null;
     const ordersToNextTier = nextTier ? Math.max(0, nextTier.minOrders - lifetimeOrders) : 0;
 
     return NextResponse.json({
