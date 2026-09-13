@@ -2,14 +2,22 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
+// ── Backend API instance (for non-auth endpoints) ────────────
 export const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
   headers: { "Content-Type": "application/json" },
   withCredentials: false,
 });
 
-// Request interceptor — attach JWT token
-api.interceptors.request.use((config) => {
+// ── Auth API instance (Next.js API routes — same domain) ─────
+const authAxios = axios.create({
+  baseURL: "",  // relative to current domain
+  headers: { "Content-Type": "application/json" },
+  withCredentials: false,
+});
+
+// Request interceptor — attach JWT token (both instances)
+function attachToken(config: any) {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("ncn_access_token");
     if (token) {
@@ -17,12 +25,13 @@ api.interceptors.request.use((config) => {
     }
   }
   return config;
-});
+}
+api.interceptors.request.use(attachToken);
+authAxios.interceptors.request.use(attachToken);
 
 // Response interceptor — auto refresh on 401
-api.interceptors.response.use(
-  (res) => res,
-  async (error) => {
+function handle401(instance: typeof axios) {
+  return async (error: any) => {
     const original = error.config;
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
@@ -30,16 +39,13 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("ncn_refresh_token");
         if (!refreshToken) throw new Error("No refresh token");
 
-        const { data } = await axios.post(`${API_URL}/api/v1/auth/refresh`, {
-          refreshToken,
-        });
+        const { data } = await axios.post("/api/auth/refresh", { refreshToken });
 
         localStorage.setItem("ncn_access_token", data.accessToken);
         localStorage.setItem("ncn_refresh_token", data.refreshToken);
         original.headers.Authorization = `Bearer ${data.accessToken}`;
-        return api(original);
+        return instance(original);
       } catch {
-        // Clear tokens and redirect to login
         localStorage.removeItem("ncn_access_token");
         localStorage.removeItem("ncn_refresh_token");
         localStorage.removeItem("ncn_user");
@@ -49,23 +55,25 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
-);
+  };
+}
+api.interceptors.response.use((r) => r, handle401(api as any));
+authAxios.interceptors.response.use((r) => r, handle401(authAxios as any));
 
-// ── Auth endpoints ──────────────────────────────────────────
+// ── Auth endpoints (Next.js API routes) ─────────────────────
 export const authApi = {
   register: (data: { email: string; name: string; password: string; referralCode?: string }) =>
-    api.post("/auth/register", data).then((r) => r.data),
+    authAxios.post("/api/auth/register", data).then((r) => r.data),
 
   login: (data: { email: string; password: string }) =>
-    api.post("/auth/login", data).then((r) => r.data),
+    authAxios.post("/api/auth/login", data).then((r) => r.data),
 
-  logout: () => api.post("/auth/logout").then((r) => r.data),
+  logout: () => Promise.resolve({ success: true }),  // client-side only
 
-  me: () => api.get("/auth/me").then((r) => r.data),
+  me: () => authAxios.get("/api/auth/me").then((r) => r.data),
 
   refresh: (refreshToken: string) =>
-    api.post("/auth/refresh", { refreshToken }).then((r) => r.data),
+    authAxios.post("/api/auth/refresh", { refreshToken }).then((r) => r.data),
 };
 
 // ── Assessment endpoints ────────────────────────────────────
@@ -94,10 +102,15 @@ export const paymentsApi = {
     api.post("/payments/checkout", { plan, affiliateCode }).then((r) => r.data),
 };
 
-// ── Affiliate endpoints ─────────────────────────────────────
+// ── Affiliate endpoints ─────────────────────────────────────────
+// NOTE: Gọi Next.js API routes thay vì NestJS backend:
+//   - NestJS /api/v1/affiliate/* không reachable từ Vercel production
+//   - NestJS dùng PostgreSQL, nhưng data thực ở Firestore (SePay webhook)
+//   → /api/affiliate/stats và /api/affiliate/commissions đọc thẳng Firestore
 export const affiliateApi = {
-  getStats: () => api.get("/affiliate/stats").then((r) => r.data),
-  getCommissions: () => api.get("/affiliate/commissions").then((r) => r.data),
+  getStats:       () => authAxios.get("/api/affiliate/stats").then((r) => r.data),
+  getCommissions: (page = 1, limit = 20) =>
+    authAxios.get(`/api/affiliate/commissions?page=${page}&limit=${limit}`).then((r) => r.data),
 };
 
 // ── Users endpoints ─────────────────────────────────────────

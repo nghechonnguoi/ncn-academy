@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { assessmentApi } from "@/lib/api";
 import { CheckoutModal } from "@/components/dashboard/checkout-modal";
-import { Lock, Star, Users, TrendingUp, CheckCircle, Loader2, ArrowLeft, Copy, Check, Link2 } from "lucide-react";
+import { Lock, Star, CheckCircle, Loader2, ArrowLeft, Copy, Check, Link2 } from "lucide-react";
 import Link from "next/link";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -206,16 +206,45 @@ function DashboardContent() {
       title: c.name ?? c.title ?? "",
       match: Math.round(c.pct ?? c.match ?? 0),
       reason: c.niche ?? c.reason ?? "",
-      locked: i < 3,
+      locked: true,
     }));
   }
 
   const countdownKey = `ncn_countdown_${user?.id ?? "guest"}`;
-  const countdown = useCountdown(countdownKey);
+  useCountdown(countdownKey);
 
   // ── Tải assessment ──────────────────────────────────────────────────────
   function loadAssessment() {
     setIsLoading(true);
+
+    // Kiểm tra sessionStorage trước (kết quả guest vừa submit)
+    const trySessionStorage = () => {
+      try {
+        const cached = sessionStorage.getItem("ncn_last_result");
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.assessment?.id) {
+            // Chuyển đổi định dạng result sang assessment format
+            const fakeAssessment = {
+              id: parsed.assessment.id,
+              riasecResult: { ...parsed.riasecResult, mbtiCode: parsed.riasecResult?.mbtiCode },
+              careerResult: {
+                track: parsed.track,
+                university: parsed.careerResult,
+                vocational: parsed.vocationalCareerResult ?? null,
+                profile: parsed.profile ?? null,
+              },
+              createdAt: new Date().toISOString(),
+            };
+            setAssessment(fakeAssessment);
+            setMatchScore(calculateMatchScore(fakeAssessment));
+            return true;
+          }
+        }
+      } catch {}
+      return false;
+    };
+
     assessmentApi.list()
       .then((list: any[]) => {
         const resetDate = new Date("2026-07-05T00:00:00.000Z");
@@ -223,13 +252,20 @@ function DashboardContent() {
         if (valid.length > 0) {
           setAssessment(valid[0]);
           setMatchScore(calculateMatchScore(valid[0]));
+        } else {
+          // Không có assessment từ DB → thử sessionStorage (guest mode)
+          trySessionStorage();
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        // API lỗi (chưa login) → thử sessionStorage
+        trySessionStorage();
+      })
       .finally(() => setIsLoading(false));
   }
 
   useEffect(() => { loadAssessment(); }, []);
+
 
   // ── Gọi AI khi có assessment ────────────────────────────────────────────
   useEffect(() => {
@@ -239,18 +275,18 @@ function DashboardContent() {
     const holland = riasec.top3 ?? "AIE";
     const lifePath = riasec.numerology?.LP ?? null;
     const riasecScores = { R: riasec.R ?? 0, I: riasec.I ?? 0, A: riasec.A ?? 0, S: riasec.S ?? 0, E: riasec.E ?? 0, C: riasec.C ?? 0 };
-    const numerology = { LP: riasec.numerology?.LP ?? null, soul: riasec.numerology?.soul ?? null, mission: riasec.numerology?.mission ?? null };
 
     setAiLoading(true);
     fetch("/api/dashboard-ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mbti, holland, lifePath, riasecScores, numerology, assessmentId: assessment.id }),
+      body: JSON.stringify({ mbti, holland, lifePath, riasecScores, assessmentId: assessment.id }),
     })
       .then((r) => r.json())
       .then((data: AiData) => setAiData(data))
       .catch(() => {})
       .finally(() => setAiLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assessment?.id]);
 
   // ── Redirect nếu không có assessment ───────────────────────────────────
@@ -418,9 +454,19 @@ function DashboardContent() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {getAssessmentCareers(assessment).map((career) => (
-                <CareerCard key={career.rank} career={career} onUnlock={() => setCheckoutOpen(true)} />
-              ))}
+              {(() => {
+                const careers = getAssessmentCareers(assessment);
+                const list = careers.length > 0 ? careers : [1,2,3,4,5].map((rank) => ({
+                  rank,
+                  title: `Nghề phù hợp #${rank}`,
+                  match: 0,
+                  reason: "",
+                  locked: true,
+                }));
+                return list.map((career) => (
+                  <CareerCard key={career.rank} career={career} onUnlock={() => setCheckoutOpen(true)} />
+                ));
+              })()}
             </div>
           )}
 
@@ -1014,10 +1060,12 @@ function CareerCard({ career, onUnlock }: { career: Career; onUnlock: () => void
           </div>
           <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>Mở khóa trong báo cáo đầy đủ</p>
         </div>
-        <div className="text-right flex-shrink-0">
-          <div className="text-sm font-black" style={{ color: "#94a3b8" }}>{career.match}%</div>
-          <div className="text-xs" style={{ color: "#cbd5e1" }}>phù hợp</div>
-        </div>
+        {career.match > 0 && (
+          <div className="text-right flex-shrink-0">
+            <div className="text-sm font-black" style={{ color: "#94a3b8" }}>{career.match}%</div>
+            <div className="text-xs" style={{ color: "#cbd5e1" }}>phù hợp</div>
+          </div>
+        )}
       </div>
     );
   }

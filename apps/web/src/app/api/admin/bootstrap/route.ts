@@ -1,10 +1,8 @@
 /**
- * TEMPORARY admin bootstrap API — XÓA SAU KHI DÙNG
  * POST /api/admin/bootstrap
- * Body: { "secret": "ncn-bootstrap-2026", "email": "email-cua-ban@example.com" }
+ * Body: { "secret": "ncn-bootstrap-2026", "email": "email@example.com" }
  * 
- * Endpoint này set role ADMIN cho một email cụ thể.
- * Chỉ hoạt động nếu secret khớp.
+ * Set role ADMIN cho user (tìm theo email trong Firestore `users` collection).
  */
 
 import { NextResponse } from 'next/server';
@@ -34,33 +32,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Thiếu email' }, { status: 400 });
     }
 
-    // Backend dùng PostgreSQL (Prisma), không dùng Firestore cho users
-    // → Gọi API backend trực tiếp thông qua URL nội bộ
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL ?? 'http://localhost:3001';
+    initFirebase();
+    const db = getFirestore();
 
-    // Cố gắng kết nối backend NestJS để update role
-    const backendRes = await fetch(`${apiUrl}/api/v1/users/set-admin`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-Internal-Secret': BOOTSTRAP_SECRET,
-      },
-      body: JSON.stringify({ email }),
-    }).catch(() => null);
+    // Find user by email in Firestore
+    const snap = await db.collection('users')
+      .where('email', '==', email.toLowerCase().trim())
+      .limit(1)
+      .get();
 
-    if (backendRes && backendRes.ok) {
-      return NextResponse.json({ success: true, message: `Đã set ADMIN cho ${email}` });
+    if (snap.empty) {
+      return NextResponse.json({
+        success: false,
+        error: `Không tìm thấy user với email: ${email}. Hãy đăng ký trước.`,
+      }, { status: 404 });
     }
 
-    // Nếu backend không có endpoint đó, trả về hướng dẫn
+    const userDoc = snap.docs[0];
+    await userDoc.ref.update({ role: 'ADMIN' });
+
     return NextResponse.json({
-      success: false,
-      error: 'Backend không hỗ trợ endpoint này. Cần update trực tiếp trong database.',
-      hint: `Chạy lệnh SQL: UPDATE "User" SET role = 'ADMIN' WHERE email = '${email}';`,
-      apiUrl,
-    }, { status: 501 });
+      success: true,
+      message: `Đã set ADMIN cho ${email} (ID: ${userDoc.id})`,
+    });
 
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+

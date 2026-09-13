@@ -21,8 +21,8 @@ const FALLBACK_DATA = {
       { rank: 1, title: "???", match: 96, reason: "Phù hợp cao nhất với tổ hợp tính cách của bạn", locked: true },
       { rank: 2, title: "???", match: 94, reason: "Phù hợp cao, khai thác tối đa điểm mạnh tự nhiên", locked: true },
       { rank: 3, title: "Nhà sáng tạo nội dung", match: 88, reason: "Sáng tạo kết hợp khả năng kết nối cảm xúc với khán giả", locked: true },
-      { rank: 4, title: "Chuyên viên Truyền thông", match: 85, reason: "Kết nối con người, xử lý tình huống linh hoạt và năng động", locked: false },
-      { rank: 5, title: "Điều phối viên Dự án", match: 82, reason: "Tổ chức, dẫn dắt đội nhóm đạt mục tiêu chung có tác động", locked: false },
+      { rank: 4, title: "Chuyên viên Truyền thông", match: 85, reason: "Kết nối con người, xử lý tình huống linh hoạt và năng động", locked: true },
+      { rank: 5, title: "Điều phối viên Dự án", match: 82, reason: "Tổ chức, dẫn dắt đội nhóm đạt mục tiêu chung có tác động", locked: true },
     ],
     avoid_careers: [
       { title: "Kế toán / Kiểm toán", reason: "Công việc lặp đi lặp lại, ít sáng tạo sẽ khiến bạn chán nản nhanh" },
@@ -225,7 +225,7 @@ function computeAvoidCareers(hollandStr: string): { title: string; reason: strin
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { mbti, holland, lifePath, riasecScores, numerology, assessmentId } = body;
+    const { mbti, holland, lifePath, riasecScores, assessmentId } = body;
 
     if (!mbti || !holland) {
       return NextResponse.json({ error: 'Missing mbti or holland' }, { status: 400 });
@@ -388,7 +388,7 @@ Trả lời ĐÚNG định dạng JSON:
     const careers = {
       top_careers: ((careersData as any).top_careers || FALLBACK_DATA.careers.top_careers).map((c: any) => ({
         ...c,
-        locked: c.rank <= 3,
+        locked: true,
       })),
       avoid_careers: avoidCareers.length >= 3 ? avoidCareers : FALLBACK_DATA.careers.avoid_careers,
     };

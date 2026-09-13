@@ -40,7 +40,7 @@ const VIET_MAP: Record<string, string> = {
 export class AssessmentService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async submit(userId: string, dto: SubmitAssessmentDto) {
+  async submit(userId: string | null, dto: SubmitAssessmentDto) {
     const answerMap: Record<string, number | string> = {};
     for (const { questionId, answer } of dto.answers) {
       answerMap[questionId] = answer;
@@ -130,6 +130,17 @@ export class AssessmentService {
       dto.track === 'vocational'
         ? this.matchVocationalCareers(engineInput, top3)
         : null;
+
+    // Guest mode: không lưu vào DB, trả về kết quả ngay
+    if (!userId) {
+      return {
+        assessment: { id: `guest-${Date.now()}` },
+        riasecResult: { ...riasecResult, mbtiCode },
+        careerResult,
+        vocationalCareerResult,
+        track: dto.track ?? 'university',
+      };
+    }
 
     const assessment = await this.prisma.assessment.create({
       data: {
@@ -446,12 +457,12 @@ export class AssessmentService {
   private buildEngineInput(params: any) { return params; }
 
   // ── University track: top 5, S_market = 65 ──────────────────────────────
-  private matchCareers(input: any, top3: string) {
+  private matchCareers(input: any, _top3: string) {
     return this.threeRoundMatch(UNIVERSITY_CAREERS, input, 5, () => 65);
   }
 
   // ── Vocational track: top 10, S_market từ salary ─────────────────────────
-  private matchVocationalCareers(input: any, top3: string) {
+  private matchVocationalCareers(input: any, _top3: string) {
     const deriveMarket = (career: any): number => {
       const nums = (career.salary??'').match(/\d+/g)?.map(Number)??[];
       if (!nums.length) return 50;

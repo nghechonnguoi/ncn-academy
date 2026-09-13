@@ -261,6 +261,11 @@ export default function AssessmentPage() {
       const answersArray = Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer }));
       const result = await submit(answersArray, track ?? "university", profile);
 
+      // Lưu kết quả vào sessionStorage để dashboard hiển thị (bao gồm guest mode)
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("ncn_last_result", JSON.stringify(result));
+      }
+
       // Đăng ký lead để kích hoạt chuỗi mail chăm sóc khách hàng (không chặn điều hướng nếu lỗi)
       fetch("/api/leads", {
         method: "POST",
@@ -278,6 +283,7 @@ export default function AssessmentPage() {
       toast({ title: "Có lỗi xảy ra", description: "Vui lòng thử lại", variant: "destructive" });
     }
   };
+
 
   const isLastQuestion = currentIdx === TOTAL - 1;
   const isCurrentAnswered = answers[q?.id] !== undefined || (q?.type === "textarea" && textareaValue.trim().length > 0);

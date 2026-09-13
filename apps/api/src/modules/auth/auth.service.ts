@@ -53,7 +53,7 @@ export class AuthService {
     };
   }
 
-  async googleAuth(idToken: string) {
+  async googleAuth(_idToken: string) {
     // Verify idToken with Google, then upsert user
     // TODO: Use google-auth-library to verify token
     throw new ForbiddenException('Google auth not yet configured');

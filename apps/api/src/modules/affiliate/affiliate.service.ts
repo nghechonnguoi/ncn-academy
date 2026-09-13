@@ -50,7 +50,7 @@ export class AffiliateService {
     return { data, total, page, limit };
   }
 
-  async requestPayout(userId: string, amount: number, bankInfo: { bank: string; account: string }) {
+  async requestPayout(_userId: string, _amount: number, _bankInfo: { bank: string; account: string }) {
     // Create payout request — in production, integrate with bank transfer API
     return { success: true, message: 'Yêu cầu rút tiền đã được ghi nhận. Xử lý trong 1-3 ngày làm việc.' };
   }

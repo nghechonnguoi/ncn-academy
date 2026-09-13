@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-const SECRET = 'ncn-bootstrap-2026';
+const SECRET = process.env.BOOTSTRAP_SECRET ?? 'ncn-bootstrap-2026';
 
 function initFirebase() {
   if (!getApps().length) {

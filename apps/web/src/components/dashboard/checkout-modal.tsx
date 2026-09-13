@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { X, Loader2, CheckCircle, Copy, Tag, Lock } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
+import { X, Loader2, CheckCircle, Copy, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Giá chiến dịch theo thời gian ────────────────────────────────────────────
@@ -18,7 +19,7 @@ function getCampaignPrice(): { price: number; display: string; isCampaign: boole
     : { price: PRICE_ORIGINAL, display: "799.000đ", isCampaign: false };
 }
 
-const { price: PRICE, display: PRICE_DISPLAY, isCampaign: IS_CAMPAIGN } = getCampaignPrice();
+const { price: PRICE, isCampaign: IS_CAMPAIGN } = getCampaignPrice();
 const BANK_BIN    = process.env.NEXT_PUBLIC_BANK_BIN    ?? "970422";
 const BANK_ACCT   = process.env.NEXT_PUBLIC_BANK_ACCT   ?? "768688678";
 const BANK_OWNER  = process.env.NEXT_PUBLIC_BANK_OWNER  ?? "HO KINH DOANH NGHE CHON NGUOI";
@@ -97,12 +98,12 @@ export function CheckoutModal({
   const pdfPayloadRef = useRef<any>(null);
 
   // Tạo orderCode từ assessment id (stable)
-  function buildOrderCode() {
+  const buildOrderCode = useCallback(() => {
     const rawId = assessment?.id ?? "";
     const nums = rawId.replace(/[^0-9]/g, "");
     if (nums) return parseInt(nums.slice(-8));
     return Math.floor(Math.random() * 900000) + 100000;
-  }
+  }, [assessment?.id]);
 
   // Reset khi đóng modal
   useEffect(() => {
@@ -133,7 +134,7 @@ export function CheckoutModal({
         setFinalAmount(discounted);
       }
     }
-  }, [open]);
+  }, [open, buildOrderCode]);
 
   // ── Polling order status ──────────────────────────────────────────────────
   // Kiến trúc: Webhook server là người DUY NHẤT tạo PDF.
@@ -558,7 +559,7 @@ export function CheckoutModal({
 
               {qrUrl && (
                 <div className="inline-block rounded-xl overflow-hidden border-4 border-white">
-                  <img src={qrUrl} alt="QR thanh toán" className="w-56 h-56 object-contain" />
+                  <Image src={qrUrl} alt="QR thanh toán" width={224} height={224} className="object-contain" unoptimized />
                 </div>
               )}
 

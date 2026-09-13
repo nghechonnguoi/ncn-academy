@@ -102,7 +102,7 @@ export async function POST(req: Request) {
             // Retry hợp lệ: trả về cả discountAmount
             return NextResponse.json({ success: true, message: 'Mã hợp lệ!', discountAmount }, { headers: corsHeaders });
           }
-          return NextResponse.json({ success: false, message: 'Mã giảm giá này đã được sủ dụng' }, { headers: corsHeaders });
+          return NextResponse.json({ success: false, message: 'Mã giảm giá này đã được sử dụng' }, { headers: corsHeaders });
         }
       }
       return NextResponse.json({ success: true, message: 'Mã hợp lệ!', discountAmount }, { headers: corsHeaders });
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
             advisorEmail: matchedAdvisor.email,
             advisorPhone: matchedAdvisor.phone || '',
           }, { merge: true });
-          console.log(`[apply-coupon] advisor ${matchedAdvisor.name} ghi nhận vào order ${orderCode}`);
+          console.warn(`[apply-coupon] advisor ${matchedAdvisor.name} ghi nhận vào order ${orderCode}`);
         }
       }
     } catch (advErr: any) {
@@ -194,7 +194,7 @@ export async function POST(req: Request) {
               couponApplied:    couponCode,
               createdAt:        FieldValue.serverTimestamp(),
             });
-            console.log(`[apply-coupon] affiliate commission ghi nhận order ${orderCode} ref=${orderData.referralCode}`);
+            console.warn(`[apply-coupon] affiliate commission ghi nhận order ${orderCode} ref=${orderData.referralCode}`);
           }
         }
       } catch (syncErr: any) {

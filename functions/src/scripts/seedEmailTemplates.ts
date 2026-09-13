@@ -40,12 +40,12 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p>Hẹn gặp lại trong email tiếp theo!</p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
     Bạn nhận email này vì đã làm bài trắc nghiệm tại nghechonnguoi.com.<br>
-    <a href="https://quiz.nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
+    <a href="https://nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
   </p>
 </div>`,
   },
@@ -77,11 +77,11 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   </p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
-    <a href="https://quiz.nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
+    <a href="https://nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
   </p>
 </div>`,
   },
@@ -113,11 +113,11 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   </p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
-    <a href="https://quiz.nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
+    <a href="https://nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
   </p>
 </div>`,
   },
@@ -149,11 +149,11 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   </p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
-    <a href="https://quiz.nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
+    <a href="https://nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
   </p>
 </div>`,
   },
@@ -187,11 +187,11 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p>Chúc bạn luôn tìm được con đường phù hợp nhất.</p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
-    <a href="https://quiz.nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
+    <a href="https://nghechonnguoi.com/api/email/unsubscribe?email={{email}}" style="color: #999;">Huỷ nhận email</a>
   </p>
 </div>`,
   },

@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic';
 
 function initFirebase() {
   if (!getApps().length) {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT) return;
     const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
     initializeApp({ credential: cert(sa) });
   }

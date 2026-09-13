@@ -1,110 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 export function ContactFollower() {
-  const [pos, setPos] = useState({ x: -999, y: -999 });
-  const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const rafRef = useRef<number | null>(null);
-  const targetRef = useRef({ x: -999, y: -999 });
-  const currentRef = useRef({ x: -999, y: -999 });
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      targetRef.current = { x: e.clientX, y: e.clientY };
-      setVisible(true);
-    };
-    const onMouseLeave = () => setVisible(false);
-
-    window.addEventListener("mousemove", onMouseMove);
-    document.documentElement.addEventListener("mouseleave", onMouseLeave);
-
-    const animate = () => {
-      const dx = targetRef.current.x - currentRef.current.x;
-      const dy = targetRef.current.y - currentRef.current.y;
-      currentRef.current = {
-        x: currentRef.current.x + dx * 0.12,
-        y: currentRef.current.y + dy * 0.12,
-      };
-      setPos({ x: currentRef.current.x, y: currentRef.current.y });
-      rafRef.current = requestAnimationFrame(animate);
-    };
-    rafRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      document.documentElement.removeEventListener("mouseleave", onMouseLeave);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
 
   const phoneNumber = "0986864591";
   const zaloLink = `https://zalo.me/${phoneNumber}`;
 
   return (
     <>
-      {/* Follower widget */}
-      <div
-        style={{
-          position: "fixed",
-          left: pos.x + 20,
-          top: pos.y - 20,
-          zIndex: 9999,
-          pointerEvents: "none",
-          opacity: visible ? 1 : 0,
-          transition: "opacity 0.3s ease",
-          userSelect: "none",
-        }}
-      >
-        <div
-          style={{
-            background: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)",
-            borderRadius: "999px",
-            padding: "8px 16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            boxShadow: "0 8px 32px rgba(14,165,233,0.45), 0 2px 8px rgba(0,0,0,0.3)",
-            backdropFilter: "blur(8px)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: "50%",
-              background: "#fff",
-              display: "inline-block",
-              boxShadow: "0 0 0 0 rgba(255,255,255,0.7)",
-              animation: "ncn-pulse 1.4s infinite",
-              flexShrink: 0,
-            }}
-          />
-          <span style={{ color: "#fff", fontWeight: 700, fontSize: "13px" }}>
-            Liên hệ Admin
-          </span>
-          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "13px", fontWeight: 500 }}>
-            {phoneNumber}
-          </span>
-          <span
-            style={{
-              background: "rgba(255,255,255,0.2)",
-              borderRadius: "6px",
-              padding: "2px 7px",
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "#fff",
-            }}
-          >
-            Zalo
-          </span>
-        </div>
-      </div>
-
       {/* Fixed clickable button */}
-      <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 10000 }}>
+      <div style={{ position: "fixed", bottom: 28, right: 28, zIndex: 10000, display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
         <button
           onClick={() => setExpanded((v) => !v)}
           aria-label="Liên hệ Admin"
@@ -129,6 +36,53 @@ export function ContactFollower() {
             />
           </svg>
         </button>
+
+        {/* Label below phone button */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)",
+            borderRadius: "999px",
+            padding: "5px 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            boxShadow: "0 4px 16px rgba(14,165,233,0.4)",
+            whiteSpace: "nowrap",
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          <span
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#fff",
+              display: "inline-block",
+              boxShadow: "0 0 0 0 rgba(255,255,255,0.7)",
+              animation: "ncn-pulse 1.4s infinite",
+              flexShrink: 0,
+            }}
+          />
+          <span style={{ color: "#fff", fontWeight: 700, fontSize: "12px" }}>
+            Liên hệ Admin
+          </span>
+          <span style={{ color: "rgba(255,255,255,0.85)", fontSize: "11px", fontWeight: 500 }}>
+            {phoneNumber}
+          </span>
+          <span
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              borderRadius: "5px",
+              padding: "1px 6px",
+              fontSize: "10px",
+              fontWeight: 700,
+              color: "#fff",
+            }}
+          >
+            Zalo
+          </span>
+        </div>
 
         {/* Expandable panel */}
         <div

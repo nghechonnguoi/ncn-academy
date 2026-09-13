@@ -1,0 +1,5 @@
+﻿data = open('quiz-site/dashboard-result.js', 'rb').read()
+fixed = data.decode('utf-8').encode('cp437', errors='replace').decode('utf-8', errors='replace')
+open('quiz-site/dashboard-result.js', 'w', encoding='utf-8-sig').write(fixed)
+print('Done! First 200 chars:')
+print(repr(fixed[:200]))

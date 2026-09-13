@@ -28,7 +28,7 @@ const DEFAULT_STEP_DELAY_DAYS = 1;
  */
 export const dailyNurtureSend = onRequest(
   {
-    region: "us-central1",
+    region: "asia-southeast1",
     secrets: [RESEND_API_KEY, CRON_SECRET],
     timeoutSeconds: 300,
   },

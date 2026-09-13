@@ -16,7 +16,13 @@ export function getDb() {
 }
 
 // ── JWT ────────────────────────────────────────────────────────
-const JWT_SECRET_RAW = () => process.env.JWT_SECRET ?? 'ncn-jwt-secret-change-me-2026';
+const JWT_SECRET_RAW = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable is not set in production!');
+  }
+  return secret ?? 'ncn-jwt-secret-change-me-2026';
+};
 const getSecret = () => new TextEncoder().encode(JWT_SECRET_RAW());
 
 const ACCESS_TOKEN_EXPIRY  = '24h';   // generous for SPA

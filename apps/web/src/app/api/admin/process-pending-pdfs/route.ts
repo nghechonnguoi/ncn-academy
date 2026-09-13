@@ -49,7 +49,6 @@ async function handler(req: Request) {
 
     // Tìm orders: status=PAID và pdfDone=false hoặc chưa có
     // Chỉ xử lý orders tạo trong 24 giờ qua để tránh re-process cũ
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const snap = await db.collection('orders')
       .where('status', 'in', ['PAID', 'paid'])

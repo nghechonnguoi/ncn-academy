@@ -8,6 +8,18 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 }
 
+// Optional JWT guard — không throw 401 nếu không có token (guest mode)
+@Injectable()
+export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
+  canActivate(context: ExecutionContext) {
+    return super.canActivate(context);
+  }
+  handleRequest(_err: any, user: any) {
+    // Không throw lỗi nếu user null — cho phép guest
+    return user || null;
+  }
+}
+
 // Role-based guard
 import { SetMetadata } from '@nestjs/common';
 export const Roles = (...roles: string[]) => SetMetadata('roles', roles);

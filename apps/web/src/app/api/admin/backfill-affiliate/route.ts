@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const endOfDay   = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    console.log(`[backfill-affiliate] Scanning orders from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
+    console.warn(`[backfill-affiliate] Scanning orders from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
 
     // Query orders PAID có referralCode trong ngày
     // NOTE: Lọc createdAt ở phía JS để tránh cần composite index trên Firestore
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
         });
 
         const resJson = await res.json().catch(() => ({}));
-        console.log(`[backfill-affiliate] order ${oc} ref=${data.referralCode}: HTTP ${res.status}`, resJson);
+        console.warn(`[backfill-affiliate] order ${oc} ref=${data.referralCode}: HTTP ${res.status}`, resJson);
 
         results.push({
           orderCode:    oc,

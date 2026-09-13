@@ -22,7 +22,6 @@ import {
   RefreshCw,
   HandCoins,
   ChevronDown,
-  Ticket,
   Plus,
   Trash2,
   Tag,

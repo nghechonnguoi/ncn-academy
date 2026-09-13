@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "psych-content-studio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "D:\\psych-content-studio", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}

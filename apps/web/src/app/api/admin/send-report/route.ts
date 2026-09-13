@@ -91,12 +91,12 @@ async function fetchReportData(db: FirebaseFirestore.Firestore, periodDays: numb
     };
   });
 
-  return { orders, totalRevenue, affiliates, usedCoupons, since };
+  return { orders, totalRevenue, affiliates, usedCoupons };
 }
 
 // ── HTML Email Template ────────────────────────────────────────────────────────
 function buildEmailHtml(data: Awaited<ReturnType<typeof fetchReportData>>, periodDays: number) {
-  const { orders, totalRevenue, affiliates, usedCoupons, since } = data;
+  const { orders, totalRevenue, affiliates, usedCoupons } = data;
 
   const ordersRows = orders.length > 0
     ? orders.map(o => `
@@ -263,7 +263,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log('[send-report] Email sent:', data?.id);
+    console.warn('[send-report] Email sent:', data?.id);
     return NextResponse.json({
       success: true,
       emailId: data?.id,

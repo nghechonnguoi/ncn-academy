@@ -2,7 +2,7 @@ import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AiService } from './ai.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { IsArray, IsString } from 'class-validator';
+import { IsArray } from 'class-validator';
 
 class ChatDto {
   @IsArray()

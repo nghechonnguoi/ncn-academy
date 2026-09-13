@@ -26,7 +26,7 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p>Báo cáo nghề nghiệp của bạn đã được tạo xong. Bạn có thể xem và tải về ngay tại đây:</p>
   
   <p style="text-align: center; margin: 25px 0;">
-    <a href="https://nghechonnguoi.com/dashboard" 
+    <a href="https://quiz.nghechonnguoi.com/dashboard" 
        style="display: inline-block; background: #e8654a; color: white; padding: 12px 24px; 
               text-decoration: none; border-radius: 5px; font-weight: bold;">
       Xem báo cáo của bạn →
@@ -41,7 +41,7 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p>Nếu có bất kỳ thắc mắc nào, bạn cứ reply email này — mình sẽ hỗ trợ ngay.</p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
@@ -67,7 +67,7 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p><strong>Bước 3 — Chia sẻ với ba mẹ hoặc người thân.</strong> Báo cáo sẽ giúp ba mẹ hiểu bạn hơn và cùng bạn đưa ra quyết định phù hợp.</p>
   
   <p style="text-align: center; margin: 25px 0;">
-    <a href="https://nghechonnguoi.com/dashboard" 
+    <a href="https://quiz.nghechonnguoi.com/dashboard" 
        style="display: inline-block; background: #e8654a; color: white; padding: 12px 24px; 
               text-decoration: none; border-radius: 5px; font-weight: bold;">
       Đọc lại báo cáo →
@@ -75,7 +75,7 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   </p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">
@@ -99,13 +99,13 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p>🎁 <strong>Giới thiệu bạn bè làm trắc nghiệm và mua báo cáo — bạn nhận hoa hồng 20% cho mỗi đơn hàng thành công.</strong></p>
   
   <p>Cách tham gia rất đơn giản:</p>
-  <p>1. Đăng ký tài khoản affiliate tại trang dashboard<br>
+  <p>1. Đăng ký tài khoản affiliate tại link bên dưới<br>
   2. Nhận link giới thiệu riêng của bạn<br>
   3. Chia sẻ link cho bạn bè, nhóm lớp, group phụ huynh<br>
   4. Nhận hoa hồng khi có đơn hàng thành công</p>
   
   <p style="text-align: center; margin: 25px 0;">
-    <a href="https://nghechonnguoi.com/dashboard" 
+    <a href="https://www.nghechonnguoi.com/dang-ky-affiliate.html" 
        style="display: inline-block; background: #e8654a; color: white; padding: 12px 24px; 
               text-decoration: none; border-radius: 5px; font-weight: bold;">
       Tham gia affiliate →
@@ -115,7 +115,7 @@ const templates: { id: string; subject: string; bodyHtml: string; delayDays: num
   <p>Cảm ơn bạn đã đồng hành cùng Nghề Chọn Người!</p>
   
   <p>Thân mến,<br>
-  <strong>Ngàn — Nghề Chọn Người</strong></p>
+  <strong>Nghề Chọn Người</strong></p>
   
   <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
   <p style="color: #999; font-size: 12px;">

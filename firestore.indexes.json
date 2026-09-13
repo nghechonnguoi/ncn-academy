@@ -10,11 +10,37 @@
       ]
     },
     {
+      "collectionGroup": "customers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "emailSequence.unsubscribed", "order": "ASCENDING" },
+        { "fieldPath": "emailSequence.nextSendAt", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "pdfDone", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "pdfDone", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }
   ],

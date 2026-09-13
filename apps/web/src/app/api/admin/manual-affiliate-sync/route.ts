@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       orderCode:     String(orderCode),
     };
 
-    console.log('[manual-affiliate-sync] payload:', syncPayload);
+    console.warn('[manual-affiliate-sync] payload:', syncPayload);
 
     // Ghi trực tiếp vào Firestore (NestJS API không reachable từ Vercel)
     // Commission record sẽ được lưu trong collection affiliate_commissions_pending

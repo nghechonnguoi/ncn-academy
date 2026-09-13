@@ -2,7 +2,8 @@
 import { useState, useEffect, useRef } from "react";
 
 const QUIZ_URL = "https://quiz.nghechonnguoi.com";
-const REPORT_PRICE = "568.000đ";
+const REPORT_PRICE = "799.000đ";
+
 
 function FadeIn({ children, className = "" }) {
   const ref = useRef(null);

@@ -82,16 +82,39 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, message: 'Order not found' }, { headers: corsHeaders });
       }
 
-      // Check if amount is sufficient
+      // ── Các mốc thanh toán hợp lệ ────────────────────────────────────────────
+      // PRICE_FULL      = 799.000đ — giá gốc, không có affiliate
+      // PRICE_AFFILIATE = 759.000đ — giá sau giảm 5% affiliate (floor *0.95/1k*1k)
+      // Coupon miễn phí (VIP/FREE/NCN/PRO/GIFT) → không qua webhook, xử lý tại apply-coupon
+      const PRICE_FULL      = 799_000;
+      const PRICE_AFFILIATE = 759_000;
+
       const expectedAmount = Number(data.amount || 0);
-      if (amount < expectedAmount) {
-        console.warn(`Insufficient amount for order ${orderCode}. Expected ${expectedAmount}, received ${amount}`);
-        // Save partial payment but don't generate PDF
+      // Chấp nhận trong biên độ 1.000đ để xử lý làm tròn của ngân hàng
+      const ROUNDING_BUFFER = 1_000;
+      const minimumAccept   = expectedAmount - ROUNDING_BUFFER;
+      const hasAffiliate    = !!data.referralCode;
+
+      console.warn(
+        `[webhook] order ${orderCode}` +
+        ` | mốc: ${expectedAmount === PRICE_AFFILIATE ? 'AFFILIATE (759k)' : expectedAmount === PRICE_FULL ? 'FULL (799k)' : `CUSTOM (${expectedAmount}đ)`}` +
+        ` | received: ${amount.toLocaleString('vi-VN')}đ` +
+        ` | min acceptable: ${minimumAccept.toLocaleString('vi-VN')}đ` +
+        (hasAffiliate ? ` | ref: ${data.referralCode}` : '')
+      );
+
+      if (amount < minimumAccept) {
+        console.warn(
+          `[webhook] ❌ PARTIAL_PAID order ${orderCode}:` +
+          ` received ${amount.toLocaleString('vi-VN')}đ` +
+          ` < min ${minimumAccept.toLocaleString('vi-VN')}đ` +
+          ` (expected ${expectedAmount.toLocaleString('vi-VN')}đ)`
+        );
         await docRef.set({
-           status: 'PARTIAL_PAID',
-           paidAmount: amount,
-           sepayData: payload,
-           updatedAt: FieldValue.serverTimestamp()
+          status:     'PARTIAL_PAID',
+          paidAmount: amount,
+          sepayData:  payload,
+          updatedAt:  FieldValue.serverTimestamp(),
         }, { merge: true });
         return NextResponse.json({ success: true, message: 'Insufficient amount' }, { headers: corsHeaders });
       }
@@ -144,15 +167,16 @@ export async function POST(req: Request) {
       // ───────────────────────────────────────────────────────────────────────
 
 
-      // Sync purchase status to the matching lead (if one exists) so the
+      // Sync purchase status to the matching lead/customer (if one exists) so the
       // nurture sequence (onLeadCreated / dailyNurtureSend) reacts to this purchase.
       const buyerEmail = data.payload?.EMAIL;
       if (buyerEmail && buyerEmail !== 'Không cung cấp') {
-        const leadsSnap = await db.collection('customers').where('email', '==', buyerEmail).limit(1).get();
+        const isCoursePurchase = String(data.productType || data.payload?.PRODUCT_TYPE || 'pdf').toLowerCase() === 'course';
+
+        // ── Update `leads` collection (quiz funnel nurture sequence) ────────
+        const leadsSnap = await db.collection('leads').where('email', '==', buyerEmail).limit(1).get();
         if (!leadsSnap.empty) {
           const leadRef = leadsSnap.docs[0].ref;
-          const isCoursePurchase = String(data.productType || data.payload?.PRODUCT_TYPE || 'pdf').toLowerCase() === 'course';
-
           if (isCoursePurchase) {
             await leadRef.update({
               'purchases.coursePurchased': true,
@@ -160,20 +184,42 @@ export async function POST(req: Request) {
               'emailSequence.unsubscribed': true,
             });
           } else {
-            // PDF purchase → chuyển sang post-purchase email sequence
+            // PDF purchase → stop nurture, chuyển sang post-purchase sequence
             await leadRef.update({
               'purchases.pdfPurchased': true,
               'purchases.pdfPurchasedAt': FieldValue.serverTimestamp(),
-              // Dừng nurture cũ, chuyển sang post-purchase sequence
               'emailSequence.currentStep': 0,
               'emailSequence.sequenceType': 'post_purchase',
-              'emailSequence.nextSendAt': FieldValue.serverTimestamp(), // gửi email P0 ngay lần chạy scheduled tiếp theo
+              'emailSequence.nextSendAt': FieldValue.serverTimestamp(),
               'emailSequence.unsubscribed': false,
             });
           }
           console.warn(`Updated lead ${leadRef.id} purchases for order ${orderCode} (course=${isCoursePurchase})`);
         } else {
-          console.warn(`No lead found for email ${buyerEmail}, skipping emailSequence update.`);
+          console.warn(`No lead found for email ${buyerEmail}, skipping leads emailSequence update.`);
+        }
+
+        // ── Update `customers` collection (account holder sequence) ─────────
+        const customersSnap = await db.collection('customers').where('email', '==', buyerEmail).limit(1).get();
+        if (!customersSnap.empty) {
+          const customerRef = customersSnap.docs[0].ref;
+          if (isCoursePurchase) {
+            await customerRef.update({
+              'purchases.coursePurchased': true,
+              'purchases.coursePurchasedAt': FieldValue.serverTimestamp(),
+              'emailSequence.unsubscribed': true,
+            });
+          } else {
+            await customerRef.update({
+              'purchases.pdfPurchased': true,
+              'purchases.pdfPurchasedAt': FieldValue.serverTimestamp(),
+              'emailSequence.currentStep': 0,
+              'emailSequence.sequenceType': 'post_purchase',
+              'emailSequence.nextSendAt': FieldValue.serverTimestamp(),
+              'emailSequence.unsubscribed': false,
+            });
+          }
+          console.warn(`Updated customer ${customerRef.id} purchases for order ${orderCode} (course=${isCoursePurchase})`);
         }
       }
 
