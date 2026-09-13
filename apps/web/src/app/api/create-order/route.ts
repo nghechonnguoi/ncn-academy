@@ -38,11 +38,17 @@ export async function POST(req: Request) {
 
     if (getApps().length) {
       const db = getFirestore();
-      await db.collection('orders').doc(String(orderCode)).set({
+      const docRef = db.collection('orders').doc(String(orderCode));
+
+      // Kiểm tra trước — nếu đã PAID (webhook fire trước create-order) thì không overwrite status
+      const existing = await docRef.get();
+      const alreadyPaid = existing.exists && existing.data()?.status === 'PAID';
+
+      await docRef.set({
         orderId:       orderId ?? `NCN-${orderCode}`,
         orderCode:     Number(orderCode),
         amount:        Number(amount),
-        status:        'PENDING',
+        ...(alreadyPaid ? {} : { status: 'PENDING' }), // không reset về PENDING nếu đã PAID
         customerName:  customerName  ?? '',
         customerEmail: customerEmail ?? '',
         customerPhone: customerPhone ?? '',
