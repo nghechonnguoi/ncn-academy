@@ -193,7 +193,7 @@ export default function AffiliateStatsPage() {
             <div className="icon">🏆</div>
             <h2>Xem thành tích của bạn</h2>
             <p>Nhập mã affiliate của bạn để xem thống kê đơn hàng và hoa hồng</p>
-            <input type="text" id="code-input" placeholder="VD: KHANH783" maxLength={20} />
+            <input type="text" id="code-input" placeholder="VD: ABC123" maxLength={20} />
             <button id="login-btn">Xem thành tích →</button>
             <div className="error-msg" id="login-error"></div>
           </div>
