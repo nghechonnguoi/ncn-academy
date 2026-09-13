@@ -133,16 +133,18 @@ export async function POST(req: Request) {
 
     const db = initFirebase();
 
-    // Tìm leads đăng ký HÔM NAY (từ 00:00 giờ Việt Nam = 17:00 UTC hôm qua)
-    const todayStart = new Date('2026-09-13T00:00:00+07:00'); // 17:00 UTC 12/09
-    const todayStartTs = Timestamp.fromDate(todayStart);
+    // Query leads 7 ngày gần nhất chưa mua (bao gồm những người đã làm quiz trước đó)
+    // Lý do: users bị lỗi sáng nay nhiều khả năng đã đăng ký từ trước (quiz cũ)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoTs = Timestamp.fromDate(sevenDaysAgo);
 
-    console.log(`Querying leads created after: ${todayStart.toISOString()}`);
+    console.log(`Querying leads created after: ${sevenDaysAgo.toISOString()}`);
 
     // Chỉ query theo createdAt (single-field index) để tránh cần composite index
     // Lọc pdfPurchased trong JavaScript
     const leadsSnap = await db.collection('leads')
-      .where('createdAt', '>=', todayStartTs)
+      .where('createdAt', '>=', sevenDaysAgoTs)
       .orderBy('createdAt', 'desc')
       .limit(500)
       .get();
