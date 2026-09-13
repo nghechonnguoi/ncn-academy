@@ -66,7 +66,8 @@ export async function POST(req: Request) {
     // ── Kiểm tra mã có tồn tại trong Firestore `coupons` không ───────────────
     let isAdminCode  = false;
     let couponActive = false;
-    let discountAmount = 0; // 0 = miễn phí hoàn toàn, >0 = giảm theo số tiền cụ thể
+    let discountAmount = 0;
+    let isMultiUse   = false; // Nếu true: dùng nhiều lần không bị chặn
 
     const couponDoc = await db.collection('coupons').doc(couponCode).get().catch(() => null);
 
@@ -75,6 +76,7 @@ export async function POST(req: Request) {
       isAdminCode    = couponData.isAdmin    === true;
       couponActive   = couponData.active     !== false;
       discountAmount = Number(couponData.discountAmount ?? 0);
+      isMultiUse     = couponData.multiUse   === true;
     } else {
       // Fallback về hardcode
       const fallback = FALLBACK_COUPONS[couponCode];
@@ -94,12 +96,12 @@ export async function POST(req: Request) {
 
     // ── VALIDATE: chỉ đọc, không ghi ──────────────────────────────────────────────────
     if (action === 'validate') {
-      if (!isAdminCode) {
+      // isAdmin hoặc multiUse: không cần check đã dùng chưa
+      if (!isAdminCode && !isMultiUse) {
         const doc = await couponRef.get();
         if (doc.exists && doc.data()?.used) {
           const existingOrderCode = String(doc.data()?.orderCode ?? '');
           if (orderCode && existingOrderCode === String(orderCode)) {
-            // Retry hợp lệ: trả về cả discountAmount
             return NextResponse.json({ success: true, message: 'Mã hợp lệ!', discountAmount }, { headers: corsHeaders });
           }
           return NextResponse.json({ success: false, message: 'Mã giảm giá này đã được sử dụng' }, { headers: corsHeaders });
@@ -128,7 +130,8 @@ export async function POST(req: Request) {
         return true;
       }
 
-      if (!isAdminCode) {
+      // isAdmin hoặc multiUse: không mark used, chỉ update order
+      if (!isAdminCode && !isMultiUse) {
         t.set(couponRef, { used: true, orderCode, usedAt: FieldValue.serverTimestamp() });
       }
 
