@@ -188,7 +188,7 @@ function DashboardContent() {
   const [affiliateCopied, setAffiliateCopied] = useState(false);
 
   const affiliateCode = user?.affiliateCode ?? null;
-  const affiliateLink = affiliateCode ? `https://quiz.nghechonnguoi.com/ref/${affiliateCode}` : "";
+  const affiliateLink = affiliateCode ? `https://quiz.nghechonnguoi.com/?ref=${affiliateCode}` : "";
 
   const handleAffiliateCopy = () => {
     if (!affiliateLink) return;
@@ -785,7 +785,7 @@ function DashboardContent() {
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-white">Link affiliate của bạn</p>
                   <p className="text-xs truncate font-mono mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>
-                    nghechonnguoi.com/ref/<span style={{ color: "#2BA88C" }}>{affiliateCode}</span>
+                    quiz.nghechonnguoi.com/?ref=<span style={{ color: "#2BA88C" }}>{affiliateCode}</span>
                   </p>
                 </div>
               </div>
