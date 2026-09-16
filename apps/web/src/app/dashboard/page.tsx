@@ -446,6 +446,34 @@ function DashboardContent() {
             5 nghề phù hợp nhất với bạn
           </h2>
 
+          {/* CTA button ngay dưới heading */}
+          <div className="text-center" style={{ margin: "-8px 0 20px" }}>
+            <button
+              onClick={() => setCheckoutOpen(true)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "14px 28px",
+                borderRadius: 14,
+                background: "linear-gradient(135deg,#E8A838,#f5c55a)",
+                border: "none",
+                cursor: "pointer",
+                boxShadow: "0 4px 20px rgba(232,168,56,0.45)",
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              onMouseOver={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 28px rgba(232,168,56,0.55)"; }}
+              onMouseOut={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(232,168,56,0.45)"; }}
+            >
+              <span style={{ fontSize: 16 }}>🔓</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#1B2A4A", lineHeight: 1.3 }}>
+                XEM NGAY 5 NGHỀ PHÙ HỢP NHẤT VỚI BẠN<br />
+                <span style={{ fontSize: 11, fontWeight: 600, opacity: 0.75 }}>&amp; ĐỊNH HƯỚNG PHÁT TRIỂN TRONG TƯƠNG LAI</span>
+              </span>
+            </button>
+            <p className="text-xs mt-2" style={{ color: "#94a3b8" }}>🔒 Kết quả được cá nhân hóa riêng cho bạn · Nhận ngay trong 30 giây</p>
+          </div>
+
           {isLoading ? (
             <div className="flex flex-col gap-3">
               {[0,1,2,3,4].map((i) => (
@@ -453,7 +481,7 @@ function DashboardContent() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3" style={{ position: "relative" }}>
               {(() => {
                 const careers = getAssessmentCareers(assessment);
                 const list = careers.length > 0 ? careers : [1,2,3,4,5].map((rank) => ({
@@ -463,9 +491,61 @@ function DashboardContent() {
                   reason: "",
                   locked: true,
                 }));
-                return list.map((career) => (
-                  <CareerCard key={career.rank} career={career} onUnlock={() => setCheckoutOpen(true)} />
-                ));
+                const unlockedItems = list.filter(c => !c.locked);
+                const lockedItems = list.filter(c => c.locked);
+                return (
+                  <>
+                    {unlockedItems.map((career) => (
+                      <CareerCard key={career.rank} career={career} onUnlock={() => setCheckoutOpen(true)} />
+                    ))}
+                    {lockedItems.length > 0 && (
+                      <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", marginTop: 4 }}>
+                        {/* Blurred locked items — chỉ hiện tối đa 2 item để vùng mờ nhỏ gọn hơn */}
+                        <div style={{ filter: "blur(4px)", pointerEvents: "none", userSelect: "none", maxHeight: 148, overflow: "hidden" }}>
+                          {lockedItems.slice(0, 2).map((career) => (
+                            <CareerCard key={career.rank} career={career} onUnlock={() => setCheckoutOpen(true)} />
+                          ))}
+                        </div>
+                        {/* Gradient overlay + CTA */}
+                        <div style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "linear-gradient(to bottom, rgba(248,250,252,0) 0%, rgba(248,250,252,0.85) 40%, rgba(248,250,252,1) 100%)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          paddingBottom: 8,
+                        }}>
+                          <div className="text-center">
+                            <button
+                              onClick={() => setCheckoutOpen(true)}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 12,
+                                padding: "18px 36px",
+                                borderRadius: 16,
+                                background: "linear-gradient(135deg,#E8A838,#f5c55a)",
+                                border: "none",
+                                cursor: "pointer",
+                                boxShadow: "0 6px 28px rgba(232,168,56,0.55)",
+                                transition: "transform 0.2s, box-shadow 0.2s",
+                              }}
+                              onMouseOver={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 10px 36px rgba(232,168,56,0.65)"; }}
+                              onMouseOut={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 28px rgba(232,168,56,0.55)"; }}
+                            >
+                              <span style={{ fontSize: 20 }}>🔓</span>
+                              <span style={{ fontSize: 16, fontWeight: 900, color: "#1B2A4A", lineHeight: 1.3 }}>
+                                MỞ KHÓA 5 NGHỀ VƯỢT TRỘI NHẤT<br />
+                                <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.75 }}>Xem phân tích chi tiết &amp; lộ trình phát triển</span>
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
               })()}
             </div>
           )}
